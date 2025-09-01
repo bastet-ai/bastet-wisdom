@@ -123,6 +123,8 @@ nav:
     - Documentation: best-practices/documentation.md
     - Communication: best-practices/communication.md
     - Legal & Ethics: best-practices/legal-ethics.md
+  - Process:
+    - HackerOne Data Collection: process/hackerone-data-collection.md
 
 # Extra
 extra:
