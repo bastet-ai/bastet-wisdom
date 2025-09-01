@@ -109,6 +109,8 @@ nav:
     - Network: tools/network.md
     - Mobile: tools/mobile.md
     - Cloud: tools/cloud.md
+  - Templates:
+    - Vulnerability Report: templates/vulnerability-report-template.md
   - Checklists:
     - Web Applications: checklists/web-applications.md
     - APIs: checklists/apis.md
