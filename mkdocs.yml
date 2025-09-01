@@ -123,6 +123,7 @@ nav:
     - File Upload: payloads/file-upload.md
   - Best Practices:
     - Reporting: best-practices/reporting.md
+    - Verification Before Reporting: best-practices/verification-before-reporting.md
     - Documentation: best-practices/documentation.md
     - Communication: best-practices/communication.md
     - Legal & Ethics: best-practices/legal-ethics.md
