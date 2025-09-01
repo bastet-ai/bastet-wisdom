@@ -104,6 +104,7 @@ nav:
     - Post-Exploitation: methodology/post-exploitation.md
   - Tools:
     - Bastet Suite: tools/bastet-suite.md
+    - httpx: tools/httpx.md
     - Web Application: tools/web-application.md
     - Network: tools/network.md
     - Mobile: tools/mobile.md
