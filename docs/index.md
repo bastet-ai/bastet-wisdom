@@ -23,8 +23,9 @@ Bastet Wisdom is a curated collection of:
 ### For Experienced Researchers
 
 1. Explore our specialized [Tool Documentation](tools/bastet-suite.md)
-2. Access curated [Payload Collections](payloads/xss.md)
-3. Review [Advanced Methodologies](methodology/reconnaissance.md)
+2. Master [DNS Enumeration](methodology/dns-enumeration.md) and [Nmap Scanning](methodology/nmap-scanning.md)
+3. Access curated [Payload Collections](payloads/xss.md)
+4. Review [Advanced Methodologies](methodology/reconnaissance.md)
 
 ## 📋 Testing Methodologies
 

@@ -97,6 +97,8 @@ nav:
   - Methodology:
     - Overview: methodology/overview.md
     - Reconnaissance: methodology/reconnaissance.md
+    - DNS Enumeration: methodology/dns-enumeration.md
+    - Nmap Scanning: methodology/nmap-scanning.md
     - Vulnerability Assessment: methodology/vulnerability-assessment.md
     - Exploitation: methodology/exploitation.md
     - Post-Exploitation: methodology/post-exploitation.md
