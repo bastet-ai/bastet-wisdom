@@ -1,0 +1,136 @@
+site_name: Bastet Wisdom
+site_description: Bug bounty security testing best practices and methodology documentation
+site_author: Bastet.ai Security Team
+site_url: https://wisdom.bastet.ai
+
+# Repository
+repo_name: bastet-ai/bastet-wisdom
+repo_url: https://github.com/bastet-ai/bastet-wisdom
+
+# Configuration
+theme:
+  name: material
+  palette:
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: purple
+      accent: cyan
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+    # Palette toggle for light mode
+    - scheme: default
+      primary: purple
+      accent: cyan
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - toc.integrate
+    - content.code.copy
+    - content.code.annotate
+    - navigation.instant
+    - navigation.instant.prefetch
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+
+# Plugins
+plugins:
+  - search:
+      lang: en
+  - awesome-pages
+  - git-revision-date-localized:
+      type: date
+  - minify:
+      minify_html: true
+  - mermaid2
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.keys
+  - pymdownx.critic
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - tables
+
+# Navigation structure
+nav:
+  - Home: index.md
+  - Methodology:
+    - Overview: methodology/overview.md
+    - Reconnaissance: methodology/reconnaissance.md
+    - Vulnerability Assessment: methodology/vulnerability-assessment.md
+    - Exploitation: methodology/exploitation.md
+    - Post-Exploitation: methodology/post-exploitation.md
+  - Tools:
+    - Bastet Suite: tools/bastet-suite.md
+    - Web Application: tools/web-application.md
+    - Network: tools/network.md
+    - Mobile: tools/mobile.md
+    - Cloud: tools/cloud.md
+  - Checklists:
+    - Web Applications: checklists/web-applications.md
+    - APIs: checklists/apis.md
+    - Mobile Apps: checklists/mobile-apps.md
+    - Infrastructure: checklists/infrastructure.md
+  - Payloads:
+    - XSS: payloads/xss.md
+    - SQL Injection: payloads/sql-injection.md
+    - Command Injection: payloads/command-injection.md
+    - File Upload: payloads/file-upload.md
+  - Best Practices:
+    - Reporting: best-practices/reporting.md
+    - Documentation: best-practices/documentation.md
+    - Communication: best-practices/communication.md
+    - Legal & Ethics: best-practices/legal-ethics.md
+
+# Extra
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/bastet-ai
+    - icon: fontawesome/solid/globe
+      link: https://bastet.ai
+  version:
+    provider: mike
+
+# Copyright
+copyright: Copyright &copy; 2024 Bastet.ai - Security Research & Development
