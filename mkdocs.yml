@@ -126,6 +126,7 @@ nav:
     - Legal & Ethics: best-practices/legal-ethics.md
   - Process:
     - HackerOne Data Collection: process/hackerone-data-collection.md
+    - Reconnaissance Tools Setup: process/reconnaissance-tools-setup.md
 
 # Extra
 extra:
