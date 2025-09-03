@@ -96,6 +96,9 @@ nav:
   - Home: index.md
   - Methodology:
     - Overview: methodology/overview.md
+    - Client-Side Analysis: methodology/client-side-analysis.md
+    - CORS Vulnerability Analysis: methodology/cors-vulnerability-analysis.md
+    - Large-Scale Reconnaissance: methodology/large-scale-reconnaissance.md
     - Reconnaissance: methodology/reconnaissance.md
     - DNS Enumeration: methodology/dns-enumeration.md
     - Nmap Scanning: methodology/nmap-scanning.md
