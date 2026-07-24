@@ -85,3 +85,14 @@ Safe validation boundaries:
 4. Negative controls: AMP command arguments passed as arrays, shell metacharacters rejected before `secure_popen()`, and configs restricted to trusted administrators.
 
 Reporting heuristic: title as **AMP command config to Glances command runner**, include the exact config source, service account, command line or parser trace, temp marker path, and patched-version rejection.
+
+## July 24 OpenDJ proxy-identity and DSML URI follow-up
+
+Two OpenDJ 5.1.2 fixes add distinct directory-server boundaries:
+
+- [GHSA-p279-2cqp-84jg](https://github.com/advisories/GHSA-p279-2cqp-84jg): SASL PLAIN `authzid` accepted a different resolvable user when the authenticating account held `proxied-auth`, but omitted the target-scoped `mayProxy` ACI decision enforced by other proxy paths.
+- [GHSA-68r5-9hpg-7qw9](https://github.com/advisories/GHSA-68r5-9hpg-7qw9): the unauthenticated DSMLv2 SOAP gateway dereferenced `xsd:anyURI` values, including local-file and outbound HTTP sources, before the fixed release disabled dereferencing by default and bounded the opt-in path.
+
+For SASL, create a proxy account, one in-scope synthetic target, and one out-of-scope synthetic target. Compare PLAIN `dn:`/`u:` forms with RFC 4370, DIGEST-MD5, or GSSAPI controls, and preserve only the effective canary identity and access decision. Do not impersonate administrators or read directory data.
+
+For DSML, use an owned callback and a benign file created under a lab temp directory. Send one add/modify request containing the canary URI and record callback or marker-byte handling; never point at metadata, internal production services, directory configuration, or credentials. Report **DSML value coercion -> URI dereference -> owned network/file canary**, and keep the unbounded-read availability behavior out of the proof.

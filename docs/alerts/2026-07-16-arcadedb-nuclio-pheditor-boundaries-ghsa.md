@@ -59,6 +59,15 @@ Report Nuclio findings as **dashboard function API -> build metadata or handler 
 
 Report Pheditor findings as **default or authorized login -> web editor terminal/upload feature -> shell or filesystem side effect beyond intended allowlist**.
 
+### July 24 Pheditor forced-change and argv follow-up
+
+Two later advisories sharpen this fixture:
+
+- [GHSA-f25v-x6vr-962g](https://github.com/advisories/GHSA-f25v-x6vr-962g): when the stored password was still the default, the forced-change branch checked that stored state but did not verify the submitted current password. Any non-empty value could reach the change form and establish an administrator session. Use a disposable install, a synthetic password, and a second browser profile; prove only the login-state transition. Version `2.0.8` is the fixed control.
+- [GHSA-g3hq-hphg-8fhh](https://github.com/advisories/GHSA-g3hq-hphg-8fhh): after metacharacter fixes, the terminal still prefix-matched an allowlisted program and passed the whole string to a shell. Program-native execution options therefore crossed the allowlist without shell separators. Test only with an argv recorder or a command that writes one nonce beneath a disposable temp root. Version `2.0.7` is the fixed control.
+
+Run the password case separately from terminal capability. The first boundary is **unauthenticated request -> unverified forced-change branch -> admin session**; the second is **terminal-enabled account -> first-token allowlist -> executable program option -> inert marker**. Do not use the newly established session to execute a terminal proof on any non-disposable target, and do not publish reusable command payloads.
+
 ## Operator checklist
 
 - [ ] Which identity or role crosses the boundary: read-only database user, single-database user, schema admin, unauthenticated dashboard caller, default web-editor user, or terminal-enabled account?

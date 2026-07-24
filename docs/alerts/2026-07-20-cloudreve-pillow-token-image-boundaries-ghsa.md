@@ -123,3 +123,9 @@ Four Cloudreve findings extend the existing OAuth and file fixture:
 5. Search a two-character canary prefix as an ordinary user and compare active, inactive, banned, anonymous, and fixed-build results. Preserve only synthetic email values.
 
 Keep claims bounded: the event issue exposes activity metadata, not file bytes; WOPI escapes per-file/directory scope but remains in the same owner's drive; the OAuth issue requires an already-authorized read-admin token; and directory search is an authenticated PII oracle rather than account access.
+
+### Admin.Read node-test SSRF follow-up
+
+[GHSA-v6w6-358x-2433](https://github.com/advisories/GHSA-v6w6-358x-2433) adds an action-vs-scope mismatch: an OAuth token with `Admin.Read` but not `Admin.Write` could submit caller-controlled node definitions to `/api/v4/admin/node/test` and `/api/v4/admin/node/test/downloader`, causing outbound operational requests. Cloudreve `4.17.0` is the fixed control.
+
+Extend the lab with an owned callback and a synthetic node definition containing fake keys. Establish that the token cannot create/update a node, then call each test route and record only callback receipt, request class, and redacted marker headers. Never target metadata, internal services, or real storage nodes. Report **read-only admin OAuth scope -> node test action -> server-side network request**, not anonymous SSRF.

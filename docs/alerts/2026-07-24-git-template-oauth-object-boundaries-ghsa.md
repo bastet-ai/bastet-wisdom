@@ -131,3 +131,9 @@ GitPython 3.1.54 closes three additional argument-boundary gaps affecting 3.1.53
 6. Repeat on 3.1.54. Unsafe transformed tokens and templates must be rejected, and diff arguments must not overwrite the canary.
 
 Evidence should bind **untrusted Python argument -> transformed native Git argv -> inert hook or selected canary write**. Never target SSH files, shell profiles, Git config, application config, or production repositories, and do not execute an upload-pack command.
+
+## Late follow-up: GitPython remote URL environment expansion
+
+[GHSA-94p4-4cq8-9g67](https://github.com/advisories/GHSA-94p4-4cq8-9g67) shows that the earlier clone-path fix did not cover `Repo.create_remote()`, `Remote.add()`, or the sibling submodule-add path. Through GitPython 3.1.53, these callers retained `Git.polish_url(..., expand_vars=True)`, so an attacker-influenced URL containing an environment placeholder could be expanded by the hosting process, written into `.git/config` or `.gitmodules`, and sent on a later fetch. Version `3.1.55` is the fixed control.
+
+Use a temporary repository, a single fake environment variable, and an owned local HTTP listener. First prove expansion parse-only by inspecting the remote URL and recording only whether the fixed sentinel appears; then, if network execution is explicitly in scope, perform one fetch to the local listener and preserve a hash/redacted path marker. Clear the environment and delete the repository afterward. The finding is **untrusted remote/submodule URL -> host environment interpolation -> persistent Git URL -> later owned callback**. Never seed real cloud tokens or inspect an existing repository's remotes.

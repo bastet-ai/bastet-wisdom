@@ -64,6 +64,12 @@ This batch is durable because each item exposes a reusable operator boundary: lo
 - Preserve preconditions. These are high-signal when tied to role, feature, bridge topology, package version, and deployment pattern; they become noisy if reported as generic SSRF, generic request smuggling, or generic auth bypass.
 - Use inert canaries and lab-only listeners. Avoid metadata-service reads, backend desync against real users, production tenant checkpoint access, internal network pivoting, or manipulating real attestation trust stores.
 
+## July 24 SwiftNIO HTTP/2 header-value follow-up
+
+[GHSA-q3g2-m552-3r9c](https://github.com/advisories/GHSA-q3g2-m552-3r9c) / CVE-2026-64785 extends the bridge matrix beyond the earlier pseudo-header issue. In affected `swift-nio-http2` pipelines, regular HTTP/2 header values could carry CR/LF/NUL or other controls into an HTTP/1.1 serialization, while `:path` could carry spaces that alter request-line tokenization. Stock pipelines with outbound HTTP/1 validation enabled reject these forms; exposure requires a bridge that disables that validator or trusts the translated `HTTPRequestHead` before forwarding. Version `1.45.0` is the fixed control.
+
+Add paired raw-byte fixtures for a regular marker header and a marker `:path`. Record the inbound H2 representation, translated request head, outbound-validator setting, exact HTTP/1 bytes at a disposable backend, and parser decision. Use one connection and harmless routes only. Report **validated-looking H2 field -> H2/H1 codec -> changed HTTP/1 field or request-line structure**, not generic request smuggling when stock outbound validation blocks the path.
+
 ## Notes on skipped adjacent items
 
 The same scan rechecked Disclosed, PortSwigger, Trail of Bits, ProjectDiscovery, GitHub advisory published/updated feeds, and CISA KEV. SwiftNIO decompression/header-block/ByteBuffer resource issues, MLflow model-version enumeration, Firefly II stored XSS, and similar availability or narrow UI findings were tracked but not promoted in this batch because they did not add a stronger reusable privilege, tenant, parser-differential, filesystem, or control-plane boundary than the items above. No new PortSwigger, Trail of Bits, ProjectDiscovery, Disclosed, or CISA KEV item in this run added a higher-signal offensive operator workflow than the GitHub advisory batch above.
