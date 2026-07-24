@@ -375,6 +375,14 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - SVGO advisories/source: https://github.com/svg/svgo/security/advisories and https://github.com/svg/svgo
 - Jackson Databind advisories/source: https://github.com/FasterXML/jackson-databind/security/advisories and https://github.com/FasterXML/jackson-databind
 - SharpCompress advisories/source: https://github.com/adamhathcock/sharpcompress/security/advisories and https://github.com/adamhathcock/sharpcompress
+- FrontMCP advisories/source: https://github.com/frontmcp/frontmcp/security/advisories and https://github.com/frontmcp/frontmcp
+- etcd advisories/source: https://github.com/etcd-io/etcd/security/advisories and https://github.com/etcd-io/etcd
+- Oh My Posh advisories/source: https://github.com/JanDeDobbeleer/oh-my-posh/security/advisories and https://github.com/JanDeDobbeleer/oh-my-posh
+- OpenList advisories/source: https://github.com/OpenListTeam/OpenList/security/advisories and https://github.com/OpenListTeam/OpenList
+- http4s blaze advisories/source: https://github.com/http4s/blaze/security/advisories and https://github.com/http4s/blaze
+- OmniFaces advisories/source: https://github.com/omnifaces/omnifaces/security/advisories and https://github.com/omnifaces/omnifaces
+- Shescape advisories/source: https://github.com/ericcornelissen/shescape/security/advisories and https://github.com/ericcornelissen/shescape
+- AWS API MCP Server advisories/source: https://github.com/awslabs/mcp/security/advisories and https://github.com/awslabs/mcp
 
 ## Network and service discovery
 

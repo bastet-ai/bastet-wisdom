@@ -8,6 +8,12 @@ This batch is durable because the advisories expose reusable operator checks: fr
 
 [GHSA-6rfw-mq36-jm8h](https://github.com/advisories/GHSA-6rfw-mq36-jm8h) / CVE-2026-12530 extends the package-control pattern to AWS Bedrock AgentCore's Python SDK. The advisory says `install_packages()` in the Code Interpreter client built a `pip install` shell command from caller-provided package-name arguments and allowed crafted pip flags such as `--index-url` and `-r`, letting an authenticated remote user redirect package resolution to an attacker-controlled package index or expose arbitrary sandbox files/environment variables. Treat agent package-install helpers as command and dependency-resolution boundaries, even when they accept values that look like package names rather than shell commands.
 
+### July 24 delimiter-neutralization follow-up
+
+[GHSA-j6g5-3hh3-pgw8](https://github.com/advisories/GHSA-j6g5-3hh3-pgw8) / CVE-2026-16796 confirms that package-name validation still allowed crafted argument delimiters to become command execution inside the Code Interpreter sandbox before `bedrock-agentcore` `1.18.1`. Extend the existing harness with argument-boundary cases around extras syntax, separators, and option termination, but route the sink to an argv recorder or one temp marker rather than a reusable shell payload. Record the remote caller's package value, SDK validation result, final process argv, sandbox identity, marker effect, and fixed-version rejection.
+
+Keep the impact scoped to the managed Code Interpreter sandbox and the capabilities mounted into it. The proof is **remote authenticated package argument -> incomplete delimiter validation -> changed installer command structure -> inert sandbox marker**; do not claim host execution, and never expose real environment values, mounted repositories, cloud credentials, or customer data.
+
 ## June 23 OpenTofu provider-cache symlink update
 
 [GHSA-wcmj-x466-56mm](https://github.com/advisories/GHSA-wcmj-x466-56mm) extends the IaC package-install pattern to OpenTofu provider installation. A repository-controlled symlink under `.terraform/providers` could be followed during `tofu init`, causing provider package contents to be written outside the working tree when the operator initializes an attacker-controlled root module. Treat IaC dependency caches as filesystem write boundaries: a project checkout can contain symlinks and package selectors before the first successful init.
