@@ -10,12 +10,14 @@ Sources:
 
 - [GHSA-f59h-q822-g45g / CVE-2026-52845: Caddy FastCGI header normalization bypass in `forward_auth copy_headers`](https://github.com/advisories/GHSA-f59h-q822-g45g)
 - [GHSA-82mp-vp5c-9pf7 / CVE-2026-55628: ImageMagick `-concatenate` misses path policy checks](https://github.com/advisories/GHSA-82mp-vp5c-9pf7)
+- [GHSA-vghg-5jrg-2398: ImageMagick `-script` misses read-policy checks](https://github.com/advisories/GHSA-vghg-5jrg-2398)
+- [GHSA-v3j6-27vc-7pw2: ImageMagick APNG encoder and delegates miss write-policy checks](https://github.com/advisories/GHSA-v3j6-27vc-7pw2)
 - [GHSA-56m6-8q75-f2rw: incomplete ImageMagick policy-bypass fix](https://github.com/advisories/GHSA-56m6-8q75-f2rw)
 - [GHSA-hc76-7mpc-qjqh: incomplete ImageMagick HTML-encoder code-injection fix](https://github.com/advisories/GHSA-hc76-7mpc-qjqh)
 - [GHSA-p2f4-r6v6-j797 / CVE-2026-54673: `builder-util-runtime` relays credential headers across redirects](https://github.com/advisories/GHSA-p2f4-r6v6-j797)
 - [GHSA-7g7r-gx96-252g / CVE-2026-54672: Electron AppImage runtime includes empty search-path components](https://github.com/advisories/GHSA-7g7r-gx96-252g)
 
-The same publication wave included ImageMagick parser memory-safety and resource-exhaustion records, a LiquidJS memory-accounting bypass, a React Router manifest-endpoint availability issue, and Quinn stream-reassembly exhaustion. They are not expanded here because this page is limited to bounded authorization, filesystem, credential, and execution-boundary validation.
+The same publication wave included ImageMagick parser memory-safety, one-byte debug-profile disclosure, and resource-exhaustion records; an `httplib2` decompression-bomb issue; a LiquidJS memory-accounting bypass; a React Router manifest-endpoint availability issue; and Quinn stream-reassembly exhaustion. They are not expanded here because this page is limited to bounded authorization, filesystem, credential, and execution-boundary validation.
 
 !!! warning "Authorized validation only"
     Use disposable Caddy/PHP-FastCGI fixtures, synthetic identity headers, lab-owned image files, an explicit restrictive ImageMagick policy, two owned redirect origins, fake updater credentials, and a throwaway AppImage launch directory. Do not inject roles into production applications, read or overwrite unrelated files, collect live repository tokens, replace libraries used by real users, or run resource-exhaustion and memory-corruption payloads.
@@ -76,11 +78,20 @@ Confirm all of the following before testing:
 
 1. Create `allowed/` and `denied/` directories under one temporary test root. Put a unique marker file in `denied/` and pre-create a distinct output marker path there.
 2. Load a restrictive policy that denies ImageMagick reads and writes for `denied/*`. First prove the policy works through a control operation that performs the expected authorization check.
-3. Exercise the exact application path that reaches concatenate behavior. Test denied input and denied output separately so read and write impact are not conflated.
+3. Exercise each operation family the application actually exposes. Use `-concatenate` and `-script` as separate denied-read fixtures; use APNG output and any reachable external-delegate path as separate denied-write fixtures. Never assume that one passing control covers another coder or operation.
 4. Capture the policy file, normalized path, operation selected, process arguments or API calls, exit status, and marker-only file result.
 5. Compare Magick.NET before and at 14.15.0, or the corresponding fixed ImageMagick build used by the target. Do not infer exposure from package version alone; wrapper reachability and effective policy are required.
 
-Report this as **operation-specific missing policy check -> denied canary path is opened**. Do not read system files or write executable/configuration paths. The adjacent incomplete-fix and HTML-encoder records justify testing alternate operation and rendering paths, but their sparse public descriptions do not justify claiming a specific source-to-sink chain without reproducing it. For HTML output, stop at a harmless DOM/text marker and only call it code execution if an executable sink is independently demonstrated in the target viewer.
+For `-script`, use a script file containing only a benign image operation plus a unique marker and prove that the script path itself was denied by policy before testing the vulnerable build. For APNG/delegate output, pre-create a disposable denied destination or inspect a marker-only output under the temporary test root; distinguish a direct APNG encoder write from a delegate-spawned write in the evidence. A useful matrix is:
+
+| Operation family | Policy direction | Expected vulnerable result | Fixed control |
+| --- | --- | --- | --- |
+| `-concatenate` | denied read or write, tested separately | operation opens the denied canary path | policy rejection |
+| `-script` | denied read | marker-only script is consumed | policy rejection |
+| APNG encoder | denied write | synthetic APNG appears at denied destination | no output plus policy rejection |
+| external delegate | denied write | owned delegate fixture receives denied destination | delegate is not invoked for that path |
+
+Report this as **operation/coder-specific missing policy check -> denied canary path is opened**. Do not read system files, write executable/configuration paths, or substitute a real external command for the delegate fixture. The adjacent incomplete-fix and HTML-encoder records justify testing alternate operation and rendering paths, but their sparse public descriptions do not justify claiming a specific source-to-sink chain without reproducing it. For HTML output, stop at a harmless DOM/text marker and only call it code execution if an executable sink is independently demonstrated in the target viewer.
 
 ## Electron updater cross-origin credential relay
 
