@@ -205,3 +205,11 @@ Frame reports around the violated boundary, not just the CVE:
 - Do not run volumetric `__manifest` tests on production.
 - Do not execute JavaScript in victim sessions or collect tokens while testing redirect/XSS behavior.
 - Do not claim React Router RCE unless prototype pollution reachability and the affected deserialization path are both demonstrated under authorization.
+
+## July 24 unstable RSC CSRF action follow-up
+
+[GHSA-qwww-vcr4-c8h2](https://github.com/advisories/GHSA-qwww-vcr4-c8h2) covers `react-router >= 7.12.0, < 8.3.0` when unstable RSC APIs are enabled. It follows CVE-2026-22030: malformed or cross-site RSC action requests can execute the action before the framework returns a 400 response. The response status is therefore not a side-effect oracle; operators must inspect action state.
+
+Use a disposable RSC application with one action that increments a synthetic counter and no external effects. Send a same-origin valid control, a cross-origin form request, and malformed RSC action variants through the actual deployed adapter. For every case capture `Origin`, content type, RSC/action headers, response status, counter before/after, and server trace ordering. Repeat on 8.3.0.
+
+A vulnerable result is **cross-site or invalid request -> action counter changes -> framework emits 400 only after action execution**. Do not test account, payment, email, token, or destructive actions. Confirm unstable RSC reachability and the exact application action before reporting; ordinary React Router modes are outside this advisory.

@@ -8,16 +8,16 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Framework authentication, static-path, and policy-field boundaries](alerts/2026-07-24-framework-auth-static-policy-boundaries-ghsa.md)
+- [Open WebUI channel, realtime, knowledge, and delegated-execution follow-up](alerts/2026-05-08-open-webui-model-channel-and-knowledge-boundary-batch-ghsa.md#july-24-follow-up-channel-realtime-knowledge-and-delegated-execution-boundaries)
+- [Claude Code worktree sandbox path-confusion follow-up](alerts/2026-06-10-claude-code-action-mcp-and-baileys-event-boundaries-ghsa.md#july-24-claude-code-worktree-path-confusion-follow-up)
+- [GitPython option transformation and diff-output follow-up](alerts/2026-07-24-git-template-oauth-object-boundaries-ghsa.md#late-follow-up-gitpython-option-transformation-and-diff-output)
+- [React Router unstable RSC CSRF action follow-up](alerts/2026-06-03-react-router-redirect-rsc-and-manifest-boundary-batch-ghsa.md#july-24-unstable-rsc-csrf-action-follow-up)
 - [Git config, template, OAuth, and object-path boundaries](alerts/2026-07-24-git-template-oauth-object-boundaries-ghsa.md)
 - [Markdown file inlining and Trix rich-text model boundaries](alerts/2026-07-24-markdown-file-trix-model-boundaries-ghsa.md)
 - [Kiota code-generation and Seroval deserialization boundaries](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md)
 - [Better Auth passwordless, Stripe organization, and SCIM provider follow-up](alerts/2026-07-07-better-auth-aider-netfoil-ckan-mcp-boundaries-ghsa.md#july-24-follow-up-passwordless-pre-account-billing-target-and-scim-namespace-boundaries)
 - [Ray WebDataset default-decoder deserialization follow-up](alerts/2026-05-05-minio-ray-kirby-execution-and-storage-boundary-batch-ghsa.md#july-24-follow-up-ray-webdataset-default-decoder-deserialization)
-- [Caddy FastCGI identity, ImageMagick policy, and Electron updater boundaries](alerts/2026-07-24-caddy-imagemagick-electron-boundaries-ghsa.md)
-- [c3p0 JavaBean deserialization composition boundary](alerts/2026-07-23-c3p0-deserialization-composition-boundary-ghsa.md)
-- [React Router navigation, RSC redirect, and hydration follow-up](alerts/2026-06-03-react-router-redirect-rsc-and-manifest-boundary-batch-ghsa.md#july-23-navigation-rsc-and-hydration-follow-up)
-- [PostCSS, PhpSpreadsheet, and Auth.js trust-boundary checks](alerts/2026-07-23-postcss-phpspreadsheet-authjs-boundaries-ghsa.md)
-- [DOMPurify state, policy, and reparse boundary checks](alerts/2026-07-23-dompurify-state-context-boundaries-ghsa.md)
 
 
 

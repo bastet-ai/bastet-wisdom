@@ -10,6 +10,11 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Framework authentication, static-path, and policy-field boundaries](2026-07-24-framework-auth-static-policy-boundaries-ghsa.md)
+- [Open WebUI channel, realtime, knowledge, and delegated-execution follow-up](2026-05-08-open-webui-model-channel-and-knowledge-boundary-batch-ghsa.md#july-24-follow-up-channel-realtime-knowledge-and-delegated-execution-boundaries)
+- [Claude Code worktree sandbox path-confusion follow-up](2026-06-10-claude-code-action-mcp-and-baileys-event-boundaries-ghsa.md#july-24-claude-code-worktree-path-confusion-follow-up)
+- [GitPython option transformation and diff-output follow-up](2026-07-24-git-template-oauth-object-boundaries-ghsa.md#late-follow-up-gitpython-option-transformation-and-diff-output)
+- [React Router unstable RSC CSRF action follow-up](2026-06-03-react-router-redirect-rsc-and-manifest-boundary-batch-ghsa.md#july-24-unstable-rsc-csrf-action-follow-up)
 - [DOMPurify state, policy, and reparse boundary checks](2026-07-23-dompurify-state-context-boundaries-ghsa.md)
 - [n8n agent, Git TOCTOU, browser, and JWT credential-artifact checks](2026-06-24-hono-n8n-flowise-picklescan-boundaries-ghsa.md#july-22-n8n-agent-git-browser-and-credential-artifact-follow-up)
 - [Wagtail `TableBlock` class-attribute render boundary](2026-07-21-developer-agent-proxy-control-boundaries-ghsa.md#july-22-wagtail-tableblock-attribute-rendering-follow-up)

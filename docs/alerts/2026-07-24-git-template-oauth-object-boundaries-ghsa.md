@@ -112,3 +112,22 @@ Confirm the application renders `.prompty` files through the TypeScript runtime 
 6. Repeat on 2.0.0-beta.5 or later. Ordinary data rendering should remain functional while unsafe member lookups and calls fail.
 
 Report **attacker-controlled `.prompty` body -> unrestricted Nunjucks member traversal -> function object reached/called -> inert host-process side effect**. Do not use a shell command, read environment variables, install packages, or test untrusted prompts on an agent host carrying real credentials.
+
+## Late follow-up: GitPython option transformation and diff output
+
+GitPython 3.1.54 closes three additional argument-boundary gaps affecting 3.1.53 and earlier:
+
+- [GHSA-r9mr-m37c-5fr3](https://github.com/advisories/GHSA-r9mr-m37c-5fr3): a single-character kwarg can place its value in a second argv token, so the safety check sees only `-n` while Git later sees a smuggled long option;
+- [GHSA-6p8h-3wgx-97gf](https://github.com/advisories/GHSA-6p8h-3wgx-97gf): clone's unsafe-option denylist omits `--template`, allowing a supplied template directory to contribute executable hooks; and
+- [GHSA-fjr4-x663-mwxc](https://github.com/advisories/GHSA-fjr4-x663-mwxc): `Diffable.diff()` has no unsafe-option guard, and both `output=` and an `other` value beginning with `--output=` can select and overwrite a filesystem path.
+
+### Argv-only and marker-file proof
+
+1. Confirm the application forwards user-controlled option dictionaries, clone template paths, diff kwargs, or revision-like `other` values into the named GitPython APIs. A hard-coded option is not remotely reachable.
+2. Monkeypatch or wrap the Git command runner in a disposable test so it records final argv and performs no command. Compare the candidates inspected by the guard with the transformed argv.
+3. For the single-character case, use a fake long option marker rather than `--upload-pack`; prove that an extra option-shaped token appears after the guard approved only the short key.
+4. For clone templates, stage an owned local template whose `post-checkout` hook writes one fixed marker under the temp root. Clone only a local synthetic repository under a temporary `HOME`.
+5. For diff output, target an existing canary file in the temp root and generate a harmless one-line repository diff. Test key control and `other` value control separately.
+6. Repeat on 3.1.54. Unsafe transformed tokens and templates must be rejected, and diff arguments must not overwrite the canary.
+
+Evidence should bind **untrusted Python argument -> transformed native Git argv -> inert hook or selected canary write**. Never target SSH files, shell profiles, Git config, application config, or production repositories, and do not execute an upload-pack command.

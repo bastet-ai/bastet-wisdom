@@ -111,3 +111,17 @@ A strong report frames impact as **remote protocol input crossing into trusted a
 - For messaging-event findings, include library version, affected callback, claimed sender/key fields, downstream sink, and a canary-only demonstration of spoofed event acceptance.
 - Keep secrets out of evidence. A marker proves execution or event trust without exposing credentials.
 - Tie severity to privilege crossing: PR author to privileged runner for Claude Code Action, or remote message sender to trusted application state for Baileys.
+
+## July 24 Claude Code worktree path-confusion follow-up
+
+[GHSA-7835-87q9-rgvv](https://github.com/advisories/GHSA-7835-87q9-rgvv) adds a repository-to-sandbox boundary for `@anthropic-ai/claude-code >= 2.1.38, < 2.1.163`. A malicious repository with prompt-injection content could steer worktree handling through a `.git`-named worktree, out-of-sandbox navigation, symlink manipulation, and Git filesystem-monitor execution. The reported chain could overwrite a home-directory startup file and later execute outside macOS seatbelt restrictions. Reliable exploitation requires the user to clone the repository and run Claude Code against it; package presence alone is not enough.
+
+### Disposable worktree harness
+
+1. Use a throwaway OS account, temporary `HOME`, local repository, and Claude Code with no credentials, plugins, MCP servers, network access, or valuable files.
+2. Place synthetic marker files inside the expected sandbox/worktree root and a second marker target in the temporary home. Do not use `.zshenv`, shell profiles, Git global config, credentials, or the real home directory.
+3. Instrument Git/worktree invocations and filesystem writes. Exercise normal worktree creation, a `.git`-named worktree request, an outside-root path, and a symlinked path using only inert repository content.
+4. If fsmonitor reachability must be shown, configure a test-only helper that appends a fixed marker to a temp log. It must not invoke a shell payload, inspect environment variables, or access the network.
+5. Record the requested path, canonical worktree/git-dir path, sandbox profile, helper decision, and marker writes. Repeat on 2.1.163 or later.
+
+Report **repository/prompt-controlled worktree operation -> Git directory or canonical-path confusion -> filesystem/helper action escapes the intended sandbox context**. Stop at a disposable outside-root marker; do not overwrite a startup file or demonstrate persistence.

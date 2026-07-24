@@ -29,3 +29,55 @@ AI web consoles collapse many trust zones: user documents, shared channels, mode
 - Namespace cache keys by tenant/deployment/user where appropriate.
 - Reject unknown request fields by default; avoid permissive schema modes for authorization-relevant objects.
 - Treat model chaining and tool passthrough as delegation: the caller must be allowed to reach every downstream model/tool.
+
+## July 24 follow-up: channel, realtime, knowledge, and delegated-execution boundaries
+
+Open WebUI 0.10.0 closes another cross-surface authorization wave. The durable operator lesson is to bind every supplied object or session identifier to both the authenticated principal and the URL/body parent object, then repeat that decision at asynchronous emitters and workers.
+
+Sources:
+
+- [GHSA-gh7p-78x6-jw6m](https://github.com/advisories/GHSA-gh7p-78x6-jw6m): channel member responses expose full user settings, including integration credential fields.
+- [GHSA-73x5-h92w-xc2j](https://github.com/advisories/GHSA-73x5-h92w-xc2j): a thread parent is loaded by message ID without binding it to the authorized URL channel.
+- [GHSA-3wp3-xxj9-5jqq](https://github.com/advisories/GHSA-3wp3-xxj9-5jqq): a callable passed as aiocache's static `key=` makes permission-filtered model lists collide across users.
+- [GHSA-7r7x-gjvr-448g](https://github.com/advisories/GHSA-7r7x-gjvr-448g): upload `metadata.knowledge_id` inserts a knowledge/file association before the later write check.
+- [GHSA-74h3-cxq7-vc5q](https://github.com/advisories/GHSA-74h3-cxq7-vc5q): a caller-controlled Socket.IO session ID can route code-interpreter or tool events into another user's connected browser session.
+- [GHSA-x2ff-v5v8-m75m](https://github.com/advisories/GHSA-x2ff-v5v8-m75m): chat-completion `id` and multimodel `message_ids` can write across channel boundaries.
+- [GHSA-855v-hq7w-jmjw](https://github.com/advisories/GHSA-855v-hq7w-jmjw): Redis-revoked JWTs remain accepted by Socket.IO and terminal WebSocket authentication.
+- [GHSA-gmfw-g93r-vg53](https://github.com/advisories/GHSA-gmfw-g93r-vg53): unauthenticated collaborative-document awareness and leave events accept spoofed identity/document data.
+- [GHSA-rqj7-6wrp-6g2g](https://github.com/advisories/GHSA-rqj7-6wrp-6g2g): the direct image-edit route skips global and per-user capability gates.
+- [GHSA-mvx4-532p-xfm9](https://github.com/advisories/GHSA-mvx4-532p-xfm9): scheduled automations do not revalidate deactivated owners, feature grants, or stored-model access.
+- [GHSA-4r2p-27mh-5m22](https://github.com/advisories/GHSA-4r2p-27mh-5m22): shared Pyodide snippets run in a same-origin worker and can make credentialed requests when a victim clicks **Run**.
+
+### Two-user channel and object-binding matrix
+
+Use two ordinary users, one admin only where a privilege boundary must be observed, private and shared channels, a read-only knowledge base, synthetic model names, and marker-only messages/files. Never capture tool keys, real prompts, provider content, or third-party credentials.
+
+| Surface | Positive test | Secure control |
+| --- | --- | --- |
+| channel members | ordinary member receives only public profile fields | settings, webhooks, and tool-server keys absent |
+| thread parent | attacker channel plus victim marker message ID | parent rejected unless `parent.channel_id` matches URL channel |
+| model cache | alternate two users with distinct canary model grants inside the TTL | each response remains principal-scoped |
+| KB upload | read-only user supplies target `knowledge_id` in upload metadata | no association committed; failed vector processing leaves no row |
+| message update | mix attacker/victim IDs in single and multimodel completion forms | every ID is bound to the selected channel before emitter write |
+| image edit | verified user denied image generation calls direct edit route | request rejected before provider dispatch |
+
+For ID-based checks, use IDs created by the lab harness; do not enumerate UUIDs. Capture the URL parent, supplied child ID, database parent/owner before and after, status, and 0.10.0 negative control.
+
+### Realtime identity and lifecycle replay
+
+1. With Redis enabled, issue a disposable JWT containing a unique `jti`; prove HTTP and Socket.IO access before revocation.
+2. Sign out or perform a lab back-channel logout, then attempt a **new** HTTP, Socket.IO, note/channel join, and terminal-WebSocket handshake with the same token. Every transport should reject it.
+3. Connect an unauthenticated socket and emit only a harmless synthetic awareness marker for a disposable note. No event should reach the legitimate room, and spoofed `user_id` values must not be trusted.
+4. Create an automation that writes only a run counter, then change its owner to `pending` or remove the automation/model grant. At the next due time, the counter must remain unchanged.
+
+Report transport and lifecycle drift explicitly: **the same revoked/deactivated principal is denied on the normal HTTP path but accepted by a realtime or background path**.
+
+### Session-ID delegation and Pyodide trust
+
+The cross-user event-caller issue requires code interpreter/tool reachability, a victim socket ID (for example from a shared-note collaboration room), and a connected victim. Prove it only with two disposable users and an inert browser-side tool that increments a visible counter. Show that user A can cause an event to arrive at user B's session on an affected build and that 0.10.0 binds the destination session to the requester. Do not invoke Functions, create server-side code, or target an administrator session.
+
+For Pyodide, require all preconditions: shared attacker-controlled code, Pyodide selected, and a victim click on **Run**. In an isolated browser profile, let the snippet request a same-origin endpoint that only records a canary counter. Record origin, cookie-send decision, CORS result, and counter. On 0.10.0's opaque-origin sandbox the request must carry no application credential and must not change the counter. Do not read session state or call privileged APIs.
+
+### Evidence standard
+
+A strong report includes exact version and feature flags, two-user/role setup, raw IDs and their server-side parent bindings, cache or transport timing, authorization decisions at both request and asynchronous sink, marker-only before/after state, and the 0.10.0 result. Avoid elevating model-name disclosure, UI presence spoofing, billing-only image dispatch, or bounded stale automation into account takeover unless a stronger application-specific sink is independently proven.
