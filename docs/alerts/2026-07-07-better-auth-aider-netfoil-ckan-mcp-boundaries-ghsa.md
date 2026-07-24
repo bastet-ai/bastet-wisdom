@@ -113,3 +113,50 @@ Additional Better Auth advisories published later in the same GitHub advisory wa
 5. Repeat as owner/admin, on `@better-auth/sso@1.6.11` or later, and with `providersLimit: 0` as negative controls.
 
 Strong evidence shows **ordinary organization membership -> SSO provider create succeeds -> companion lifecycle operations remain admin-gated -> synthetic callback provisions a canary identity**. State the configured default/get-role behavior; do not claim admin creation when the lab only demonstrates member provisioning.
+
+## July 24 follow-up: passwordless pre-account, billing target, and SCIM namespace boundaries
+
+Three later advisories extend the identity checks on this page:
+
+| Advisory | Preconditions | Failed binding | Bounded operator proof |
+| --- | --- | --- | --- |
+| [GHSA-qq9h-g4jm-xgf3](https://github.com/advisories/GHSA-qq9h-g4jm-xgf3) | open email/password registration plus magic-link or email-OTP sign-in | mailbox proof verifies a pre-created account without removing its attacker-planted password | owned email alias, disposable account, and post-verification password/session decision table |
+| [GHSA-h3rm-78g3-j7cp](https://github.com/advisories/GHSA-h3rm-78g3-j7cp) | `@better-auth/stripe`, organization subscriptions, `authorizeReference`, and membership in multiple orgs | middleware authorizes the query/body org ID while the handler falls back to the session's active org | two synthetic orgs, fake billing objects, and cancel/change/restore/portal target recorder |
+| [GHSA-rjg6-39jm-rgg4](https://github.com/advisories/GHSA-rjg6-39jm-rgg4) | `@better-auth/scim`; collision impact also needs another provider using the selected ID | token-controlled SCIM provider ID aliases an SSO/OIDC/social account namespace; deactivation/email updates also drift from identity state | synthetic provider IDs, two lab users, marker-only profile/session state, and no real IdP data |
+
+### Passwordless pre-account matrix
+
+This is the passwordless sibling of the OAuth pre-account check above. Use an owned mailbox alias throughout:
+
+1. Enable open email/password registration and either the magic-link or email-OTP plugin in a disposable app.
+2. Register the alias with a canary password but leave the email unverified. Confirm the account cannot yet reach a harmless authenticated marker route.
+3. Complete the legitimate magic-link or email-OTP flow for the same alias as the mailbox owner.
+4. In separate sessions, test the newly issued passwordless session, the pre-verification canary password, and any session created before verification.
+5. Repeat for both passwordless plugins that the target enables, then on `better-auth@1.6.22` or `1.7.0-beta.10` or later.
+
+Positive evidence is **attacker-precreated unverified account -> mailbox owner verifies through a passwordless flow -> planted password remains authoritative**. Stop at your own profile/status marker. Do not access victim data or test with an address you do not control.
+
+### Stripe organization target-confusion matrix
+
+Create organizations `ORG-ALPHA` and `ORG-BETA`. Give the same disposable user billing authority in Alpha but ordinary membership in Beta; make Beta the active organization. Back the Stripe integration with a mock or test-mode recorder containing synthetic subscriptions only.
+
+For cancel, change-plan, restore, and billing-portal actions, vary the organization selector independently:
+
+| Query org | Body org | Active org | Authorization should cover | Handler actually targets |
+| --- | --- | --- | --- | --- |
+| Alpha | absent | Beta | Alpha | record and compare |
+| absent | Alpha | Beta | Alpha | record and compare |
+| Alpha | Beta | Beta | one unambiguous rejected target | record and compare |
+
+Do not cancel or expose real subscriptions. A mock handler that records `subscription.referenceId`, or Stripe test mode with throwaway customers and no payment method, is sufficient. Strong evidence proves **approved org ID from middleware -> different active/body org selected by handler -> synthetic billing action crosses the intended org role boundary**. The documented target remains an organization the caller belongs to; do not call this arbitrary-tenant access.
+
+### SCIM provider-ID collision and lifecycle checks
+
+1. In a lab, configure a fake OIDC/SSO provider with a distinctive provider ID and provision only synthetic users.
+2. As a low-privileged authenticated user allowed to generate SCIM tokens, request a SCIM provider/token using the same ID.
+3. With that token, attempt only list/get and marker-only PATCH operations against the synthetic identity. If deletion is in scope, use a disposable user whose sole purpose is this fixture and record whether the global user or only a SCIM link is removed.
+4. Separately test `active: false`: record HTTP success, disabled state, session revocation, and subsequent access to a harmless status route.
+5. Separately change one disposable user's email to another owned alias. Record uniqueness handling and whether `emailVerified` remains true after reassignment.
+6. Repeat on `@better-auth/scim@1.6.22` or `1.7.0-beta.10` or later. Token creation should reject collisions, and lifecycle changes should remain bound to SCIM-owned identities.
+
+Treat these as three results, not one oversized claim: **provider namespace collision to unrelated account selection**, **deactivation signal to stale access**, and **email reassignment to stale verification proof**. Keep bearer tokens redacted and never enumerate real SSO/social identities, delete production users, or collect profile data.

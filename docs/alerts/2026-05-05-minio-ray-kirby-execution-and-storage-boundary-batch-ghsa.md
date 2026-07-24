@@ -72,3 +72,28 @@ The reusable bug class is **second-phase interpretation of untrusted metadata**.
 ## Operator lesson
 
 The dangerous moment is often not the first parse. It is the second interpreter that sees the same bytes later and decides they are code, credentials, or a template. Security reviews need to follow metadata through every phase until it becomes inert or intentionally authoritative.
+
+## July 24 follow-up: Ray WebDataset default-decoder deserialization
+
+[GHSA-hhrp-gw25-jr43 / CVE-2026-57516](https://github.com/advisories/GHSA-hhrp-gw25-jr43) extends the Ray Data ingestion boundary to WebDataset TAR members. In affected Ray versions through 2.55.1, `ray.data.read_webdataset()` defaults `decoder=True`; the default decoder routes member extensions to handlers that use `pickle.loads()` for `.pickle`/`.pkl` and `torch.load(..., weights_only=False)` for `.pt`/`.pth`. The unsafe load occurs while the dataset is materialized through operations such as `take_all()` or `iter_batches()`, without a caller explicitly opting into pickle semantics. Ray 2.56.0 removes those formats from the default decoder.
+
+### Reachability checklist
+
+Confirm all of these before reporting exposure:
+
+- the target calls `ray.data.read_webdataset()` rather than merely depending on Ray;
+- an attacker, tenant, partner, model registry, object store, or workflow user can influence a TAR shard or its selected path;
+- the caller leaves the default decoder enabled or supplies another decoder that reaches the same unsafe loads;
+- the dataset is consumed far enough to decode members; and
+- the worker's identity, filesystem, network, and secrets establish the realistic impact boundary.
+
+### Inert two-extension harness
+
+1. Use a disposable virtual environment, Ray worker, and temp directory. Do not run a tainted shard on a workstation, shared cluster, notebook service, or production worker.
+2. Create a minimal WebDataset TAR with one ordinary text member and one test-only `.pkl` member. The serialized object should invoke a local Python function that increments a counter or writes one marker under the same temp root—no shell, subprocess, network, environment access, or external path.
+3. Call the exact target API and materialization operation. Record whether the marker appears before application code intentionally reads the decoded object.
+4. In a separate fixture, use a `.pt` member with an equivalent inert marker object only if PyTorch is part of the scoped target. Keep `.pkl` and `.pt` evidence separate because they reach different loaders.
+5. Run negative controls with `decoder=None`, with a custom safe decoder that treats those extensions as opaque bytes, and with Ray 2.56.0 or later.
+6. Record TAR member names, selected decoder, Ray/PyTorch versions, worker identity, the API call that triggers decoding, and marker timing.
+
+A strong finding proves **attacker-influenced WebDataset shard -> extension-dispatched default decoder -> unsafe Python object load -> inert side effect in the Ray worker**. Do not publish a weaponized pickle, read credentials, or use outbound callbacks. Distinguish this WebDataset code path from the earlier Parquet Arrow-extension advisory: fixing or negatively testing one does not prove the other is safe.
