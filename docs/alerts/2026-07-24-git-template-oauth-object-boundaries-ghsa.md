@@ -93,3 +93,22 @@ Lead with the exact boundary and trigger:
 - own dotted update key to process-global prototype metadata.
 
 Include version, route/API, attacker-control provenance, raw and parsed representations, side-effect timing, patched negative control, and marker-only evidence. Keep all proofs in disposable, single-purpose environments.
+
+## Late follow-up: Prompty Nunjucks template member access
+
+[GHSA-w28w-gp39-m4p6](https://github.com/advisories/GHSA-w28w-gp39-m4p6) adds the same high-level read-to-constructor lesson as Velocity.js to a distinct AI prompt-template surface. Affected `@prompty/core` TypeScript runtimes through 0.1.4 and 2.0.0-beta.4 render `.prompty` bodies with Nunjucks member access that can traverse constructor/prototype properties and invoke functions in the host Node.js process. The patched 2.0.0-beta.5 renderer restricts inputs to own data, blocks constructor/prototype traversal, and disallows template function calls while retaining ordinary interpolation, loops, and conditionals.
+
+### Prompty-specific reachability
+
+Confirm the application renders `.prompty` files through the TypeScript runtime and that an attacker can influence the **template body**, not only ordinary prompt variables. Relevant sources include community prompt packages, cloned repositories, uploaded prompt definitions, agent-generated templates, or marketplace content. A Python runtime, trusted template with untrusted scalar values, or package presence without rendering is not enough.
+
+### Inert renderer proof
+
+1. Run `@prompty/core` in a disposable Node process with a local `.prompty` file and synthetic render data.
+2. Give the test data one inert function that increments an in-memory counter; expose no process, filesystem, environment, shell, package-manager, or network capability.
+3. Establish ordinary interpolation, conditional, loop, and own nested-property controls.
+4. Attempt constructor/prototype member traversal and a call to the inert counter through the same default or explicit Nunjucks renderer the application uses.
+5. Record the parsed template body, member lookup sequence, function-call decision, counter before/after, and rendered marker.
+6. Repeat on 2.0.0-beta.5 or later. Ordinary data rendering should remain functional while unsafe member lookups and calls fail.
+
+Report **attacker-controlled `.prompty` body -> unrestricted Nunjucks member traversal -> function object reached/called -> inert host-process side effect**. Do not use a shell command, read environment variables, install packages, or test untrusted prompts on an agent host carrying real credentials.

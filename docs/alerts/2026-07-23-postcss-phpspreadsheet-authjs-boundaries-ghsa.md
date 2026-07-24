@@ -175,3 +175,37 @@ Use wording such as:
 - "configuration-error object passed an existence-only gate," not "authentication always bypassed";
 - "owned test recipient changed after normalization," not "arbitrary account takeover"; and
 - "provider-A check material was accepted by provider B in a disposable linking flow," not "all OAuth providers compromised."
+
+## July 24 follow-up: previous-map traversal to `.map` disclosure
+
+[GHSA-r28c-9q8g-f849](https://github.com/advisories/GHSA-r28c-9q8g-f849) narrows an important limitation in the PostCSS check above. PostCSS 8.5.12 blocked loading non-`.map` files through the previous source-map path, but did not confine `.map` paths to the CSS source directory. Versions through 8.5.17 still allow parent traversal when `from` is set and absolute `.map` paths when it is absent. If the loaded map contains `sourcesContent`, PostCSS can merge that content into the generated `result.map`, giving a deterministic full-content disclosure path rather than only the earlier parse/error oracle. The traversal fix is in 8.5.18.
+
+### Revised two-phase fixture
+
+Use this layout under one disposable root:
+
+```text
+TEMP/
+  uploads/user/input.css
+  uploads/user/inside.js.map
+  sibling/outside.js.map
+```
+
+Both map files should be valid synthetic source maps with distinct `sources` and `sourcesContent` canaries. Then test:
+
+1. same-directory `inside.js.map` as the expected baseline;
+2. `../../sibling/outside.js.map` with `from` set to `TEMP/uploads/user/input.css`;
+3. the absolute path to `outside.js.map` with `from` omitted;
+4. a sibling file with a non-`.map` extension to distinguish the 8.5.12 extension restriction from path confinement;
+5. each case with `map: false`; and
+6. each case on 8.5.11, 8.5.12-8.5.17, and 8.5.18 or later where practical.
+
+Capture the annotation, `from`, resolved path, filesystem-open trace, whether `result.map` becomes truthy, and whether the outside canary appears in `result.map.toString()` or an emitted API/build artifact. The expected version matrix is:
+
+| Version | Non-`.map` outside file | Outside `.map` file |
+| --- | --- | --- |
+| <= 8.5.11 | earlier arbitrary-extension behavior may be reachable | reachable if path resolves and application exposes result |
+| 8.5.12-8.5.17 | blocked by extension check | still reachable by traversal/absolute path |
+| >= 8.5.18 | blocked | confined/rejected |
+
+Revise the earlier negative-control guidance accordingly: `8.5.12+` is not a valid fixed control for an outside file ending in `.map`; use 8.5.18 or later. A strong finding proves **untrusted CSS annotation -> out-of-source-directory synthetic `.map` read -> `sourcesContent` copied into an attacker-visible result map**. Do not read real build maps, bundled proprietary source, or other tenants' artifacts.
