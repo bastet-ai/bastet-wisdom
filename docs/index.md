@@ -8,16 +8,16 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Downloader artifact, remote-file synchronization, and MCP URI boundaries](alerts/2026-07-24-downloader-artifact-integration-boundaries-ghsa.md)
+- [Open WebUI terminal, model, file, and fetch-policy follow-up](alerts/2026-05-08-open-webui-model-channel-and-knowledge-boundary-batch-ghsa.md#late-july-24-follow-up-terminal-model-file-and-fetch-policy-boundaries)
+- [Budibase identity, role, metadata, and SQL follow-up](alerts/2026-06-22-budibase-gogs-skillctl-nuxt-automation-boundaries-ghsa.md#july-24-budibase-identity-role-metadata-and-sql-follow-up)
+- [Cloudreve scope, share-event, WOPI, and directory follow-up](alerts/2026-07-20-cloudreve-pillow-token-image-boundaries-ghsa.md#july-24-cloudreve-scope-share-event-wopi-and-directory-follow-up)
+- [OpenAM class-loading, deserialization, and consent-rendering follow-up](alerts/2026-06-22-container-openam-xwiki-comfyui-boundaries-ghsa.md#july-24-openam-pre-auth-class-loading-deserialization-and-consent-rendering-follow-up)
+- [Camel HTTP-to-producer control-header follow-up](alerts/2026-05-22-prefect-camel-imagemagick-airflow-boundary-batch-ghsa.md#july-24-camel-http-to-producer-control-header-follow-up)
 - [Framework authentication, static-path, and policy-field boundaries](alerts/2026-07-24-framework-auth-static-policy-boundaries-ghsa.md)
 - [Open WebUI channel, realtime, knowledge, and delegated-execution follow-up](alerts/2026-05-08-open-webui-model-channel-and-knowledge-boundary-batch-ghsa.md#july-24-follow-up-channel-realtime-knowledge-and-delegated-execution-boundaries)
 - [Claude Code worktree sandbox path-confusion follow-up](alerts/2026-06-10-claude-code-action-mcp-and-baileys-event-boundaries-ghsa.md#july-24-claude-code-worktree-path-confusion-follow-up)
-- [GitPython option transformation and diff-output follow-up](alerts/2026-07-24-git-template-oauth-object-boundaries-ghsa.md#late-follow-up-gitpython-option-transformation-and-diff-output)
-- [React Router unstable RSC CSRF action follow-up](alerts/2026-06-03-react-router-redirect-rsc-and-manifest-boundary-batch-ghsa.md#july-24-unstable-rsc-csrf-action-follow-up)
 - [Git config, template, OAuth, and object-path boundaries](alerts/2026-07-24-git-template-oauth-object-boundaries-ghsa.md)
-- [Markdown file inlining and Trix rich-text model boundaries](alerts/2026-07-24-markdown-file-trix-model-boundaries-ghsa.md)
-- [Kiota code-generation and Seroval deserialization boundaries](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md)
-- [Better Auth passwordless, Stripe organization, and SCIM provider follow-up](alerts/2026-07-07-better-auth-aider-netfoil-ckan-mcp-boundaries-ghsa.md#july-24-follow-up-passwordless-pre-account-billing-target-and-scim-namespace-boundaries)
-- [Ray WebDataset default-decoder deserialization follow-up](alerts/2026-05-05-minio-ray-kirby-execution-and-storage-boundary-batch-ghsa.md#july-24-follow-up-ray-webdataset-default-decoder-deserialization)
 
 
 

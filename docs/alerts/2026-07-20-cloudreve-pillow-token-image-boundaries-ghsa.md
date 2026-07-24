@@ -104,3 +104,22 @@ Report this as **mode `1` packed row -> TGA RLE byte-per-pixel mismatch -> synth
 ## Not promoted from the same wave
 
 [GHSA-phj9-mv4w-65pm](https://github.com/advisories/GHSA-phj9-mv4w-65pm), [GHSA-45hq-cxwh-f6vc](https://github.com/advisories/GHSA-45hq-cxwh-f6vc), [GHSA-5x94-69rx-g8h2](https://github.com/advisories/GHSA-5x94-69rx-g8h2), [GHSA-8v84-f9pq-wr9x](https://github.com/advisories/GHSA-8v84-f9pq-wr9x), [GHSA-pg7v-jwj7-p798](https://github.com/advisories/GHSA-pg7v-jwj7-p798), and [GHSA-jjj6-mw9f-p565](https://github.com/advisories/GHSA-jjj6-mw9f-p565) are Pillow decompression/parser resource issues. [GHSA-3jxr-9vmj-r5cp](https://github.com/advisories/GHSA-3jxr-9vmj-r5cp) is an exponential-time brace-expansion issue. [GHSA-6r8x-57c9-28j4](https://github.com/advisories/GHSA-6r8x-57c9-28j4) and [GHSA-xj96-63gp-2gmr](https://github.com/advisories/GHSA-xj96-63gp-2gmr) expose public-API native writes but did not add a bounded application exploit path beyond isolated memory-safety harnessing. They were marked processed without standalone offensive guidance.
+
+## July 24 Cloudreve scope, share-event, WOPI, and directory follow-up
+
+Four Cloudreve findings extend the existing OAuth and file fixture:
+
+- [GHSA-hq88-5x99-x3gf](https://github.com/advisories/GHSA-hq88-5x99-x3gf) / CVE-2026-55502: an OAuth token with `Admin.Read` but not `Admin.Write` can reach the OneDrive policy `oauth/signin` handler, which persists caller-supplied app ID and secret. Use a fake policy and reversible marker values; 4.17.0 is the fixed control.
+- [GHSA-w8x7-h2px-xmq8](https://github.com/advisories/GHSA-w8x7-h2px-xmq8) / CVE-2026-55499: opening the event stream for a single-file share can subscribe the recipient to the owner's parent-folder topic, leaking unshared sibling activity metadata.
+- [GHSA-49h3-cwhj-4737](https://github.com/advisories/GHSA-49h3-cwhj-4737) / CVE-2026-55495: WOPI `PUT_RELATIVE` treats `X-WOPI-SuggestedTarget` as path segments and normalizes them before basename validation, allowing a token bound to one file to create a file elsewhere in the same owner's drive.
+- [GHSA-8r7f-r8hj-r3rv](https://github.com/advisories/GHSA-8r7f-r8hj-r3rv) / CVE-2026-55496: `SearchActive` lacks an active-status predicate, so a logged-in user can find inactive/banned synthetic accounts and their email field.
+
+### Consolidated Cloudreve lab
+
+1. Create an admin OAuth client with separate read-only and write tokens, a fake OneDrive policy, two ordinary users, one parent folder with a shared marker file and unshared sibling, one WOPI-enabled marker document, and active/inactive/banned synthetic directory users.
+2. With the read-only admin token, submit only fake app credentials to the policy OAuth-signin route. Record the scope decision and marker fields before/after, then restore them. Do not connect a real OneDrive tenant.
+3. As the single-file share recipient, subscribe using the bare share-root URI. Rename one unshared sibling to another synthetic name. Evidence is the event type/path/hash only; do not retrieve sibling contents. Compare an explicit shared-file URI and a folder share.
+4. With a WOPI token for `folder/current.docx`, compare a plain suggested filename, an extension-only target, a child path, and a traversal-shaped target that resolves only to another disposable folder in the same lab account. Evidence is the final URI and marker-file placement; never overwrite an existing file.
+5. Search a two-character canary prefix as an ordinary user and compare active, inactive, banned, anonymous, and fixed-build results. Preserve only synthetic email values.
+
+Keep claims bounded: the event issue exposes activity metadata, not file bytes; WOPI escapes per-file/directory scope but remains in the same owner's drive; the OAuth issue requires an already-authorized read-admin token; and directory search is an authenticated PII oracle rather than account access.

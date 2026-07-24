@@ -81,3 +81,23 @@ For Pyodide, require all preconditions: shared attacker-controlled code, Pyodide
 ### Evidence standard
 
 A strong report includes exact version and feature flags, two-user/role setup, raw IDs and their server-side parent bindings, cache or transport timing, authorization decisions at both request and asynchronous sink, marker-only before/after state, and the 0.10.0 result. Avoid elevating model-name disclosure, UI presence spoofing, billing-only image dispatch, or bounded stale automation into account takeover unless a stronger application-specific sink is independently proven.
+
+## Late July 24 follow-up: terminal, model, file, and fetch-policy boundaries
+
+Five more Open WebUI advisories extend the same 0.10.0 comparison fixture:
+
+- [GHSA-frvj-c5qp-xj4w](https://github.com/advisories/GHSA-frvj-c5qp-xj4w) / CVE-2026-59221: terminal proxy traversal decoding stops after eight passes, so a ninth encoding layer can defer `..` normalization to the upstream.
+- [GHSA-j657-m4c4-24jq](https://github.com/advisories/GHSA-j657-m4c4-24jq) / CVE-2026-59224: the WebSocket terminal `session_id` can inject query material before the proxy-appended `user_id`; the broader HTTP design also forwards an unsigned `X-User-Id` identity claim.
+- [GHSA-m3qf-58wf-w979](https://github.com/advisories/GHSA-m3qf-58wf-w979) / CVE-2026-59225: task routes authorize an arena wrapper, then recursively dispatch to a restricted selected model with `bypass_filter=True`.
+- [GHSA-2xwm-4h2q-ggfx](https://github.com/advisories/GHSA-2xwm-4h2q-ggfx) / CVE-2026-59212: a file readable through a knowledge-base grant can be attached to an attacker-owned model, after which model metadata satisfies later write/delete authorization.
+- [GHSA-qg3f-8x3j-ggf2](https://github.com/advisories/GHSA-qg3f-8x3j-ggf2) / CVE-2026-59223: `WEB_FETCH_FILTER_LIST` compares suffixes against a full URL or without DNS-label boundaries, confusing a path suffix or `evilcorp.com` with an allowed `corp.com` host.
+
+### Bounded replay matrix
+
+1. Configure a lab terminal upstream with `/base/ok` and `/admin/canary`, fake credentials, and request logging. Compare canonical, one-layer, eight-layer, and nine-layer traversal-shaped paths. Evidence is the upstream path and marker status only; do not invoke a shell or terminal action.
+2. For WebSocket identity, create two disposable users and terminal sessions. Put reserved query separators in only the lab `session_id`, then record the first/last `user_id` values seen by a mock coordinator. Also test direct upstream access separately: an unsigned `X-User-Id` is exploitable only where that upstream is independently reachable and trusts it.
+3. Give an ordinary user access to a synthetic arena wrapper but deny its underlying canary model. Compare direct model, normal chat, and `/api/v1/tasks/moa/completions`; the owned provider stub must not receive a restricted-model dispatch on 0.10.0.
+4. Give the user read-only access to a KB containing one marker file. Attempt to attach that known file ID to the user's model, then perform only a reversible marker metadata update. Do not delete files or enumerate IDs.
+5. For the web-fetch filter, use owned public hosts named to exercise exact host, subdomain, suffix-collision, and path-suffix cases. This issue does not defeat Open WebUI's separate default non-global-IP guard; do not claim private-address SSRF without independently proving that guard is disabled or bypassed.
+
+Report the transitions narrowly: **deferred decode -> upstream path escape**, **unencoded session path -> query identity injection**, **authorized wrapper -> unauthorized selected model**, **read-only file relation -> write decision**, or **raw URL suffix -> wrong host-policy result**. Affected terminal/file paths begin in 0.9.6 and are fixed in 0.10.0; the arena path affects 0.8.12 through pre-0.10.0 builds.

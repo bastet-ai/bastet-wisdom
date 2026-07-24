@@ -40,3 +40,14 @@ This batch is durable because the advisories map to reusable operator checks: wo
 - For ImageMagick, report exposed `magick -distribute-cache` as a network service boundary issue, not a generic image-upload parser bug. Include bind address, network path, version, and whether authentication/challenge-response is present.
 - For Airflow, report the exploit path as network-positioned SMTP credential capture from worker egress, with package version, connection path, and proof using throwaway credentials.
 - Keep all proofs within authorized test infrastructure; avoid crashing shared services, reading real secrets, or capturing live production credentials.
+
+## July 24 Camel HTTP-to-producer control-header follow-up
+
+Two Camel advisories expose the inverse of the earlier case-variant problem: component control headers used plain lowercase namespaces, so the standard HTTP filter did not recognize them as internal Camel headers.
+
+- [GHSA-f7g3-2cg6-f5hj](https://github.com/advisories/GHSA-f7g3-2cg6-f5hj) / CVE-2026-48204: an HTTP request bridged to `mongodb-gridfs:` can supply `gridfs.operation`, object ID, metadata, and related headers. When the endpoint leaves `operation` unset, the request can select operations or pass a MongoDB document as metadata.
+- [GHSA-hcm8-x79p-wx2w](https://github.com/advisories/GHSA-hcm8-x79p-wx2w) / CVE-2026-48205: an HTTP request bridged to `dns:` can supply `dns.server`, name/domain, record type/class, and term headers, steering the resolver and lookup.
+
+Build one unauthenticated and one authenticated `platform-http` route in a lab. Point GridFS at a disposable bucket containing one marker object and DNS at an owned mock resolver. Send baseline requests, each raw control header separately, and the post-fix `CamelGridFs*`/`CamelDns*` names. For GridFS, prove only operation selection against the marker object or metadata parse shape; do not delete/read real files or inject destructive operators. For DNS, query only canary names in an owned zone and record which resolver received the request; do not enumerate internal names.
+
+The affected ranges are 4.0.0 through pre-4.14.8, 4.15.0 through pre-4.18.3, and 4.19.0 through pre-4.21.0. A strong report proves **untrusted HTTP header -> Camel Exchange header -> producer control decision** and includes route authentication, explicit/default endpoint options, filter strategy, and producer sink. Component presence without an HTTP-to-producer bridge is not impact.

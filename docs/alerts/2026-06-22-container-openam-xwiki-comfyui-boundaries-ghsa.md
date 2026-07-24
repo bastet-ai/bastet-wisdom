@@ -72,3 +72,20 @@ Adjacent AVideo advisories from the same scan were promoted as an update to the 
 - Lead with the boundary: **remote build source to local build context**, **image filesystem to host runtime setup**, **OIDC parameter to IdP-origin HTML**, **session callback URL to server-side request**, **REST query parameter to LDAP filter**, **wiki title/content to privileged macro execution**, or **AI manager config path to unauthenticated web API**.
 - Keep evidence non-sensitive: file names, path-resolution tables, callback metadata, DOM markers, seeded directory entries, and fake config keys.
 - If chaining is approved, state the chain as preconditions plus canary impact. Do not publish exploit payloads that read secrets, modify host files, forge real sessions, or execute commands on shared systems.
+
+## July 24 OpenAM pre-auth class-loading, deserialization, and consent-rendering follow-up
+
+OpenAM 16.1.2 fixes three adjacent paths:
+
+- [GHSA-wg5r-wc3x-39vc](https://github.com/advisories/GHSA-wg5r-wc3x-39vc) / CVE-2026-62379: default-reachable `/authservice` XML can name a class that `AuthXMLUtils.createCustomCallback` loads and instantiates before authentication.
+- [GHSA-gf8h-gq53-288j](https://github.com/advisories/GHSA-gf8h-gq53-288j) / CVE-2026-62263: the WebAuthn serialization filter allows every nested object at depth greater than one, so only an `AuthenticatorImpl` root is constrained and nested classpath gadgets deserialize before assertion verification.
+- [GHSA-vqxv-6xrh-49cp](https://github.com/advisories/GHSA-vqxv-6xrh-49cp) / CVE-2026-62280: `display=wap` reaches an OAuth2/OIDC consent renderer missed by the earlier output-escaping fix.
+
+### Marker-only classpath and browser harness
+
+1. Confirm `/authservice` reachability with a normal malformed XML canary and record whether `sunRemoteAuthSecurityEnabled` requires a token. Package version alone is not proof of an externally reachable default path.
+2. In a disposable OpenAM JVM, place a custom no-network marker class on the test classpath whose constructor only increments an in-memory counter. Submit an XML callback naming that class and record class-load/constructor counters. Do not use JNDI, process execution, file writes, or third-party gadget classes.
+3. For WebAuthn, instrument deserialization and use an `AuthenticatorImpl` root containing a nested synthetic serializable object whose `readObject` increments the same counter. Compare depth one, nested depth, wrong root type, no gadget class, and 16.1.2. Do not generate a weaponized serialization stream.
+4. Register a disposable OAuth client, authenticate a lab user, and send paired authorization requests where only `display=wap` and a harmless request-derived DOM marker vary. Capture rendered HTML and marker execution in an isolated browser profile; do not read cookies or invoke account actions.
+
+Report these separately as **unauthenticated XML class name -> constructor**, **allowed serialization root -> unrestricted nested object**, and **alternate consent renderer -> OpenAM-origin DOM execution**. The WebAuthn path still requires a compatible classpath object graph; do not label a deployment exploitable from package presence alone.

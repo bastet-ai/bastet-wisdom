@@ -254,3 +254,19 @@ Thirteen adjacent advisories extend the consolidated fixture above. They are gro
 5. Keep impact narrow. Public-only PAT findings retain the user's ordinary membership; notification/watch/fork findings depend on prior access or a prior public state; webhook secret exposure requires an administrative peer; migration fetches require the migration/import path.
 
 Report these as **one-time code -> replayed authentication**, **token flag -> route-family omission**, **migration metadata -> unfiltered secondary fetch**, **write-only webhook secret -> peer-admin API response**, **aggregate org API -> private child metadata**, **visibility transition -> stale relationship**, **disabled local account -> OAuth callback reactivation**, **single-branch grant -> cached multi-ref write**, or **public-era fork -> private-era commit synchronization**. Do not combine them into an unproven account-takeover or host-compromise chain.
+
+## July 24 Budibase identity, role, metadata, and SQL follow-up
+
+Five Budibase advisories add a reusable tenant-control matrix:
+
+| Advisory | Boundary | Safe proof |
+| --- | --- | --- |
+| [GHSA-c8vc-7pv3-g98p](https://github.com/advisories/GHSA-c8vc-7pv3-g98p) | `POST /api/v2/email` checks the caller's `currentEmail` but does not bind body `accountId` to the session, so mailbox verification can update another known account | Use two disposable accounts and an attacker-owned mailbox; stop after the victim account's synthetic email changes, restore it, and do not reset a production password. The victim UUID is an out-of-band precondition, not normally enumerable through the documented API surface. |
+| [GHSA-j9fc-w3mr-x6mv](https://github.com/advisories/GHSA-j9fc-w3mr-x6mv) | an app-scoped builder can self-issue an API key and pass an uncontrolled target app in `appBuilder` or `role` to `/api/public/v1/roles/assign` | Use app A/app B and marker-only roles; prove only that an A-scoped builder gains a reversible B canary grant. |
+| [GHSA-fcrw-f7gg-6g9f](https://github.com/advisories/GHSA-fcrw-f7gg-6g9f) | POWER-readable user metadata returns stored SSO `oauth2` fields | Seed fake OAuth marker values, preserve only field presence/hash, and compare list/single-user routes. Version 3.39.25 is the fixed control. |
+| [GHSA-4qcj-m5wp-jmf4](https://github.com/advisories/GHSA-4qcj-m5wp-jmf4) | `GET /api/global/groups` omits the builder/admin middleware used by sibling group routes | Compare BASIC, builder, and admin against synthetic group names, memberships, and app-role mappings; report authorization-topology disclosure only. |
+| [GHSA-q6x4-v3qx-85qw](https://github.com/advisories/GHSA-q6x4-v3qx-85qw) | the MySQL datasource enables `multipleStatements`, amplifying a reachable concatenation flaw into stacked SQL statements | Instrument a disposable database and use a second harmless `SELECT` that returns a canary row. `multipleStatements: true` alone is not SQL injection: identify the exact user-controlled field and query-construction path before reporting. |
+
+Run the identity and role cases as a two-user/two-app decision table. Capture caller account, session-bound account, body target, app header, current role, requested grant, response, and before/after server state. Keep fake OAuth values out of screenshots and revoke every lab key.
+
+For SQL validation, grant the datasource user access only to a scratch schema. Start with a quote/error probe, then a boolean result-count differential, and use a stacked canary `SELECT` only if the exact route concatenates untrusted input. Never use `DROP`, `DELETE`, `GRANT`, file-write functions, sleep-heavy payloads, or production datasource credentials.
