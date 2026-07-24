@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Git config, template, OAuth, and object-path boundaries](alerts/2026-07-24-git-template-oauth-object-boundaries-ghsa.md)
 - [Markdown file inlining and Trix rich-text model boundaries](alerts/2026-07-24-markdown-file-trix-model-boundaries-ghsa.md)
 - [Kiota code-generation and Seroval deserialization boundaries](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md)
 - [Better Auth passwordless, Stripe organization, and SCIM provider follow-up](alerts/2026-07-07-better-auth-aider-netfoil-ckan-mcp-boundaries-ghsa.md#july-24-follow-up-passwordless-pre-account-billing-target-and-scim-namespace-boundaries)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [React Router navigation, RSC redirect, and hydration follow-up](alerts/2026-06-03-react-router-redirect-rsc-and-manifest-boundary-batch-ghsa.md#july-23-navigation-rsc-and-hydration-follow-up)
 - [PostCSS, PhpSpreadsheet, and Auth.js trust-boundary checks](alerts/2026-07-23-postcss-phpspreadsheet-authjs-boundaries-ghsa.md)
 - [DOMPurify state, policy, and reparse boundary checks](alerts/2026-07-23-dompurify-state-context-boundaries-ghsa.md)
-- [Eclipse Jetty path, authority, trailer-state, and Digest-auth checks](alerts/2026-07-22-jetty-http-parser-auth-boundaries-ghsa.md)
 
 
 
