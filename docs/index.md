@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Caddy FastCGI identity, ImageMagick policy, and Electron updater boundaries](alerts/2026-07-24-caddy-imagemagick-electron-boundaries-ghsa.md)
 - [c3p0 JavaBean deserialization composition boundary](alerts/2026-07-23-c3p0-deserialization-composition-boundary-ghsa.md)
 - [React Router navigation, RSC redirect, and hydration follow-up](alerts/2026-06-03-react-router-redirect-rsc-and-manifest-boundary-batch-ghsa.md#july-23-navigation-rsc-and-hydration-follow-up)
 - [PostCSS, PhpSpreadsheet, and Auth.js trust-boundary checks](alerts/2026-07-23-postcss-phpspreadsheet-authjs-boundaries-ghsa.md)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [JupyterLab image and extension-policy checks](alerts/2026-06-19-jupyterlab-stanza-containerd-parse-symfony-archive-boundaries-ghsa.md#july-22-jupyterlab-image-and-extension-policy-follow-up)
 - [LiteLLM guardrail, MCP, OIDC-file, and Skills checks](alerts/2026-06-08-litellm-authlib-dash-vitest-boundary-batch.md#july-22-litellm-guardrail-mcp-oidc-file-and-skills-follow-up)
 - [n8n MCP, GraphQL, computer-use, and LLM credential checks](alerts/2026-06-24-hono-n8n-flowise-picklescan-boundaries-ghsa.md#final-july-22-n8n-mcp-graphql-computer-use-and-llm-credential-follow-up)
-- [Dompdf nested-SVG local-path existence oracle](alerts/2026-07-22-dompdf-local-file-boundaries-ghsa.md#data-uri-svg-nested-resource-validation)
+
 
 
 
