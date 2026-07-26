@@ -38,6 +38,8 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - Budibase advisories/source: https://github.com/Budibase/budibase/security/advisories and https://github.com/Budibase/budibase
 - Yii 2 advisories/source: https://github.com/yiisoft/yii2/security/advisories and https://github.com/yiisoft/yii2
 - OpenClaw advisories/source: https://github.com/openclaw/openclaw/security/advisories and https://github.com/openclaw/openclaw
+- `openclaw-cn` browser navigation policy issues/source: https://github.com/mf-yang/openclaw-cn/issues/561, https://github.com/mf-yang/openclaw-cn/issues/562, and https://github.com/mf-yang/openclaw-cn
+- SparkJava external static-file symlink issue/source: https://github.com/perwendel/spark/issues/1296 and https://github.com/perwendel/spark
 - free5GC advisories/source: https://github.com/free5gc/free5gc/security/advisories and https://github.com/free5gc/free5gc
 - OpenStack Ironic advisories/source: https://security.openstack.org/ and https://opendev.org/openstack/ironic
 - BentoML advisories/source: https://github.com/bentoml/BentoML/security/advisories and https://github.com/bentoml/BentoML
