@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [NoteGen skill-to-chat-render-to-desktop-shell boundary chain](alerts/2026-07-26-notegen-skill-render-shell-chain-ghsa.md)
 - [Browser navigation and static-root canonicalization boundaries](alerts/2026-07-26-browser-navigation-static-root-boundaries-ghsa.md)
 - [Agent, filesystem, prompt, and HTTP boundary checks](alerts/2026-07-24-agent-filesystem-prompt-http-boundaries-ghsa.md)
 - [Bedrock AgentCore package delimiter follow-up](alerts/2026-06-19-framework-report-iac-mcp-cms-package-boundaries-ghsa.md#july-24-delimiter-neutralization-follow-up)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Pheditor forced-change and argv follow-up](alerts/2026-07-16-arcadedb-nuclio-pheditor-boundaries-ghsa.md#july-24-pheditor-forced-change-and-argv-follow-up)
 - [Downloader artifact, remote-file synchronization, and MCP URI boundaries](alerts/2026-07-24-downloader-artifact-integration-boundaries-ghsa.md)
 - [Open WebUI terminal, model, file, and fetch-policy follow-up](alerts/2026-05-08-open-webui-model-channel-and-knowledge-boundary-batch-ghsa.md#late-july-24-follow-up-terminal-model-file-and-fetch-policy-boundaries)
-- [Budibase identity, role, metadata, and SQL follow-up](alerts/2026-06-22-budibase-gogs-skillctl-nuxt-automation-boundaries-ghsa.md#july-24-budibase-identity-role-metadata-and-sql-follow-up)
+
 
 
 

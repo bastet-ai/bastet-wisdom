@@ -10,6 +10,7 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [NoteGen skill-to-chat-render-to-desktop-shell boundary chain](2026-07-26-notegen-skill-render-shell-chain-ghsa.md)
 - [Framework authentication, static-path, and policy-field boundaries](2026-07-24-framework-auth-static-policy-boundaries-ghsa.md)
 - [Open WebUI channel, realtime, knowledge, and delegated-execution follow-up](2026-05-08-open-webui-model-channel-and-knowledge-boundary-batch-ghsa.md#july-24-follow-up-channel-realtime-knowledge-and-delegated-execution-boundaries)
 - [Claude Code worktree sandbox path-confusion follow-up](2026-06-10-claude-code-action-mcp-and-baileys-event-boundaries-ghsa.md#july-24-claude-code-worktree-path-confusion-follow-up)
