@@ -153,3 +153,23 @@ Include:
 - the extra user, IDE, compile, import, deployment, or plugin precondition.
 
 Avoid collapsing the cluster into “malicious OpenAPI equals RCE.” External `$ref` stops at fetch/inclusion in the confirmed advisory; class-name injection provides out-of-root writes but malformed generated code may not compile; plugin template paths are realized downstream; and Seroval impact depends on registered plugins and framework reachability.
+
+## July 26 follow-up: JSON Schema `customBasePath` to generated Python import
+
+[GHSA-7x49-hhjc-29rg / CVE-2026-63720](https://github.com/advisories/GHSA-7x49-hhjc-29rg) reports that `datamodel-code-generator` before 0.70.0 accepts schema-controlled `customBasePath` values containing newlines and emits them into a Python `from ... import ...` statement. The [primary validation commit](https://github.com/koxudaxi/datamodel-code-generator/commit/545a96c5) adds a dotted-Python-identifier validator for scalar and nested-list values and tests both file generation and `generate_dynamic_models()`.
+
+This is the same source-generation boundary as Kiota's language-writer findings, but with two distinct execution phases:
+
+- CLI/file generation writes attacker-shaped Python that executes only if a later workflow imports or runs it;
+- dynamic-model APIs may generate and execute the resulting module in the same application process.
+
+### Inert generation/import differential
+
+1. Use a disposable JSON Schema with one ordinary model and a unique `customBasePath` canary. Keep the injected line to a harmless module-level assignment such as `DMCG_CANARY = "<nonce>"`; do not use imports, calls, environment reads, shell syntax, or network access.
+2. Run the exact CLI, library `generate()`, or dynamic-model API reached by the assessed workflow under a temporary output root.
+3. Before importing anything, preserve the schema hash, generator version/options, emitted filename, and the generated `from` statement plus adjacent canary line.
+4. For file-generation workflows, import the generated module only in a fresh disposable interpreter and read the inert variable. This separates **source emitted** from **generated source executed**.
+5. For dynamic-model workflows, use an in-memory marker or instrument the module-execution boundary to establish whether execution occurs during the API call.
+6. Repeat with valid scalar and list `customBasePath` controls, then with 0.70.0 or the linked validation commit. The unsafe fixture should fail before an output file exists or dynamic execution begins.
+
+The useful proof is **attacker-controlled schema extension -> newline escapes generated import context -> inert statement appears -> only the actually reachable import/dynamic phase observes the marker**. Require evidence that the target accepts untrusted schemas and later imports or dynamically executes generated code; package presence or malformed generated text alone is not RCE.

@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Agent identity, approval, MCP, and registration boundaries](alerts/2026-07-26-agent-identity-approval-mcp-boundaries-ghsa.md)
+- [datamodel-code-generator `customBasePath` follow-up](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md#july-26-follow-up-json-schema-custombasepath-to-generated-python-import)
 - [NoteGen skill-to-chat-render-to-desktop-shell boundary chain](alerts/2026-07-26-notegen-skill-render-shell-chain-ghsa.md)
 - [Browser navigation and static-root canonicalization boundaries](alerts/2026-07-26-browser-navigation-static-root-boundaries-ghsa.md)
 - [Agent, filesystem, prompt, and HTTP boundary checks](alerts/2026-07-24-agent-filesystem-prompt-http-boundaries-ghsa.md)
@@ -16,8 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Late Budibase datasource, identity, and automation wave](alerts/2026-06-22-budibase-gogs-skillctl-nuxt-automation-boundaries-ghsa.md#late-july-24-budibase-datasource-identity-and-automation-wave)
 - [OpenDJ proxy-identity and DSML URI follow-up](alerts/2026-06-22-glances-opendj-spinnaker-control-plane-boundaries-ghsa.md#july-24-opendj-proxy-identity-and-dsml-uri-follow-up)
 - [Pheditor forced-change and argv follow-up](alerts/2026-07-16-arcadedb-nuclio-pheditor-boundaries-ghsa.md#july-24-pheditor-forced-change-and-argv-follow-up)
-- [Downloader artifact, remote-file synchronization, and MCP URI boundaries](alerts/2026-07-24-downloader-artifact-integration-boundaries-ghsa.md)
-- [Open WebUI terminal, model, file, and fetch-policy follow-up](alerts/2026-05-08-open-webui-model-channel-and-knowledge-boundary-batch-ghsa.md#late-july-24-follow-up-terminal-model-file-and-fetch-policy-boundaries)
 
 
 

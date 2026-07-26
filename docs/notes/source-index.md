@@ -40,6 +40,11 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - OpenClaw advisories/source: https://github.com/openclaw/openclaw/security/advisories and https://github.com/openclaw/openclaw
 - `openclaw-cn` browser navigation policy issues/source: https://github.com/mf-yang/openclaw-cn/issues/561, https://github.com/mf-yang/openclaw-cn/issues/562, and https://github.com/mf-yang/openclaw-cn
 - SparkJava external static-file symlink issue/source: https://github.com/perwendel/spark/issues/1296 and https://github.com/perwendel/spark
+- Hermes SimpleX display-name authorization issues/source: https://github.com/NousResearch/hermes-agent/issues/44729, https://github.com/NousResearch/hermes-agent/issues/44730, and https://github.com/NousResearch/hermes-agent
+- NanoClaw approval callback and MCP payload issues/source: https://github.com/nanocoai/nanoclaw/issues/2761, https://github.com/nanocoai/nanoclaw/issues/2762, and https://github.com/nanocoai/nanoclaw
+- SiYuan Publish-to-MCP authorization advisory/source: https://github.com/siyuan-note/siyuan/security/advisories/GHSA-cvhv-7xhj-xjp8 and https://github.com/siyuan-note/siyuan
+- OpenRemote console-registration authorization advisory/source: https://github.com/openremote/openremote/security/advisories/GHSA-gpfc-h59v-63cv and https://github.com/openremote/openremote
+- datamodel-code-generator `customBasePath` code-generation validation/source: https://github.com/advisories/GHSA-7x49-hhjc-29rg and https://github.com/koxudaxi/datamodel-code-generator/commit/545a96c5
 - free5GC advisories/source: https://github.com/free5gc/free5gc/security/advisories and https://github.com/free5gc/free5gc
 - OpenStack Ironic advisories/source: https://security.openstack.org/ and https://opendev.org/openstack/ironic
 - BentoML advisories/source: https://github.com/bentoml/BentoML/security/advisories and https://github.com/bentoml/BentoML
