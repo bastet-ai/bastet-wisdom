@@ -1,0 +1,155 @@
+---
+title: Identity, tenant, webhook, and package boundaries from July 27 GHSA updates
+---
+
+# Identity, tenant, webhook, and package boundaries from July 27 GHSA updates
+
+A late July 27 GitHub advisory wave yields five durable operator workflows: authorization against one identifier followed by action on another, SSO identity/session proof that is only partially validated, a token-selected signature algorithm, cross-tenant webhook creation, and privileged package/update fields crossing into application-root files. These are useful beyond the named products because each bug breaks the binding between a decision and the object, identity, token, tenant, or artifact later consumed.
+
+Sources:
+
+- [GHSA-jhfj-h4g6-q9h9 / CVE-2026-15630: Casdoor query/body tenant mismatch](https://github.com/advisories/GHSA-jhfj-h4g6-q9h9)
+- [Voke Research: Casdoor cross-tenant authorization](https://vokecyber.com/research/cve-2026-15630-casdoor-cross-tenant-authz)
+- [GHSA-26cp-25m8-5fgc / CVE-2026-15611: Logto unverified-email SSO linking](https://github.com/advisories/GHSA-26cp-25m8-5fgc)
+- [GHSA-2r4j-c245-2qx7 / CVE-2026-15612: Logto absent OIDC nonce acceptance](https://github.com/advisories/GHSA-2r4j-c245-2qx7)
+- [GHSA-crqf-jj8w-c292 / CVE-2026-15614: Logto IdP-initiated SAML session reuse](https://github.com/advisories/GHSA-crqf-jj8w-c292)
+- [GHSA-vxqj-8hg5-3v79 / CVE-2026-15615: Logto SAML `Conditions` validation](https://github.com/advisories/GHSA-vxqj-8hg5-3v79)
+- [GHSA-cv5x-2gg8-4hc7 / CVE-2026-15616: Logto local MFA enforcement drift](https://github.com/advisories/GHSA-cv5x-2gg8-4hc7)
+- [GHSA-257m-4vpx-xg86 / CVE-2026-15617: Logto identifier normalization](https://github.com/advisories/GHSA-257m-4vpx-xg86)
+- [GHSA-fr32-wcm4-p6hf / CVE-2026-13089: Perl OIDC::Lite token-selected algorithm](https://github.com/advisories/GHSA-fr32-wcm4-p6hf)
+- [OIDC::Lite algorithm-pinning fix](https://github.com/ritou/p5-oidc-lite/pull/31)
+- [GHSA-72qw-2qpq-fg7j / CVE-2026-16624: Cal.com cross-team webhook creation](https://github.com/advisories/GHSA-72qw-2qpq-fg7j)
+- [Voke Research: Cal.com cross-tenant webhook plant](https://vokecyber.com/research/calcom-cross-tenant-webhook-plant)
+- [GHSA-c4f8-v76x-mwx3 / CVE-2026-66398: phpMyFAQ package extraction to application root](https://github.com/advisories/GHSA-c4f8-v76x-mwx3)
+- [Primary phpMyFAQ package advisory](https://github.com/thorsten/phpMyFAQ/security/advisories/GHSA-4fv7-8rr6-rf2w)
+- [GHSA-5w7v-f8fx-865c / CVE-2026-66399: phpMyFAQ group-membership escalation](https://github.com/advisories/GHSA-5w7v-f8fx-865c)
+- [GHSA-4cv6-9jjm-xp2g / CVE-2026-66397: phpMyFAQ category-image deletion traversal](https://github.com/advisories/GHSA-4cv6-9jjm-xp2g)
+
+The GitHub records were unreviewed when scanned. Confirm the exact product, affected version, route, configured identity provider, caller privilege, and fixed-build behavior from primary sources before reporting.
+
+!!! warning "Authorized validation only"
+    Use disposable tenants, synthetic users and identity-provider claims, fake keys, owned webhook listeners, marker-only archives, and temporary application roots. Never link a real person's account, forge a production identity, receive customer booking data, delete live configuration, upload executable code, or trigger an update against a production installation.
+
+## Boundary matrix
+
+| Surface | Decision input | Later action/sink | Safe proof |
+| --- | --- | --- | --- |
+| Casdoor organization API | query `id` used for authorization | body organization used for create/update/delete | reversible marker on a second disposable tenant |
+| Logto SSO | email, identifier, nonce, SAML conditions/session, IdP MFA state | local subject, account link, session, or assurance level | two synthetic accounts and claim/session decision tables |
+| OIDC::Lite | token header `alg` | verifier algorithm allowlist | local verifier harness with canary claims only |
+| Cal.com webhook | request `teamId` | subscription and event delivery for that team | owned receiver plus synthetic booking marker |
+| phpMyFAQ administration | group ID, category image path, attachment/package setting | inherited rights, file deletion, package extraction | inert group, temporary file, and non-executable archive markers |
+
+Capture both representations whenever a check and action can select different objects. A `200` response, accepted token syntax, stored webhook row, or uploaded attachment is not enough by itself; prove the smallest downstream marker and then stop.
+
+## Query/body authorization drift
+
+CVE-2026-15630 describes Casdoor organization handlers authorizing a non-global organization administrator against `?id=` while selecting the organization to mutate from the request body. This is a reusable **check object A, act on object B** pattern.
+
+### Two-tenant differential
+
+1. Create disposable organizations A and B. Give user A organization-admin rights only in A.
+2. Seed one reversible, non-sensitive marker in each organization.
+3. Capture a normal update to A and identify every object selector in the route, query, body, path, and authenticated session.
+4. Build a small matrix where query and body both name A, both name B, and name A/B in opposite combinations.
+5. For a mismatched request, change only B's synthetic description marker; do not delete organizations, users, applications, certificates, or providers.
+6. Read the marker back as B's authorized test administrator, restore it, and repeat on the fixed build.
+
+A decisive result is **user authorized only for A + query selects A + body selects B -> B's canonical record changes**. Record which identifier reached the policy check and which reached the data-layer operation. Do not describe this as unauthenticated access or global-administrator compromise.
+
+Apply the same matrix to bulk endpoints, nested JSON, GraphQL variables, duplicate parameters, path/query disagreement, and create/delete variants. Test one reversible update first; destructive verbs are unnecessary.
+
+## SSO: bind proof, principal, assurance, and session lifecycle
+
+The Logto records cover different edges and should not be collapsed into “SSO bypass” without evidence:
+
+- an email from a permissive IdP can link to an existing local account without proof that the IdP verified it;
+- an absent OIDC `nonce` can bypass replay binding;
+- omitted SAML `Conditions` can remove audience and time restrictions;
+- IdP-initiated SAML session state can remain reusable after expected consumption;
+- locally required MFA can be skipped on an SSO path;
+- case- or Unicode-different identifiers can collide during principal lookup.
+
+### Owned-identity fixture
+
+Use a local or owned test IdP and two Logto users containing only synthetic data. Never impersonate a real email address.
+
+| Dimension | Baseline | Negative mutation | Evidence |
+| --- | --- | --- | --- |
+| email ownership | IdP marks canary email verified | same email with verification absent/false | local account-link decision |
+| OIDC nonce | exact transaction nonce | missing, changed, and replayed nonce | callback/session result |
+| SAML conditions | valid audience/time window | missing, expired, future, and wrong audience | assertion decision |
+| session consumption | first owned IdP-initiated login | exact replay after completion/logout | session ID state and result |
+| assurance | flow satisfying local MFA | SSO assertion without required local factor | `amr`/assurance and route decision |
+| identifier identity | exact canonical canary | case, normalization form, and confusable controls | canonical principal selected |
+
+1. Record connector type, expected issuer/audience, local MFA policy, account-linking mode, and the canonical local subject before mutations.
+2. Change one dimension at a time and preserve the signed assertion/token when testing lifecycle behavior.
+3. For email linking, use two aliases or mailboxes owned by the assessment; stop if the second test identity links to the first synthetic account.
+4. For replay checks, use a harmless profile/status endpoint and immediately revoke the disposable session.
+5. For normalization, compare code points, normalization forms, lowercasing, database collation, and the final principal ID. A UI display collision alone is not account access.
+6. Repeat every positive case after the fix with identical IdP fixtures.
+
+Bound claims precisely: absent nonce acceptance is replay weakness only when the application initiated and expected a nonce; missing `Conditions` is meaningful when the assertion crosses an audience or validity boundary; and MFA drift requires a documented local requirement that the SSO route failed to enforce.
+
+## OIDC::Lite: the token cannot choose the verifier policy
+
+CVE-2026-13089 says the unpinned Perl `OIDC::Lite::Model::IDToken` verification path copies the token's `alg` header into the accepted-algorithm list. That can admit `none` or reuse an RSA public key as an HMAC secret. The durable check is **untrusted header -> accepted algorithm set**, not blind JWT mutation.
+
+1. Build a local harness around the exact application call path: unpinned `load(token)->verify`, key-only `load(token, key)`, and an explicitly pinned algorithm control.
+2. Use a generated disposable RSA keypair and synthetic subject/audience claims.
+3. Confirm rejection of a corrupted signature, wrong audience, and expired token before algorithm tests.
+4. Test an unsigned canary and an HMAC canary made with the disposable public key only in the isolated harness.
+5. Instrument the algorithm list passed to `decode_jwt`; this proves policy provenance without targeting an application account.
+6. Compare with the patched implementation or explicit caller pinning.
+
+The strongest bounded evidence is **header says `none` or `HS256` -> library constructs the same accepted-algorithm list -> altered canary subject is returned**, while explicit pinning rejects it. Never use a production key or real subject. See the broader [JWT algorithm-confusion testing workflow](../methodology/jwt-algorithm-confusion-testing.md).
+
+## Cross-tenant webhook creation
+
+CVE-2026-16624 describes Cal.com accepting a request-supplied `teamId` without proving the authenticated user may create webhooks for that team. A webhook is both a durable control-plane object and a future data-delivery channel, so validate creation and delivery separately.
+
+1. Create teams A and B, users scoped to only one team each, and an owned HTTPS receiver that logs only a nonce and event type.
+2. Capture user A's normal webhook-create request for team A.
+3. Replace only `teamId` with B's ID; use a unique secret and callback path for the canary.
+4. Read the webhook row through B's authorized administrator or a lab database snapshot. Do not enumerate another tenant's webhooks.
+5. If creation succeeds, trigger one synthetic B booking containing only a random marker and fake addresses; verify that the owned listener receives that marker.
+6. Delete the webhook, rotate its fake secret, and repeat on the fixed build.
+
+Report the edges separately: **A's user created a webhook bound to B** and, if proven, **B's synthetic event reached A's owned receiver**. Do not collect organizer details, attendee fields, custom responses, video credentials, or production events.
+
+## phpMyFAQ: validate each package/update edge separately
+
+The phpMyFAQ records describe three privileged boundaries before `4.1.6`:
+
+- group-management authority can attach the caller to a pre-existing group carrying stronger user-management rights;
+- `existing_image` traversal can steer category-image cleanup outside its intended directory;
+- an administrator holding `CONFIGURATION_EDIT` and `ATTACHMENT_ADD` can point `upgrade.lastDownloadedPackage` at an uploaded ZIP and extract it into the application root.
+
+These can form chains, but do not combine them unless every prerequisite and transition is reproduced.
+
+### Marker-only fixture
+
+1. Install the affected build in a disposable container with a copied application root and no real FAQ data, mail, credentials, or outbound network.
+2. Create separate low-privilege, group-manager, configuration-editor, and full-admin canaries. Record canonical rights server-side.
+3. **Group edge:** attempt to add the group-manager only to an inert group whose extra permission exposes a harmless marker route. Read back memberships and effective rights; remove membership afterward.
+4. **Deletion edge:** place a unique text marker outside the category-image directory but inside the temporary container. Submit the minimum traversal needed to address only that marker. Never name `database.php`, environment files, logs, keys, or setup gates.
+5. **Package edge:** upload a ZIP containing one non-executable `.txt` entry under a unique subdirectory. Point the package setting only at that attachment and trace extraction paths.
+6. Disable PHP/script execution in the proof directory and verify only the text marker hash. Do not include PHP, server configuration, symlinks, or traversal entries in the archive.
+7. Repeat each edge with missing and expected permissions, an invalid object/path/package, and version `4.1.6` or later.
+
+Bound the finding to what was shown: unauthorized group attachment, arbitrary marker deletion within the service account's authority, or package-controlled application-root write. A text file in the application tree does not prove code execution; deleting a marker does not prove setup takeover; and legitimate package-install authority may alter severity even when the write primitive is real.
+
+## Reporting checklist
+
+Include:
+
+- product/version, deployment mode, caller role, tenant, connector, route, and relevant feature state;
+- every competing selector and the canonical object that policy checked versus the object acted upon;
+- IdP verification flags, nonce/conditions/session lifecycle, assurance policy, and final synthetic principal;
+- algorithm-list provenance, disposable key type, and pinned-algorithm control;
+- webhook owner/team IDs, marker-only delivery evidence, deletion, and secret rotation;
+- phpMyFAQ effective-rights, canonical paths, archive listing, marker hashes, and cleanup;
+- affected/fixed decision tables and a narrow statement separating authorization drift, identity linkage, replay, MFA bypass, webhook creation, file effects, and untested execution.
+
+Redact tokens, assertions, cookies, webhook secrets, user paths, and full request bodies. Do not infer cross-tenant impact from an accepted request unless the foreign synthetic object changed, infer account takeover from claim parsing alone, or infer RCE from a non-executable write.

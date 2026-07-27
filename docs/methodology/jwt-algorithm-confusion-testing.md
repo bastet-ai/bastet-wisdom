@@ -1,6 +1,6 @@
 # JWT algorithm-confusion testing
 
-Source seed: 2026-07-16 GitHub Security Advisory update for [`GHSA-9gxv-x7rp-r2hc`](https://github.com/advisories/GHSA-9gxv-x7rp-r2hc), covering `gree/jose` treating `none` as a valid token algorithm before `2.2.1`, with the broader JWT library class described by Auth0's 2015 research on algorithm confusion.
+Source seeds: the 2026-07-16 GitHub Security Advisory update for [`GHSA-9gxv-x7rp-r2hc`](https://github.com/advisories/GHSA-9gxv-x7rp-r2hc), covering `gree/jose` treating `none` as a valid token algorithm before `2.2.1`; and [`GHSA-fr32-wcm4-p6hf` / CVE-2026-13089](https://github.com/advisories/GHSA-fr32-wcm4-p6hf), where Perl OIDC::Lite's unpinned verification path derives its accepted-algorithm list from the ID Token header. The broader JWT library class was described by Auth0's 2015 research on algorithm confusion.
 
 This workflow is durable for operators because many applications still delegate token trust to library defaults, framework adapters, or hand-rolled middleware. The useful test is not "try `alg: none` everywhere"; it is to prove whether the application binds the expected algorithm, key type, issuer, audience, and token family before accepting attacker-controlled JOSE headers.
 
@@ -88,6 +88,8 @@ Frame findings as a failed binding, not as generic JWT weakness:
 - **Token-purpose drift -> reset/ID/access token accepted by another route family -> disposable account canary crosses boundary.**
 
 Include library name/version when known, verification code or configuration snippets when provided by the program, the mutated header/payload with tokens redacted, negative controls, and the exact low-impact route decision observed.
+
+For wrappers such as the affected OIDC::Lite path, instrument the algorithm list handed to the lower-level decoder. Evidence that an attacker-controlled `alg` becomes the verifier's own allowlist is stronger and more precise than a parser-only result. Compare the unpinned call, key-only call, explicitly pinned call, and patched implementation with one disposable keypair and canary subject.
 
 ## Safety boundaries
 
