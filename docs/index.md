@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Directory, cluster, agent-fetch, and signed-document boundaries](alerts/2026-07-27-directory-cluster-agent-document-boundaries-ghsa.md)
 - [WordPress identity, token, route, and file-write boundaries](alerts/2026-07-27-wordpress-identity-token-route-boundaries-ghsa.md)
 - [Agent identity, approval, MCP, and registration boundaries](alerts/2026-07-26-agent-identity-approval-mcp-boundaries-ghsa.md)
 - [datamodel-code-generator `customBasePath` follow-up](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md#july-26-follow-up-json-schema-custombasepath-to-generated-python-import)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Bedrock AgentCore package delimiter follow-up](alerts/2026-06-19-framework-report-iac-mcp-cms-package-boundaries-ghsa.md#july-24-delimiter-neutralization-follow-up)
 - [Identity, proxy, crypto, and reviewed-artifact boundaries](alerts/2026-07-24-identity-proxy-crypto-review-boundaries-ghsa.md)
 - [Late Budibase datasource, identity, and automation wave](alerts/2026-06-22-budibase-gogs-skillctl-nuxt-automation-boundaries-ghsa.md#late-july-24-budibase-datasource-identity-and-automation-wave)
-- [OpenDJ proxy-identity and DSML URI follow-up](alerts/2026-06-22-glances-opendj-spinnaker-control-plane-boundaries-ghsa.md#july-24-opendj-proxy-identity-and-dsml-uri-follow-up)
+
 
 
 
