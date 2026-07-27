@@ -17,6 +17,9 @@ Sources:
 - [GHSA-28vq-345c-25gg / CVE-2026-17534: Kimi Code FetchURL SSRF](https://github.com/advisories/GHSA-28vq-345c-25gg)
 - [Kimi Code fix and regression fixtures](https://github.com/MoonshotAI/kimi-code/commit/31449728b72df94e22bcb2de350a1e7624895e30)
 - [Kimi Code 0.27.0 release](https://github.com/MoonshotAI/kimi-code/releases/tag/%40moonshot-ai%2Fkimi-code%400.27.0)
+- [GHSA-434r-7c99-hwf3 / CVE-2026-49138: Nanobot `web_fetch` redirect SSRF](https://github.com/advisories/GHSA-434r-7c99-hwf3)
+- [Nanobot per-hop redirect validation fix and regression fixtures](https://github.com/HKUDS/nanobot/commit/545294c62c0947da40eb5b65288aaf02b5fdf632)
+- [Nanobot 0.2.1 release](https://github.com/HKUDS/nanobot/releases/tag/v0.2.1)
 - [GHSA-m7cq-h27p-hwp4 / CVE-2026-57916: proCertum SmartSign CPS URI handling](https://github.com/advisories/GHSA-m7cq-h27p-hwp4)
 - [GHSA-fqfw-hf3f-2q4c / CVE-2026-57917: proCertum SmartSign preview-time XXE](https://github.com/advisories/GHSA-fqfw-hf3f-2q4c)
 - [CERT Polska coordinated disclosure for both SmartSign issues](https://cert.pl/posts/2026/07/CVE-2026-57916)
@@ -120,6 +123,20 @@ Test these rows independently:
 4. Compare the affected build with 0.27.0 using the same mocked resolver and canary fixtures.
 
 A positive result is **allowed URL text -> unchecked resolution/redirect or check-connect answer change -> FetchURL reaches the synthetic local canary without approval**. Separate SSRF reachability from response disclosure: seeing a callback proves a request, while the marker in agent output proves readback.
+
+### July 27 follow-up: Nanobot image preflight redirect validation
+
+GHSA-434r-7c99-hwf3 describes a parallel redirect-boundary failure in `nanobot-ai` before `0.2.1`. The linked fix is narrower than the Kimi Code change: Nanobot's image-detection preflight used an HTTP client path that could follow a `3xx Location` after validating only the initial URL. Version `0.2.1` adds a streamed, manual redirect loop with `follow_redirects=False`, validates each resolved `Location` before the next request, and closes every intermediate stream.
+
+Reuse the owned redirector and synthetic local canary above, but keep the media branch explicit:
+
+1. Serve an allowed first-hop URL that redirects to the local canary and vary the final response among `text/html`, `image/png`, and a missing `Content-Type`.
+2. Record the initial validation, image-preflight request, redirect status and raw `Location`, resolved next URL, whether readability/Jina fallback runs, actual peer, and whether any response body is read.
+3. Add relative, scheme-relative, multi-hop, missing-`Location`, and redirect-limit controls; every hop must remain owned and every response tiny.
+4. Compare the affected package with `0.2.1`. The fixed build should stop before dialing the synthetic local destination for every content-type branch.
+5. Separately exercise any later readability or external-reader fetch path that the deployment enables. A safe image preflight does not prove that another fetch backend applies the same policy.
+
+The positive edge is **validated public-looking URL -> automatic image-preflight redirect -> synthetic local canary receives the request**. A callback proves reachability; returning the canary nonce in tool output proves readback. Do not query metadata endpoints, arbitrary private services, or production agent sessions.
 
 ## SmartSign: signed metadata is still untrusted input
 
