@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [VeloCloud Orchestrator internal-function command boundary](alerts/2026-07-27-velocloud-orchestrator-internal-function-command-boundary-kev.md)
 - [Identity, tenant, webhook, and package boundaries](alerts/2026-07-27-identity-tenant-package-boundaries-ghsa.md)
 - [Hostname, LAN transfer, and template-runtime boundaries](alerts/2026-07-27-hostname-lan-transfer-template-runtime-boundaries-ghsa.md)
 - [pay-uz unauthenticated executable-hook write boundary](alerts/2026-07-27-pay-uz-executable-hook-write-boundary-ghsa.md)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [datamodel-code-generator `customBasePath` follow-up](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md#july-26-follow-up-json-schema-custombasepath-to-generated-python-import)
 - [NoteGen skill-to-chat-render-to-desktop-shell boundary chain](alerts/2026-07-26-notegen-skill-render-shell-chain-ghsa.md)
 - [Browser navigation and static-root canonicalization boundaries](alerts/2026-07-26-browser-navigation-static-root-boundaries-ghsa.md)
-- [Agent, filesystem, prompt, and HTTP boundary checks](alerts/2026-07-24-agent-filesystem-prompt-http-boundaries-ghsa.md)
 
 
 
