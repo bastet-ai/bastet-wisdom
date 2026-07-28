@@ -11,6 +11,11 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - badkeys weak-key checker and web service: https://github.com/badkeys/badkeys and https://badkeys.info/
 - GitHub Security Advisories: https://github.com/advisories
 - Pocket ID advisories/source: https://github.com/pocket-id/pocket-id/security/advisories and https://github.com/pocket-id/pocket-id
+- Novu advisories/source: https://github.com/novuhq/novu/security/advisories and https://github.com/novuhq/novu
+- WordPress Coding Standards advisories/source: https://github.com/WordPress/WordPress-Coding-Standards/security/advisories and https://github.com/WordPress/WordPress-Coding-Standards
+- Wakaru advisories/source: https://github.com/pionxzh/wakaru/security/advisories and https://github.com/pionxzh/wakaru
+- lettre advisories/source: https://github.com/lettre/lettre/security/advisories and https://github.com/lettre/lettre
+- Appium Java client advisories/source: https://github.com/appium/java-client/security/advisories and https://github.com/appium/java-client
 - zip-lib extraction advisories/source: https://github.com/advisories?query=zip-lib and https://github.com/fpsqdb/zip-lib
 - Prompty advisories/source: https://github.com/microsoft/prompty/security/advisories and https://github.com/microsoft/prompty
 - mcp-memory-keeper advisories/source: https://github.com/mkreyman/mcp-memory-keeper/security/advisories and https://github.com/mkreyman/mcp-memory-keeper

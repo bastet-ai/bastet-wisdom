@@ -4,7 +4,7 @@ title: Identity, tenant, webhook, and package boundaries from July 27 GHSA updat
 
 # Identity, tenant, webhook, and package boundaries from July 27 GHSA updates
 
-A late July 27 GitHub advisory wave, plus a July 28 Pocket ID follow-up, yields six durable operator workflows: authorization against one identifier followed by action on another, SSO identity/session proof that is only partially validated, refresh-token renewal after current authorization is removed, a token-selected signature algorithm, cross-tenant webhook creation, and privileged package/update fields crossing into application-root files. These are useful beyond the named products because each bug breaks the binding between a decision and the object, identity, token, tenant, or artifact later consumed.
+A late July 27 GitHub advisory wave, plus two July 28 Pocket ID follow-ups, yields seven durable operator workflows: authorization against one identifier followed by action on another, SSO identity/session proof that is only partially validated, refresh-token renewal after current authorization is removed, weak-login proof accepted as passkey reauthentication, a token-selected signature algorithm, cross-tenant webhook creation, and privileged package/update fields crossing into application-root files. These are useful beyond the named products because each bug breaks the binding between a decision and the object, identity, authentication method, token, tenant, or artifact later consumed.
 
 Sources:
 
@@ -27,11 +27,12 @@ Sources:
 - [GHSA-w6p7-2fxx-4f44 / CVE-2026-43983: Pocket ID refresh-token authorization-state bypass](https://github.com/pocket-id/pocket-id/security/advisories/GHSA-w6p7-2fxx-4f44)
 - [Pocket ID authorization-state fix](https://github.com/pocket-id/pocket-id/commit/978ac87deffec58beaccd15aead975e91b94c8a5)
 - [Pocket ID v2.6.0 release](https://github.com/pocket-id/pocket-id/releases/tag/v2.6.0)
+- [GHSA-hp74-gm6m-2qm5: Pocket ID one-time-token reauthentication bypass](https://github.com/pocket-id/pocket-id/security/advisories/GHSA-hp74-gm6m-2qm5)
 
-The July 27 GitHub records were unreviewed when scanned; the Pocket ID record was GitHub-reviewed when added on July 28. Confirm the exact product, affected version, route, configured identity provider, caller privilege, and fixed-build behavior from primary sources before reporting.
+The July 27 GitHub records were unreviewed when scanned; both Pocket ID records were GitHub-reviewed when added on July 28. Confirm the exact product, affected version, route, configured identity provider, caller privilege, and fixed-build behavior from primary sources before reporting.
 
 !!! warning "Authorized validation only"
-    Use disposable tenants, synthetic users and identity-provider claims, fake keys, redacted test tokens, owned webhook listeners, marker-only archives, and temporary application roots. Never link a real person's account, forge a production identity, retain or replay production refresh tokens, receive customer booking data, delete live configuration, upload executable code, or trigger an update against a production installation.
+    Use disposable tenants, synthetic users and identity-provider claims, fake keys, redacted test tokens, owned webhook listeners, marker-only archives, and temporary application roots. Never link a real person's account, forge a production identity, retain or replay production refresh tokens, bypass passkey step-up for a real account, receive customer booking data, delete live configuration, upload executable code, or trigger an update against a production installation.
 
 ## Boundary matrix
 
@@ -40,6 +41,7 @@ The July 27 GitHub records were unreviewed when scanned; the Pocket ID record wa
 | Casdoor organization API | query `id` used for authorization | body organization used for create/update/delete | reversible marker on a second disposable tenant |
 | Logto SSO | email, identifier, nonce, SAML conditions/session, IdP MFA state | local subject, account link, session, or assurance level | two synthetic accounts and claim/session decision tables |
 | Pocket ID refresh grant | previously valid refresh token | renewed tokens after client revocation, account disablement, or group removal | disposable user/client and a status-only resource |
+| Pocket ID reauthentication | fresh access token from one-time access or signup-token login | passkey-required reauthentication token and OIDC grant | disposable passkey user/client and token decision table |
 | OIDC::Lite | token header `alg` | verifier algorithm allowlist | local verifier harness with canary claims only |
 | Cal.com webhook | request `teamId` | subscription and event delivery for that team | owned receiver plus synthetic booking marker |
 | phpMyFAQ administration | group ID, category image path, attachment/package setting | inherited rights, file deletion, package extraction | inert group, temporary file, and non-executable archive markers |
@@ -125,6 +127,31 @@ The strongest bounded evidence is **valid baseline refresh -> one recorded autho
 
 Also distinguish token minting from downstream reachability. A new token pair proves renewal after revocation; accessing the canary route proves the relying party accepts the new access token. Neither requires viewing profile data, group membership beyond the synthetic fixture, or any real application resource.
 
+## Pocket ID: bind reauthentication to the required method and session
+
+GHSA-hp74-gm6m-2qm5 describes a second Pocket ID boundary fixed by the same `2.6.0` release/commit. For clients configured with `RequiresReauthentication: true`, the affected fallback path accepted a recently issued access token without proving how the user authenticated. A one-time access-token or signup-token login could therefore satisfy a passkey step-up requirement. The advisory also says the handler checked only for the presence of a `session` cookie on that fallback path rather than binding a valid server-side session.
+
+Treat the edges separately: **weaker login method -> fresh access token**, **freshness-only fallback -> reauthentication token**, and **reauthentication token -> grant for a client requiring passkey step-up**. Do not claim the full chain if only one transition is shown.
+
+### Authentication-method decision table
+
+1. Run the affected build in an isolated lab. Create one disposable passkey user and one OIDC client with `RequiresReauthentication: true`. Configure a status-only relying-party marker.
+2. Establish a normal passkey reauthentication baseline. Record only token hashes, issue times, authentication-method labels, session IDs replaced with aliases, and endpoint decisions.
+3. Reset the fixture and obtain a fresh access token through an owned one-time access-token login. In a separate run, test the signup-token path only if the lab configuration exposes it legitimately.
+4. Call the reauthentication endpoint with a deliberately non-WebAuthn body so the documented access-token fallback is reached. Test a missing session cookie, random cookie value, expired lab session, valid unrelated lab session, and valid current session independently.
+5. If a reauthentication token is returned, use it once against only the disposable client. Confirm issuance through response metadata and the harmless relying-party marker; do not request profile, group, or application data.
+6. Add stale access token, malformed token, token for a second disposable user, valid passkey assertion, and `RequiresReauthentication: false` controls. Never reuse another real user's token.
+7. Repeat on `2.6.0` or commit `978ac87deffec58beaccd15aead975e91b94c8a5`. The weak-method token and arbitrary session cookie must not satisfy passkey step-up.
+
+| Login/session condition | Expected affected decision to test | Required fixed behavior |
+| --- | --- | --- |
+| valid passkey assertion + current session | reauthentication succeeds | succeeds |
+| fresh one-time-login access token + arbitrary `session` cookie | fallback may issue reauthentication proof | rejects as wrong method/session |
+| fresh signup-token access token + arbitrary `session` cookie | fallback may issue reauthentication proof | rejects as wrong method/session |
+| stale or malformed access token | freshness/token validation fails | rejects |
+
+The strongest bounded evidence is **client explicitly requires passkey reauthentication -> owned user logs in with a weaker one-time method -> fresh token plus non-validating session-cookie gate yields reauthentication proof -> disposable client grant succeeds**, followed by fixed-build rejection. This is not a general passkey bypass unless the exact client flag, fallback route, token provenance, and downstream grant are all established.
+
 ## OIDC::Lite: the token cannot choose the verifier policy
 
 CVE-2026-13089 says the unpinned Perl `OIDC::Lite::Model::IDToken` verification path copies the token's `alg` header into the accepted-algorithm list. That can admit `none` or reuse an RSA public key as an HMAC secret. The durable check is **untrusted header -> accepted algorithm set**, not blind JWT mutation.
@@ -180,7 +207,7 @@ Include:
 - product/version, deployment mode, caller role, tenant, connector, route, and relevant feature state;
 - every competing selector and the canonical object that policy checked versus the object acted upon;
 - IdP verification flags, nonce/conditions/session lifecycle, assurance policy, and final synthetic principal;
-- Pocket ID transition type, client group-restriction state, redacted token lineage, endpoint decision, rotation result, and canary-resource result;
+- Pocket ID transition type, client group/reauthentication settings, authentication-method provenance, aliased session state, redacted token lineage, endpoint decision, rotation or grant result, and canary-resource result;
 - algorithm-list provenance, disposable key type, and pinned-algorithm control;
 - webhook owner/team IDs, marker-only delivery evidence, deletion, and secret rotation;
 - phpMyFAQ effective-rights, canonical paths, archive listing, marker hashes, and cleanup;
