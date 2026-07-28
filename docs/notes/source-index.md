@@ -18,6 +18,10 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - Appium Java client advisories/source: https://github.com/appium/java-client/security/advisories and https://github.com/appium/java-client
 - nono registry-pack advisories/source: https://github.com/always-further/nono/security/advisories and https://github.com/nolabs-ai/nono
 - Pterodactyl Panel and Wings advisories/source: https://github.com/pterodactyl/panel/security/advisories, https://github.com/pterodactyl/panel, and https://github.com/pterodactyl/wings
+- pytonapi webhook advisories/source: https://github.com/nessshon/tonapi/security/advisories and https://github.com/nessshon/tonapi
+- Ruby OAuth and OAuth2 advisories/source: https://github.com/ruby-oauth/oauth/security/advisories, https://github.com/ruby-oauth/oauth2/security/advisories, https://github.com/ruby-oauth/oauth, and https://github.com/ruby-oauth/oauth2
+- GNOME librest PKCE issue/source: https://gitlab.gnome.org/GNOME/librest/-/issues/25 and https://gitlab.gnome.org/GNOME/librest
+- Poweradmin identity URL advisory/source: https://github.com/poweradmin/poweradmin/security/advisories/GHSA-3735-5339-xfwx and https://github.com/poweradmin/poweradmin
 - zip-lib extraction advisories/source: https://github.com/advisories?query=zip-lib and https://github.com/fpsqdb/zip-lib
 - Prompty advisories/source: https://github.com/microsoft/prompty/security/advisories and https://github.com/microsoft/prompty
 - mcp-memory-keeper advisories/source: https://github.com/mkreyman/mcp-memory-keeper/security/advisories and https://github.com/mkreyman/mcp-memory-keeper

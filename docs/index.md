@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Webhook and OAuth client trust boundaries](alerts/2026-07-28-webhook-oauth-client-trust-boundaries-ghsa.md)
 - [Registry provenance and JWT purpose boundaries](alerts/2026-07-28-registry-provenance-jwt-purpose-boundaries-ghsa.md)
 - [Workflow SSRF, CI evaluator, unpack, TLS, and redirect boundaries](alerts/2026-07-28-workflow-ci-unpack-tls-redirect-boundaries-ghsa.md)
 - [Pocket ID refresh and reauthentication lifecycle boundaries](alerts/2026-07-27-identity-tenant-package-boundaries-ghsa.md)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [zip-lib multi-stage symlink and path-prefix extraction boundary](alerts/2026-07-28-zip-lib-multi-stage-symlink-boundary-ghsa.md)
 - [Kata container-to-guest virtio-pmem boundary](alerts/2026-07-28-kata-container-guest-pmem-boundary-ghsa.md)
 - [Kubernetes proxy impersonation and agent-auth boundaries](alerts/2026-07-28-kubernetes-proxy-identity-boundaries-ghsa.md)
-- [Joomla Regular Labs code, AJAX, database, and client-IP boundaries](alerts/2026-07-28-joomla-regular-labs-extension-boundaries-ghsa.md)
+
 
 
 
