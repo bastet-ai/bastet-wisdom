@@ -86,3 +86,19 @@ Include:
 - a bounded claim separating SQL object-scope escape, tunnel identity injection, and arbitrary-token metadata access.
 
 Do not include tokens, cookies, database hashes, production table names, real usernames, device inventories, internal addresses, upstream application data, or copied advisory proof-of-concept secrets.
+
+## pglogical publisher-to-subscriber command boundary
+
+[GHSA-cg29-63x4-27px / CVE-2026-50736](https://github.com/advisories/GHSA-cg29-63x4-27px) adds a database control-plane variant: pglogical queue messages can carry out-of-band commands such as replicated DDL, and affected subscribers execute the payload with the apply worker's PostgreSQL-superuser-equivalent authority. The record's key precondition is the ability to direct a subscription at an attacker-controlled publisher; default PostgreSQL installations normally reserve that action for superusers, so the useful target is a managed or shared service that delegates subscription creation to lower-privilege tenants.
+
+Use two disposable PostgreSQL clusters, a delegated non-superuser test role, a dedicated subscriber database, and one benign canary schema/function. First prove whether the role can create or retarget a pglogical subscription to the owned publisher. Then send only a queue message that creates or invokes an inert marker object in the disposable subscriber. Record the role initiating the subscription, publisher identity, message class, apply-worker role, SQL audit event, and marker owner. Compare a fixed build and a control where subscription creation remains superuser-only.
+
+Report **delegated subscription authority -> attacker-controlled publisher queue message -> subscriber apply-worker superuser context**. Do not read catalogs containing credentials, create login roles, alter extensions, access other databases, or execute operating-system commands. If the caller already has PostgreSQL superuser or equivalent subscription authority, state that the privilege boundary is absent rather than claiming escalation.
+
+## ClickHouse client escaping differential
+
+[GHSA-6wcc-39rp-hh9p / CVE-2026-54658](https://github.com/hypequery/hypequery/security/advisories/GHSA-6wcc-39rp-hh9p) reports that `@hypequery/clickhouse` before 2.0.2 escaped single quotes before backslashes during parameter substitution. A caller-controlled value ending in a backslash could change where the generated string literal closes and alter the surrounding SQL.
+
+Use a disposable ClickHouse database with one allowed table and one synthetic out-of-scope table. Instrument or mock the query transport first to capture the template, parameter value, final SQL text, and server-parsed result without executing multi-statement or destructive queries. Compare empty, quote, backslash, trailing backslash, quote-plus-backslash, Unicode, and fixed-version cases one variable at a time. If server validation is required, limit the effect to selecting one canary constant or row from the synthetic table.
+
+The proof is **parameter API value -> incorrect backslash/quote escaping -> server parser observes SQL structure outside the intended string literal**. Do not query system catalogs, credentials, user datasets, or run file/table/function mutations. Record ClickHouse settings that affect backslash and multiquery parsing, because a malformed client string without a reachable parser effect is not arbitrary SQL execution.

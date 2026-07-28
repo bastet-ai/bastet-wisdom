@@ -82,3 +82,11 @@ Include:
 
 - Trail of Bits, "The sorry state of skill distribution" (June 3, 2026): https://blog.trailofbits.com/2026/06/03/the-sorry-state-of-skill-distribution/
 - Trail of Bits Blog RSS: https://blog.trailofbits.com/feed/
+
+## July 28 symlink-dereference install follow-up
+
+[GHSA-6xx4-9wp6-65p7](https://github.com/manuelmauro/skilo/security/advisories/GHSA-6xx4-9wp6-65p7) adds a concrete Git-sourced skill ingestion boundary for `skilo` 0.5.0 through 0.11.0. `skilo add` classified an entry with `DirEntry::file_type()` without following links, but then used `std::fs::copy()`, which dereferenced a non-directory symlink. A repository symlink could therefore become a regular file containing its target's bytes inside the installed skill directory. Version 0.11.1 rejects symlink entries at every recursion depth.
+
+Use a disposable home and source repository with only a synthetic outside file such as `TEMP/home/canary-secret.txt`. Add links to that canary at the skill root and in nested directories, plus dangling, relative, absolute, directory, and symlink-chain controls. Run the exact local-path and owned-Git import forms reached by the assessed workflow. Inventory source entry type, source link target, installed entry type, installed content hash, and whether a later bundle/sync/index step reads the copied marker.
+
+The bounded proof is **untrusted skill source symlink -> installer dereferences outside-source canary -> target bytes appear as a regular installed skill file**. Do not point links at SSH keys, cloud files, environment files, browser profiles, credentials, or another user's data; do not publish or sync even the synthetic installed artifact outside the lab. Repeat on 0.11.1 and confirm the install fails closed before any partial target tree is trusted.

@@ -34,3 +34,11 @@ References: <https://github.com/advisories/GHSA-5fgg-jcpf-8jjw>, <https://github
 
 ## Durable lesson
 Localization is a supply-chain and routing surface. Language, namespace, and translation values must be validated as path components, URL components, object keys, and DOM sinks before they touch filesystems, networks, prototypes, or live attributes.
+
+## July 28 Pagy locale-to-YAML path oracle
+
+[GHSA-2xmw-f8j8-wfxc / CVE-2026-54659](https://github.com/ddnexus/pagy/security/advisories/GHSA-2xmw-f8j8-wfxc) extends the locale-path method to Ruby Pagy `>=43.0.0,<43.5.6`. When an application assigns untrusted input to `Pagy::I18n.locale=`, the value was joined into `<locale>.yml` and passed to `YAML.load_file`. Pagy's expected dictionary-structure access prevents direct response-body disclosure, but existing/readable/valid YAML paths can produce a different result from missing or malformed paths. Treat this as a `.yml` file-existence/readability oracle unless the application separately reflects content.
+
+Use a disposable Rails/Pagy app and create only synthetic YAML files under the locale root, application temp root, and a sibling directory. Compare known locale, nonexistent locale, parent traversal, absolute path, encoded separators where the framework decodes them, existing invalid YAML, valid non-Pagy YAML, and a valid Pagy-shaped canary. Capture the assigned locale, joined/resolved path through instrumentation, status/exception class, response length/hash, and timing over repeated controls. Never target `database.yml`, credentials, deployment config, or user files.
+
+A bounded result is **request-controlled locale -> out-of-locale synthetic YAML is opened -> stable existence/readability decision differs without returning file content**. Require the real application assignment from user input; gem presence alone is insufficient. Repeat on 43.5.6, where non-BCP-47-shaped values fall back before file lookup.

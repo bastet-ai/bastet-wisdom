@@ -121,3 +121,11 @@ Report **unauthenticated validation input -> caller-controlled `exec_globals` ->
 
 - Name the crossed boundary precisely: **widget content to token-bearing dashboard origin**, **AI file-node parameter to server file read**, **flow response ID to another user's history**, **monitor `flow_id` to another user's transaction/build logs**, **message/session ID to cross-user history mutation**, **caller-controlled Langflow key to cross-user authorization context**, **unauthenticated `exec_globals` to server-side validation context**, **IPv6 transition URL to link-check SSRF**, **redirect parser bypass to privileged navigation**, **embed class to stored HTML**, or **provider error text to stored HTML**.
 - Include version, authentication role, workspace/tenant IDs, URL parser normalization, network callback evidence, and negative controls. Keep evidence to synthetic markers and owned infrastructure.
+
+## July 28 FAISS namespace ownership follow-up
+
+[GHSA-668j-2f6w-gqwr / CVE-2026-13442](https://github.com/advisories/GHSA-668j-2f6w-gqwr) extends the same two-user Langflow method to FAISS vector namespaces. The reviewed record covers Langflow OSS 1.0.0 through 1.10.1 and states that one user can reuse another user's namespace to read owner-only vector content and persist entries that influence later results.
+
+Use two disposable users and two namespaces containing unique synthetic documents. Establish each owner's search/add baseline, then have user B submit user A's namespace through the exact component/API reached by the target workflow. Test read and write separately: the read proof stops after one synthetic marker appears; the integrity proof inserts one benign `POISON-CANARY` record and then has user A query for that exact marker. Add random, nonexistent, own-namespace, wrong-workspace, and fixed-build controls.
+
+Report **caller-controlled FAISS namespace -> owner binding omitted -> synthetic cross-user vector returned or persisted**. Include user/workspace/flow identity, namespace source, vector-store backend, operation, marker hashes, and post-write cleanup. Never collect real embeddings, prompts, documents, API keys, model output, or another tenant's production namespace.

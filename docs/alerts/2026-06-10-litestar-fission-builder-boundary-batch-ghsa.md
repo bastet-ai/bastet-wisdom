@@ -183,3 +183,11 @@ For the report, distinguish these edges:
 5. the process actually receives the capability.
 
 Do not infer node-wide clock control from CRD acceptance alone. The strongest safe proof is an affected/fixed admission and rendered-pod comparison, with a no-side-effect syscall counter only in an isolated lab.
+
+## July 28 fetcher filesystem follow-up
+
+[GHSA-q6vm-xqc9-v3ff / CVE-2026-50567](https://github.com/fission/fission/security/advisories/GHSA-q6vm-xqc9-v3ff) and [GHSA-r5jh-q2mw-gcx4 / CVE-2026-50568](https://github.com/fission/fission/security/advisories/GHSA-r5jh-q2mw-gcx4) add two filesystem fixtures fixed in Fission 1.25.0. The first reaches `pkg/utils/zip.go:Unarchive` when the fetcher extracts an archive selected by `Package.Spec.Source.URL` or `Deployment.URL`; the second uses lexical `strings.HasPrefix(path, safedir)` checks that accept sibling names such as `packages-extra` when `packages` is the intended root. The prefix issue additionally requires a controllable sibling directory under the shared builder/fetcher volume.
+
+Use a disposable Fission environment, an owned archive server, a synthetic package, and temporary roots containing `packages` plus `packages-extra`. For ZIP extraction, include parent-traversal, absolute-name, and symlink entries that target only one marker under the disposable sibling root. For the lexical-prefix path, vary exact child, sibling-prefix, unrelated sibling, `..`, and symlink-resolved targets against fetch/upload/clean call sites. Record the CRD or request source, raw archive/path value, normalized and resolved destination, sidecar identity, volume mounts, and marker hash.
+
+A safe positive result is **tenant-selected archive entry -> fetcher writes a marker outside extraction root** or **existing sibling-prefix directory -> builder/fetcher read/write/clean call resolves outside the safe directory**. Never target another tenant, mounted Secrets/ConfigMaps, service-account paths, binaries, or shared package volumes. Repeat on 1.25.0, where the linked fixes use `os.Root`, reject absolute/parent/symlink archive entries, and remove `SanitizeFilePath` call sites.

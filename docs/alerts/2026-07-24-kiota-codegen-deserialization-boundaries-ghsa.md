@@ -173,3 +173,39 @@ This is the same source-generation boundary as Kiota's language-writer findings,
 6. Repeat with valid scalar and list `customBasePath` controls, then with 0.70.0 or the linked validation commit. The unsafe fixture should fail before an output file exists or dynamic execution begins.
 
 The useful proof is **attacker-controlled schema extension -> newline escapes generated import context -> inert statement appears -> only the actually reachable import/dynamic phase observes the marker**. Require evidence that the target accepts untrusted schemas and later imports or dynamically executes generated code; package presence or malformed generated text alone is not RCE.
+
+## July 28 datamodel-code-generator source/fetch/file wave
+
+A second `datamodel-code-generator` wave expands the `customBasePath` lesson into a full schema-ingestion matrix. Treat remote retrieval, local include resolution, source emission, and later import as different sinks.
+
+Sources and reviewed fixed controls:
+
+- generated Python contexts: [GHSA-j884-q54q-mmx3](https://github.com/koxudaxi/datamodel-code-generator/security/advisories/GHSA-j884-q54q-mmx3) (GraphQL Union-description CR breakout, fixed 0.60.1), [GHSA-wjv6-jcfj-mf9r](https://github.com/koxudaxi/datamodel-code-generator/security/advisories/GHSA-wjv6-jcfj-mf9r) (extras comment CR breakout, fixed 0.60.2), [GHSA-386q-5hp3-95m9](https://github.com/koxudaxi/datamodel-code-generator/security/advisories/GHSA-386q-5hp3-95m9) (`default_factory`, fixed 0.60.2), [GHSA-8m8r-38jm-f355](https://github.com/koxudaxi/datamodel-code-generator/security/advisories/GHSA-8m8r-38jm-f355) (validator fields/mode, fixed 0.60.2), [GHSA-m34r-v34r-rf9q](https://github.com/koxudaxi/datamodel-code-generator/security/advisories/GHSA-m34r-v34r-rf9q) (`x-python-type`, fixed 0.60.2), and [GHSA-5578-w22f-pfx9](https://github.com/koxudaxi/datamodel-code-generator/security/advisories/GHSA-5578-w22f-pfx9) (`x-python-import`/`customTypePath`, fixed 0.64.0);
+- outbound fetches: [GHSA-rfr2-mq9m-x2qx](https://github.com/koxudaxi/datamodel-code-generator/security/advisories/GHSA-rfr2-mq9m-x2qx) (`--url`, fixed 0.61.0), [GHSA-954p-556p-r752](https://github.com/koxudaxi/datamodel-code-generator/security/advisories/GHSA-954p-556p-r752) (HTTP `$ref` fetched by default, fixed 0.61.0), [GHSA-r5vv-ff45-prp2](https://github.com/koxudaxi/datamodel-code-generator/security/advisories/GHSA-r5vv-ff45-prp2) (headers retained across cross-origin redirect, fixed 0.63.0), and [GHSA-vx7x-vcc2-c44g](https://github.com/koxudaxi/datamodel-code-generator/security/advisories/GHSA-vx7x-vcc2-c44g) (DNS validate/connect rebinding gap, fixed 0.63.0);
+- local includes: [GHSA-442q-2j6p-642g](https://github.com/koxudaxi/datamodel-code-generator/security/advisories/GHSA-442q-2j6p-642g) (XSD `schemaLocation`, fixed 0.62.0) and [GHSA-8359-h9fx-j6v9](https://github.com/koxudaxi/datamodel-code-generator/security/advisories/GHSA-8359-h9fx-j6v9) (JSON Schema `file://` and relative `$ref`, fixed 0.62.0).
+
+### Source-context fixture
+
+1. Run each input in a disposable repository with no credentials, network tokens, package hooks, or importable production modules. Preserve the generator version, input hash, options, output tree, and emitted source diff.
+2. Use one inert assignment per source field. Test CR, LF, CRLF, quote, backslash, dotted-identifier, and list-element boundaries independently in descriptions, extras comments/validators, `default_factory`, `x-python-type`, `x-python-import`, and `customTypePath`.
+3. First prove only that the marker escaped its expected comment, quoted value, type annotation, decorator, or import context. Syntax errors are useful negative evidence but are not execution.
+4. If the real workflow imports generated models, do so only in a fresh sandbox and observe an in-memory variable or no-op counter. Never use process launch, environment reads, callbacks, persistence, or package imports as the marker.
+5. Repeat at the specific fixed version. Because fixes landed across 0.60.1, 0.60.2, and 0.64.0, testing one intermediate release can leave sibling sinks reachable.
+
+### Fetch, redirect, and local-reference fixtures
+
+Use two owned loopback listeners: A serves the root schema and redirects; B serves a synthetic nested schema and records only path, origin, and presence of a fake header. Exercise `--url` and remote `$ref` separately across default behavior, explicit remote-reference denial, same-origin redirects, and cross-origin redirects. A positive redirect result is that B receives the fake header after A changes host, port, or scheme; never use a live credential.
+
+For rebinding, use a fully owned DNS/test-resolver fixture whose first lookup maps to an owned global test listener and second lookup maps to loopback. Prove validation of one address followed by connection to the other owned canary. Never query metadata, RFC1918 services, or production localhost endpoints.
+
+For file confinement, create `TEMP/repo/schema` and `TEMP/sibling/schema-canary` under one disposable parent. Test JSON Schema relative `$ref`, `file://`, and XSD `xs:include`/`xs:import` `schemaLocation` independently, including sibling-prefix and symlink controls. Run with explicit remote references disabled as a control. The positive result is **resolved local target leaves the input/base root and its synthetic type marker reaches generated output**. Do not read system files, home files, CI config, cloud credentials, or unrelated repositories.
+
+Report narrow edges: **schema field to generated Python context**, **schema URL/reference to owned outbound fetch**, **trusted-host header to redirected origin**, **validated DNS answer to different connection address**, or **local include to out-of-root canary**. State whether generated source was merely emitted or actually imported by the assessed workflow.
+
+## Style Dictionary token-path prototype boundary
+
+[GHSA-vj5c-m527-mpff / CVE-2026-54639](https://github.com/style-dictionary/style-dictionary/security/advisories/GHSA-vj5c-m527-mpff) adds a generated-design-token variant. Style Dictionary `>=4.3.0,<5.4.4` could pass a token key such as `{__proto__.canary}` through `convertTokenData(..., { output: 'object' })`; the same conversion is reached indirectly by enabled Expand and transform lifecycle paths. The advisory confirms process-global `Object.prototype` pollution, but downstream impact still depends on a separate gadget.
+
+Use a fresh Node process per row and synthetic token arrays only. Compare direct `convertTokenData`, Expand enabled/disabled, transform lifecycle, DTCG/legacy token shapes, `__proto__`, `constructor.prototype`, nested segments, and 5.4.4. Before and after each call, inspect a unique inert property on `{}`, the returned object's own keys/prototype, and one no-op sink object. Do not use authentication, process-spawn, filesystem, template-execution, or network gadgets.
+
+Report **untrusted token path -> object conversion/transform -> process-global prototype gains synthetic marker** separately from any downstream effect. Require evidence that a server, collaborative build API, pull-request workflow, or plugin accepts attacker-controlled tokens; repository maintainers transforming only their own trusted tokens have a different boundary. Reset the process between tests so one polluted row cannot contaminate controls.

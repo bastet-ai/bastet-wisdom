@@ -111,3 +111,16 @@ Include:
 - narrow impact language separating handler invocation, bearer forwarding, signed-request dispatch, and predictable synthetic PKCE output.
 
 Exclude complete tokens, OAuth signatures, consumer secrets, real webhook bodies, authorization codes, account identifiers, and internal network targets.
+
+## SuperPlane workflow-object and webhook-to-email follow-up
+
+Two sparse July 28 records add adjacent automation checks:
+
+- [GHSA-hg7x-q6w3-jcf5 / CVE-2026-57510](https://github.com/advisories/GHSA-hg7x-q6w3-jcf5) covers SuperPlane before 0.27.0, where viewer-level users could supply canvas or queue UUIDs from another organization to CanvasService gRPC handlers without organization scoping.
+- [GHSA-c3mp-rj38-mpvh / CVE-2026-57511](https://github.com/advisories/GHSA-c3mp-rj38-mpvh) covers SuperPlane before 0.30.0, where unauthenticated webhook event titles could cross CR/LF boundaries when rendered into SMTP DATA headers.
+
+For CanvasService, create two lab organizations with viewer A and owner B, plus separate canary canvases, queues, events, and execution-history markers. Replay the normal gRPC-Web or gRPC request while replacing only the object UUID. Test read, append, and delete handlers separately, but route write/delete proofs to disposable marker objects. A positive result is user A reading or changing B's synthetic object while an unrelated/random UUID rejects. Never retrieve secrets from event payloads or disrupt real workflows.
+
+For email rendering, connect SuperPlane to a local SMTP recorder and submit a synthetic webhook event whose title contains CR, LF, and CRLF canaries separately. Record the webhook status and raw SMTP envelope/header/body boundaries, but use only reserved `.invalid` addresses and never relay mail. The finding is a title-controlled extra header or body-boundary change in the recorder, not delivery, SPF/DKIM bypass, phishing, or exfiltration. Repeat on 0.30.0 with normal Unicode and folded-title controls.
+
+Name the edges **cross-organization UUID to unscoped workflow object** and **unauthenticated webhook title to SMTP header structure**. Preserve caller role, organization, method, object owner, webhook route, title encoding, mail library normalization, and fixed-version results.

@@ -74,3 +74,25 @@ These advisories are durable for operators because they expose reusable boundari
 - Lead with the crossed boundary: **preview header to shared cache entry**, **WebDAV route to ignored mode flag**, **share token to post-transfer counter race**, **diagnostic log path to outside-root file**, or **PVC symlink to exporter pod-local read**.
 - Include affected version, deployment topology, exact route/protocol, synthetic marker label, positive/negative decision table, and fixed-version or configuration control.
 - Keep the exploit narrative scoped to authorized validation. Avoid publishing staff-account takeover payloads, production cache poisoning details, sensitive file paths, or destructive file-share actions.
+
+## July 28 goshs residual-boundary follow-up
+
+Four later advisories show why a fixed primary route is not enough for a multi-protocol file server:
+
+- [GHSA-rmxw-pq4x-3fvh / CVE-2026-54719](https://github.com/goshs-labs/goshs/security/advisories/GHSA-rmxw-pq4x-3fvh): the early `?bulk` ZIP path did not apply the effective per-folder `.goshs` ACL or block list used by normal file reads; fixed in v2.1.1.
+- [GHSA-rjrw-mjq6-hpmm / CVE-2026-62325](https://github.com/goshs-labs/goshs/security/advisories/GHSA-rjrw-mjq6-hpmm): an empty password in `-b 'user:'` left both SFTP authentication handlers unset, causing the SSH library to enter no-client-auth mode; v2.1.3 was affected and v2.1.4 fixed this residual of CVE-2026-40884.
+- [GHSA-hq33-8jgp-8qq3 / CVE-2026-64863](https://github.com/goshs-labs/goshs/security/advisories/GHSA-hq33-8jgp-8qq3): WebDAV `MOVE` remained outside the `--no-delete` branch even though moving removes the source and overwrite mode can remove the destination; fixed in v2.1.4.
+- [GHSA-wg2q-39h6-66x9 / CVE-2026-66063](https://github.com/goshs-labs/goshs/security/advisories/GHSA-wg2q-39h6-66x9): multipart filename cleanup removed separators but did not reject the `..` component, allowing an upload-created marker to escape the served tree; the reviewed range is through v2.1.4 with a patched pseudo-version from commit `f3ef599e4091`.
+- [GHSA-964w-f6gj-5236 / CVE-2026-66064](https://github.com/goshs-labs/goshs/security/advisories/GHSA-964w-f6gj-5236): `sendFile` opened a cleaned path but derived the block-list/ACL filename from the raw path, so a trailing slash produced an empty policy key and exposed block-listed files or `.goshs` itself; authentication on an auth-protected directory remained enforced. The reviewed ranges and patched pseudo-version match the multipart fix.
+
+### One disposable route/protocol matrix
+
+1. Start each affected release against a new temporary root containing `public.txt`, `protected/secret-canary.txt`, `protected/blocked-canary.txt`, and a disposable WebDAV source/destination pair. Protect only the synthetic `protected` directory with `.goshs`; keep global authentication off only for the ACL-routing fixture.
+2. Compare normal `GET` with `?bulk&file=` as anonymous and authorized lab users. Record status, ZIP entry names, and canary hashes only. A positive result is a protected or block-listed synthetic entry present in the anonymous bulk archive while its normal route rejects.
+3. Compare a block-listed canary and the synthetic `.goshs` policy file with and without a trailing slash. Record raw path, cleaned open path, derived policy filename, status, and marker hash. Preserve the advisory's limit: a 401 on an authentication-protected directory is a negative control, not an authentication bypass.
+4. Start the SFTP listener with an intentionally empty lab password and no key file. Record configured handler presence and whether a no-password client reaches only the synthetic root. Do not enumerate or download non-canary files. A configuration that silently becomes `NoClientAuth` is the finding.
+5. Under `--no-delete`, compare `DELETE`, `MOVE` to a new name, and `MOVE` with overwrite against disposable files. Preserve before/after hashes; never point the root at a real workspace. The meaningful differential is `DELETE` denied while `MOVE` removes or replaces a marker.
+6. For multipart handling, target only a pre-created disposable sibling directory and a unique filename marker. Capture the raw filename, server-normalized name, final resolved path, and resulting marker hash. Do not target startup files, application code, credentials, or web roots.
+7. Repeat every positive row on the stated fixed release or commit. Test legacy v1 separately because the reviewed records list no fixed v1 release; do not infer that a v2 fix protects it.
+
+Report these as five separate boundaries: **bulk route to skipped folder ACL**, **raw-vs-clean filename to block-list/policy-file bypass**, **empty auth component to SFTP no-client-auth**, **WebDAV MOVE to delete-policy bypass**, and **multipart filename to outside-root write**. Preserve protocol, listener, flags, authentication configuration, and synthetic-file preconditions; do not collapse them into generic unauthenticated filesystem access.
