@@ -4,7 +4,7 @@ title: Identity, tenant, webhook, and package boundaries from July 27 GHSA updat
 
 # Identity, tenant, webhook, and package boundaries from July 27 GHSA updates
 
-A late July 27 GitHub advisory wave yields five durable operator workflows: authorization against one identifier followed by action on another, SSO identity/session proof that is only partially validated, a token-selected signature algorithm, cross-tenant webhook creation, and privileged package/update fields crossing into application-root files. These are useful beyond the named products because each bug breaks the binding between a decision and the object, identity, token, tenant, or artifact later consumed.
+A late July 27 GitHub advisory wave, plus a July 28 Pocket ID follow-up, yields six durable operator workflows: authorization against one identifier followed by action on another, SSO identity/session proof that is only partially validated, refresh-token renewal after current authorization is removed, a token-selected signature algorithm, cross-tenant webhook creation, and privileged package/update fields crossing into application-root files. These are useful beyond the named products because each bug breaks the binding between a decision and the object, identity, token, tenant, or artifact later consumed.
 
 Sources:
 
@@ -24,11 +24,14 @@ Sources:
 - [Primary phpMyFAQ package advisory](https://github.com/thorsten/phpMyFAQ/security/advisories/GHSA-4fv7-8rr6-rf2w)
 - [GHSA-5w7v-f8fx-865c / CVE-2026-66399: phpMyFAQ group-membership escalation](https://github.com/advisories/GHSA-5w7v-f8fx-865c)
 - [GHSA-4cv6-9jjm-xp2g / CVE-2026-66397: phpMyFAQ category-image deletion traversal](https://github.com/advisories/GHSA-4cv6-9jjm-xp2g)
+- [GHSA-w6p7-2fxx-4f44 / CVE-2026-43983: Pocket ID refresh-token authorization-state bypass](https://github.com/pocket-id/pocket-id/security/advisories/GHSA-w6p7-2fxx-4f44)
+- [Pocket ID authorization-state fix](https://github.com/pocket-id/pocket-id/commit/978ac87deffec58beaccd15aead975e91b94c8a5)
+- [Pocket ID v2.6.0 release](https://github.com/pocket-id/pocket-id/releases/tag/v2.6.0)
 
-The GitHub records were unreviewed when scanned. Confirm the exact product, affected version, route, configured identity provider, caller privilege, and fixed-build behavior from primary sources before reporting.
+The July 27 GitHub records were unreviewed when scanned; the Pocket ID record was GitHub-reviewed when added on July 28. Confirm the exact product, affected version, route, configured identity provider, caller privilege, and fixed-build behavior from primary sources before reporting.
 
 !!! warning "Authorized validation only"
-    Use disposable tenants, synthetic users and identity-provider claims, fake keys, owned webhook listeners, marker-only archives, and temporary application roots. Never link a real person's account, forge a production identity, receive customer booking data, delete live configuration, upload executable code, or trigger an update against a production installation.
+    Use disposable tenants, synthetic users and identity-provider claims, fake keys, redacted test tokens, owned webhook listeners, marker-only archives, and temporary application roots. Never link a real person's account, forge a production identity, retain or replay production refresh tokens, receive customer booking data, delete live configuration, upload executable code, or trigger an update against a production installation.
 
 ## Boundary matrix
 
@@ -36,6 +39,7 @@ The GitHub records were unreviewed when scanned. Confirm the exact product, affe
 | --- | --- | --- | --- |
 | Casdoor organization API | query `id` used for authorization | body organization used for create/update/delete | reversible marker on a second disposable tenant |
 | Logto SSO | email, identifier, nonce, SAML conditions/session, IdP MFA state | local subject, account link, session, or assurance level | two synthetic accounts and claim/session decision tables |
+| Pocket ID refresh grant | previously valid refresh token | renewed tokens after client revocation, account disablement, or group removal | disposable user/client and a status-only resource |
 | OIDC::Lite | token header `alg` | verifier algorithm allowlist | local verifier harness with canary claims only |
 | Cal.com webhook | request `teamId` | subscription and event delivery for that team | owned receiver plus synthetic booking marker |
 | phpMyFAQ administration | group ID, category image path, attachment/package setting | inherited rights, file deletion, package extraction | inert group, temporary file, and non-executable archive markers |
@@ -92,6 +96,35 @@ Use a local or owned test IdP and two Logto users containing only synthetic data
 
 Bound claims precisely: absent nonce acceptance is replay weakness only when the application initiated and expected a nonce; missing `Conditions` is meaningful when the assertion crosses an audience or validity boundary; and MFA drift requires a documented local requirement that the SSO route failed to enforce.
 
+## Pocket ID: re-evaluate authorization on refresh
+
+GHSA-w6p7-2fxx-4f44 / CVE-2026-43983 describes Pocket ID through `2.5.0` continuing to accept an already-issued OIDC refresh token after three kinds of current authorization change: the user revokes that client, an administrator disables the user, or the user leaves a group required by the client. The primary advisory says each successful refresh rotates the token with a fresh 30-day expiry. The durable pattern is **historical grant proof remains cryptographically valid, but present authorization no longer permits renewal**.
+
+This is not a bearer-token theft test. Begin with a refresh token legitimately issued to a disposable user and client that the assessor controls.
+
+### Three-transition lifecycle fixture
+
+1. Run the affected build in an isolated lab. Create one synthetic user, one confidential OIDC client, one allowed group, and a harmless relying-party route that returns only a random test marker.
+2. Complete a normal authorization-code flow requesting `openid` plus only the scopes needed for the fixture. Store token hashes or short redacted prefixes in evidence, not complete token values.
+3. Use the refresh token once as a baseline. Confirm rotation behavior and that the resulting access token reaches only the harmless marker route.
+4. Reset the fixture and test one transition at a time:
+   - revoke the user's authorization for the client;
+   - disable the synthetic user;
+   - remove the user from the client's allowed group while group restriction is enabled.
+5. After each transition, submit the exact pre-transition refresh token once. Record the token-endpoint status, OAuth error, whether a new token pair was issued, and whether the status-only marker remains reachable.
+6. Add controls for an unmodified authorized user, a corrupted refresh token, a token belonging to another disposable client, and an expired token. Do not test cross-user tokens.
+7. Repeat the same matrix on `2.6.0` or commit `978ac87deffec58beaccd15aead975e91b94c8a5` and confirm rejection after each state transition.
+
+| Transition after issuance | Affected behavior to verify | Fixed control from the patch |
+| --- | --- | --- |
+| client authorization revoked | old refresh token still rotates | revoke deletes matching stored refresh tokens; refresh also requires the authorization record |
+| user disabled | old refresh token still rotates | refresh rejects a disabled user |
+| allowed-group membership removed | old refresh token still rotates | refresh loads allowed groups and re-runs the group authorization check |
+
+The strongest bounded evidence is **valid baseline refresh -> one recorded authorization transition -> same pre-transition token still produces a new pair on the affected build -> fixed build rejects it**. Keep the three transitions separate: client revocation, principal lifecycle, and group-policy enforcement are distinct findings even though they converge on the same refresh endpoint. Do not claim initial authentication bypass—the precondition is a refresh token issued while the user was authorized.
+
+Also distinguish token minting from downstream reachability. A new token pair proves renewal after revocation; accessing the canary route proves the relying party accepts the new access token. Neither requires viewing profile data, group membership beyond the synthetic fixture, or any real application resource.
+
 ## OIDC::Lite: the token cannot choose the verifier policy
 
 CVE-2026-13089 says the unpinned Perl `OIDC::Lite::Model::IDToken` verification path copies the token's `alg` header into the accepted-algorithm list. That can admit `none` or reuse an RSA public key as an HMAC secret. The durable check is **untrusted header -> accepted algorithm set**, not blind JWT mutation.
@@ -147,6 +180,7 @@ Include:
 - product/version, deployment mode, caller role, tenant, connector, route, and relevant feature state;
 - every competing selector and the canonical object that policy checked versus the object acted upon;
 - IdP verification flags, nonce/conditions/session lifecycle, assurance policy, and final synthetic principal;
+- Pocket ID transition type, client group-restriction state, redacted token lineage, endpoint decision, rotation result, and canary-resource result;
 - algorithm-list provenance, disposable key type, and pinned-algorithm control;
 - webhook owner/team IDs, marker-only delivery evidence, deletion, and secret rotation;
 - phpMyFAQ effective-rights, canonical paths, archive listing, marker hashes, and cleanup;
