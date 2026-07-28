@@ -16,6 +16,7 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - Flask-Reuploaded advisories/source: https://github.com/advisories?query=Flask-Reuploaded and https://github.com/jugmac00/flask-reuploaded
 - uutils coreutils advisories/source: https://github.com/uutils/coreutils/security/advisories and https://github.com/uutils/coreutils
 - Trail of Bits Patch the Planet field reports: https://blog.trailofbits.com/2026/07/02/field-reports-from-patch-the-planet/
+- Trail of Bits goal-driven bug-hunting and variant-analysis workflow: https://blog.trailofbits.com/2026/07/28/how-we-use-goal-to-find-bugs-in-patch-the-planet/
 - Trail of Bits Mewt mutation-testing DAML support: https://blog.trailofbits.com/2026/07/08/mutation-testing-comes-to-daml/ and https://github.com/trailofbits/mewt
 - Trail of Bits Rust Testing Handbook update and rust-review plugin: https://blog.trailofbits.com/2026/07/13/rust-proof-your-code-with-our-new-testing-handbook-chapter/ and https://github.com/trailofbits/skills/tree/main/plugins/rust-review
 - Fission advisories/source: https://github.com/fission/fission/security/advisories and https://github.com/fission/fission

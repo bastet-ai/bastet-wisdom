@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Goal-driven agent fuzzing and variant-analysis campaigns](methodology/agent-guided-fuzzing-campaigns.md)
 - [MCP exposure and WordPress identity, object, and restore-state boundaries](alerts/2026-07-28-mcp-wordpress-identity-restore-boundaries-ghsa.md)
 - [zip-lib multi-stage symlink and path-prefix extraction boundary](alerts/2026-07-28-zip-lib-multi-stage-symlink-boundary-ghsa.md)
 - [Kata container-to-guest virtio-pmem boundary](alerts/2026-07-28-kata-container-guest-pmem-boundary-ghsa.md)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Identity, tenant, webhook, and package boundaries](alerts/2026-07-27-identity-tenant-package-boundaries-ghsa.md)
 - [Hostname, LAN transfer, and template-runtime boundaries](alerts/2026-07-27-hostname-lan-transfer-template-runtime-boundaries-ghsa.md)
 - [pay-uz unauthenticated executable-hook write boundary](alerts/2026-07-27-pay-uz-executable-hook-write-boundary-ghsa.md)
-- [Directory, cluster, agent-fetch, and signed-document boundaries](alerts/2026-07-27-directory-cluster-agent-document-boundaries-ghsa.md)
 
 
 

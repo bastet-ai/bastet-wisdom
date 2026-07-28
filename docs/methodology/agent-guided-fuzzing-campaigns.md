@@ -1,7 +1,9 @@
 # Agent-guided fuzzing campaigns
 
-**Date**: 2026-07-02  
-**Source**: Trail of Bits, *Field reports from Patch the Planet*  
+**Date**: 2026-07-02; updated 2026-07-28
+
+**Sources**: Trail of Bits, *Field reports from Patch the Planet* and *How we use /goal to find bugs in Patch the Planet*
+
 **Status**: Durable offensive operator workflow
 
 ---
@@ -46,6 +48,59 @@ Explore alternate build variants and feature flags that change parser behavior.
 Reject crashes caused by invalid harness states or impossible caller misuse.
 Preserve every command, corpus seed, minimized reproducer, and sanitizer trace.
 ```
+
+### Define success before choosing the path
+
+For an autonomous run, write the goal as a testable completion contract rather than a recipe. Include:
+
+- one vulnerability outcome and the exact threat model it must satisfy;
+- attacker-controlled inputs and normal/default configurations that count;
+- local control, privileges, configuration changes, or prior execution that must **not** be assumed;
+- a duplicate-check requirement;
+- the minimum safe proof and evidence bundle;
+- an explicit statement that “no bug found,” a crash without reachability, and a known issue do not satisfy the goal;
+- a stopping condition: one validated, previously unreported candidate.
+
+Do not prescribe a new harness, a specific code path, or an exact root cause unless that is the experiment. “Use fuzzing” leaves the agent free to reuse a better existing harness. For variant analysis, a one-sentence vulnerability class can be more productive than handing the agent the complete original backtrace.
+
+Have a separate agent draft and challenge the goal before the campaign:
+
+```text
+Read THREAT_MODEL.md and the repository's build/test guidance.
+Draft one goal for finding one previously unreported <impact> issue reachable by
+<remote/file/API attacker> under <normal configuration>.
+
+List the shortcuts a future agent could use to satisfy the wording without finding
+a valid vulnerability: impossible attacker control, test-only APIs, known issues,
+unreplayed crashes, missing default reachability, or evidence-only claims.
+Revise the goal to close those exits without prescribing the search path.
+```
+
+Treat source-reading and coverage metrics as campaign telemetry, not as substitutes for a vulnerability. If available, record which files or lines the agent actually inspected so a confident result cannot rest on a narrow code sample.
+
+### One outcome per agent
+
+Do not ask one session to maximize code coverage and find a vulnerability. Those are competing objectives.
+
+1. Run a **surface-mapping session** that inventories the repository and ranks a small number of attacker-reachable areas.
+2. Assign one independent vulnerability-finding session to each area.
+3. Add one open-ended session for surfaces the partitioning may have missed.
+4. Run coverage analysis separately and use its gaps to seed another round; do not redefine a vulnerability run as “done” because coverage increased.
+5. For variant analysis, spawn one session per source issue or bug class rather than asking one session to process the entire history.
+
+Each worker should receive the same threat model and report schema, but only one outcome. Keep run IDs, repository commits, inputs, and artifacts isolated so results can be replayed independently.
+
+### Gate variant-analysis inputs and outputs
+
+Historical critical bugs are useful seeds only after a gate confirms they represent a real security boundary for the current threat model. Route each seed to:
+
+```text
+skip        source issue is not security-relevant or is outside scope
+no_variant  valid vulnerability class, but no distinct reachable variant reproduced
+candidate   distinct behavior with a safe reproducer and plausible security impact
+```
+
+Pass candidates through two independent reviews: one for threat-model and impact validity, and another focused on clean-checkout PoC replay. Then perform a human duplicate search against local findings, upstream issues, pull requests, release notes, and advisories before submission. Model agreement is triage evidence, not confirmation.
 
 For C/C++ targets, start with a matrix like:
 
@@ -130,6 +185,26 @@ Tasks:
 8. Produce an evidence bundle with commands, flags, corpus seeds, minimized inputs, and sanitizer output.
 ```
 
+For a goal-driven discovery run, keep the search path open while making the acceptance boundary strict:
+
+```text
+Audit <repo> at <commit> and find exactly one previously unreported <impact>
+vulnerability reachable in normal/default use by <attacker model> through
+<allowed attacker-controlled inputs>.
+
+First create a concise threat model and rank attacker-reachable trust boundaries.
+Do not assume control of local configuration, command-line arguments, environment,
+plugins, source, credentials, administrator privileges, or prior code execution.
+Reject candidates that need those preconditions.
+
+Before accepting a candidate, search local findings and current upstream issues,
+pull requests, releases, and advisories for duplicates. Produce a minimal inert or
+sanitizer-backed proof, replay it from a clean checkout, and save the threat path,
+commands, artifacts, negative controls, and exact result under <output directory>.
+The following do not satisfy the goal: no finding, an untriaged crash, a known
+issue, or an unreplayed hypothesis. Stop after one valid candidate.
+```
+
 ---
 
 ## Evidence bundle
@@ -185,4 +260,5 @@ Low-signal reports to avoid:
 ## References
 
 - Trail of Bits: [Field reports from Patch the Planet](https://blog.trailofbits.com/2026/07/02/field-reports-from-patch-the-planet/)
+- Trail of Bits: [How we use /goal to find bugs in Patch the Planet](https://blog.trailofbits.com/2026/07/28/how-we-use-goal-to-find-bugs-in-patch-the-planet/)
 - Trail of Bits: [Introducing Patch the Planet](https://blog.trailofbits.com/2026/06/22/introducing-patch-the-planet/)
