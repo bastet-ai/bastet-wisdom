@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [WordPress nonce, pretix payment, and SICK device filesystem boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md)
 - [Goal-driven agent fuzzing and variant-analysis campaigns](methodology/agent-guided-fuzzing-campaigns.md)
 - [MCP exposure and WordPress identity, object, and restore-state boundaries](alerts/2026-07-28-mcp-wordpress-identity-restore-boundaries-ghsa.md)
 - [zip-lib multi-stage symlink and path-prefix extraction boundary](alerts/2026-07-28-zip-lib-multi-stage-symlink-boundary-ghsa.md)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [VeloCloud Orchestrator internal-function command boundary](alerts/2026-07-27-velocloud-orchestrator-internal-function-command-boundary-kev.md)
 - [Identity, tenant, webhook, and package boundaries](alerts/2026-07-27-identity-tenant-package-boundaries-ghsa.md)
 - [Hostname, LAN transfer, and template-runtime boundaries](alerts/2026-07-27-hostname-lan-transfer-template-runtime-boundaries-ghsa.md)
-- [pay-uz unauthenticated executable-hook write boundary](alerts/2026-07-27-pay-uz-executable-hook-write-boundary-ghsa.md)
 
 
 

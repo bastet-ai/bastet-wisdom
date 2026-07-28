@@ -285,6 +285,8 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - ProjectDiscovery Blog: https://projectdiscovery.io/blog/
 - Brutecat Security articles: https://brutecat.com/articles/ (RSS: https://brutecat.com/rss.xml)
 - pretix advisories and releases: https://github.com/pretix/pretix/security/advisories and https://pretix.eu/about/en/blog/
+- Eazy Plugin Manager and StoreGrowth source: https://plugins.svn.wordpress.org/plugins-on-steroids/ and https://plugins.svn.wordpress.org/storegrowth-sales-booster/
+- SICK PSIRT CSAF advisories: https://www.sick.com/.well-known/csaf/provider-metadata.json and https://www.sick.com/psirt
 - ProjectDiscovery Neo: https://neo.projectdiscovery.io/
 - ProjectDiscovery Neo black-box DAST benchmark notes: https://projectdiscovery.io/blog/neo-black-box-dast-capabilities
 - Argus validation benchmarks: https://github.com/pensarai/argus-validation-benchmarks
