@@ -1,16 +1,19 @@
 ---
-title: Agent identity, approval, MCP, and registration boundaries from July 26 GHSA updates
+title: Agent identity, compression, approval, MCP, and registration boundaries
 ---
 
-# Agent identity, approval, MCP, and registration boundaries from July 26 GHSA updates
+# Agent identity, compression, approval, MCP, and registration boundaries
 
-A late July 26 GitHub advisory wave yields four reusable operator checks: mutable chat profile data treated as an allowlist identity, unauthenticated loopback callbacks supplying the identity used by an approval check, approval cards that omit execution-relevant fields, and low-privilege or anonymous routes reaching privileged MCP and device-registration actions.
+A July 26 advisory wave and a July 28 Hermes update yield five reusable operator checks: mutable chat profile data treated as an allowlist identity, task state reintroduced as a high-authority prompt after context compression, unauthenticated loopback callbacks supplying approval identity, approval cards that omit execution-relevant fields, and low-privilege or anonymous routes reaching privileged MCP and device-registration actions.
 
 Sources:
 
 - [GHSA-6r3x-gc73-h69w / CVE-2026-17432: Hermes SimpleX authorization record](https://github.com/advisories/GHSA-6r3x-gc73-h69w)
 - [Primary Hermes issue #44729](https://github.com/NousResearch/hermes-agent/issues/44729)
 - [Hermes commit that introduced display-name matching](https://github.com/NousResearch/hermes-agent/commit/490c486ff65b766d9de0fe0e6f26e1778aaa8fb3)
+- [GHSA-xq8w-9jvx-gm3v / CVE-2026-10221: Hermes todo snapshot prompt injection](https://github.com/advisories/GHSA-xq8w-9jvx-gm3v)
+- [Primary Hermes compression issue #26979](https://github.com/NousResearch/hermes-agent/issues/26979)
+- [Hermes todo snapshot fix PR #69860](https://github.com/NousResearch/hermes-agent/pull/69860)
 - [GHSA-6frr-4xvp-cwch / CVE-2026-17433: NanoClaw loopback approval callback](https://github.com/advisories/GHSA-6frr-4xvp-cwch)
 - [Primary NanoClaw issue #2761](https://github.com/nanocoai/nanoclaw/issues/2761)
 - [GHSA-m5r3-634q-m3rj / CVE-2026-17434: NanoClaw MCP approval representation mismatch](https://github.com/advisories/GHSA-m5r3-634q-m3rj)
@@ -22,10 +25,10 @@ Sources:
 - [GHSA-jg8p-j9v5-g5x5 / CVE-2026-66013: OpenRemote console registration](https://github.com/advisories/GHSA-jg8p-j9v5-g5x5)
 - [Primary OpenRemote advisory GHSA-gpfc-h59v-63cv](https://github.com/openremote/openremote/security/advisories/GHSA-gpfc-h59v-63cv)
 
-The GitHub records in this wave are unreviewed. There is a material versioning discrepancy for Hermes: the record labels release `2026.6.5` affected and describes commit `490c486...` as a patch, while the linked primary issues state that `v2026.6.5` is unaffected and that this commit **introduced** display-name matching on unreleased `main`. Treat the exact source revision and observed authorization decision—not the sparse record—as authoritative evidence.
+The GitHub records in this wave are unreviewed. There are material Hermes version discrepancies. The SimpleX record labels release `2026.6.5` affected and describes commit `490c486...` as a patch, while the primary issues state that `v2026.6.5` is unaffected and that this commit **introduced** display-name matching on unreleased `main`. The compression record's prose says versions through 0.12.0, its package range says through 0.19.0, and it lists no patched release; PR #69860 merged on July 23, after the latest listed `v2026.7.20` release. Treat exact source revision and observed behavior—not either sparse range—as authoritative evidence.
 
 !!! warning "Authorized validation only"
-    Use synthetic contacts, disposable agent groups, inert pending approvals, fake MCP server values, temporary SiYuan workspaces, fake device tokens, and two-user labs. Never send commands to a production agent, approve a live shell/write/spend action, read real notes or credentials, install a plugin, overwrite a real notification token, or use another tenant's asset identifier.
+    Use synthetic contacts, disposable agent groups, inert todo markers, instrumented no-tool model stubs, inert pending approvals, fake MCP server values, temporary SiYuan workspaces, fake device tokens, and two-user labs. Never plant instructions in a production agent, trigger terminal/filesystem/browser/network tools, approve a live shell/write/spend action, read real notes or credentials, install a plugin, overwrite a real notification token, or use another tenant's asset identifier.
 
 ## Build an identity-and-authority map
 
@@ -34,12 +37,13 @@ For every messaging or agent control surface, record these values separately:
 | Boundary | Untrusted representation | Authority-bearing representation | Safe proof |
 | --- | --- | --- | --- |
 | Chat ingress | display name, handle, nickname | stable platform contact ID | allow/deny decision table |
+| Context compression | task text copied from tool state | real user turn versus synthetic scaffolding | marker-only pre/post-compression transcript diff |
 | Loopback callback | JSON `user.id` | authenticated gateway or OS peer | inert pending approval remains/clears |
 | Human approval | rendered card | complete stored payload and digest | visible-vs-applied field diff |
 | MCP route | anonymous/reader session | tool-specific role and capability | harmless tool inventory or marker note |
 | Device registration | request-supplied asset ID | asset owner/session binding | fake token update in two-user lab |
 
-Do not collapse these into one generic “missing authorization” claim. The useful finding identifies where an attacker-controlled representation is first mistaken for authenticated identity or privileged authority.
+Do not collapse these into one generic “missing authorization” or “prompt injection” claim. The useful finding identifies where attacker-controlled data is first mistaken for authenticated identity, fresh user intent, or privileged authority.
 
 ## Hermes SimpleX: stable contact ID versus mutable display name
 
@@ -67,6 +71,36 @@ Confirm:
 A positive result is **different authenticated contact ID + matching mutable display name -> authorization succeeds**. Stop at an inert message acknowledgement; do not invoke terminal, filesystem, browser, or external-service tools.
 
 Report the tested commit range explicitly. Do not claim released `v2026.6.5` is vulnerable unless that tag independently reproduces the branch.
+
+## Hermes compression: task state must not become fresh user intent
+
+The compression issue traces a second Hermes boundary. Active todo content is rendered by `TodoStore.format_for_injection()` and preserved across context compaction. The affected shape appended that text as a standalone `{role: "user"}` row at the transcript tail. A task copied from user or retrieved content could therefore return after compaction looking like a fresh user turn rather than quoted tool state.
+
+The merged PR changes this behavior, but it does **not** simply delete todo preservation or sanitize natural-language instructions. It merges the snapshot into a trailing real user turn when one exists, flags the standalone fallback as synthetic for scaffolding-only histories, refreshes stale snapshots instead of stacking them, and skips empty/all-completed stores. The longer-term design noted in the PR is typed tool state rather than a user-role row.
+
+### Marker-only compression harness
+
+Test the dataflow without asking a live model to execute anything:
+
+1. Check out the exact affected revision and the merged fix (`2ca38e5df43411afe11aedfc34bfd71a2eecd4bb`) in separate disposable environments.
+2. Replace the model/tool execution boundary with a recorder that stores ordered message roles, content hashes, synthetic flags, and whether a row is classified as a real user turn. It must never dispatch a tool.
+3. Seed one pending todo with an inert instruction-shaped marker such as `CANARY_TASK_TEXT_DO_NOT_EXECUTE`; keep a benign real user turn in the transcript.
+4. Force `_compress_context()` with a deterministic compressor stub. Compare the transcript immediately before and after compaction.
+5. Repeat with: no real user turn, a continuation-marker tail, a summary-as-user tail, a multimodal real-user tail, one stale prior snapshot, and an all-completed todo store.
+6. Run a negative control with a normal pending task and verify task continuity still works. Do not use shell commands, secret-shaped strings, URLs, or external callbacks as markers.
+
+Evidence matrix:
+
+| Fixture | Affected evidence | Fixed evidence |
+| --- | --- | --- |
+| real user tail + active todo | separate final user row contains marker | marker is attached to the existing real user row; no extra user/user turn |
+| scaffolding-only tail | marker-bearing row can appear as an unqualified user turn | standalone fallback carries synthetic provenance and remains classifiable as scaffolding |
+| stale prior snapshot | old snapshot can survive or accumulate | old block is stripped and exactly one refreshed snapshot remains |
+| all todos completed | no active state should be injected | no snapshot row or marker appears |
+
+A bounded positive result is **attacker-influenceable task text -> compression -> new tail user-role message that loses tool-state provenance**. This proves a prompt-authority transformation and persistence primitive. It does not by itself prove safety-policy override, tool execution, data access, exfiltration, remote reachability, or cross-session persistence. Establish those preconditions separately and stop before any privileged action.
+
+For broader agent reviews, apply the same harness to memories, plans, summaries, retrieved documents, approval explanations, and checkpoint restores. Track every state item's provenance through serialization, compaction, database projection, reload, and prompt assembly; labels held only in underscore-prefixed in-memory fields are insufficient if persistence strips them.
 
 ## NanoClaw: unauthenticated loopback approval identity
 
@@ -139,9 +173,10 @@ Include:
 - exact product version, commit, deployment mode, and affected route;
 - attacker position: remote contact, local process, prompt-influenced agent, anonymous Publish user, or unauthenticated registrant;
 - stable identity, mutable/display identity, proxy-added claims, and final authorization input;
+- task origin, todo status, pre/post-compression role order, synthetic provenance, and real-user classification;
 - raw canonical payload, human-visible approval representation, stored payload, and applied configuration;
 - complete allow/deny or role/tool decision tables with negative controls;
 - marker-only state changes and a fixed-build comparison;
 - source discrepancies, especially unreleased-versus-released version claims.
 
-Keep impact bounded. A display-name collision is not a released-package flaw without revision evidence; a loopback callback requires local reachability; an incomplete card still requires human approval; an MCP route is only as impactful as the reachable tool set; and a known-ID update path is not ID enumeration unless a separate oracle is proven.
+Keep impact bounded. A display-name collision is not a released-package flaw without revision evidence; a marker reappearing as a user turn is not automatic tool execution; a loopback callback requires local reachability; an incomplete card still requires human approval; an MCP route is only as impactful as the reachable tool set; and a known-ID update path is not ID enumeration unless a separate oracle is proven.

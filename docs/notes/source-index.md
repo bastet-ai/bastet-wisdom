@@ -55,6 +55,7 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - `openclaw-cn` browser navigation policy issues/source: https://github.com/mf-yang/openclaw-cn/issues/561, https://github.com/mf-yang/openclaw-cn/issues/562, and https://github.com/mf-yang/openclaw-cn
 - SparkJava external static-file symlink issue/source: https://github.com/perwendel/spark/issues/1296 and https://github.com/perwendel/spark
 - Hermes SimpleX display-name authorization issues/source: https://github.com/NousResearch/hermes-agent/issues/44729, https://github.com/NousResearch/hermes-agent/issues/44730, and https://github.com/NousResearch/hermes-agent
+- Hermes todo snapshot/context-compression prompt-authority issue and fix: https://github.com/advisories/GHSA-xq8w-9jvx-gm3v, https://github.com/NousResearch/hermes-agent/issues/26979, and https://github.com/NousResearch/hermes-agent/pull/69860
 - NanoClaw approval callback and MCP payload issues/source: https://github.com/nanocoai/nanoclaw/issues/2761, https://github.com/nanocoai/nanoclaw/issues/2762, and https://github.com/nanocoai/nanoclaw
 - SiYuan Publish-to-MCP authorization advisory/source: https://github.com/siyuan-note/siyuan/security/advisories/GHSA-cvhv-7xhj-xjp8 and https://github.com/siyuan-note/siyuan
 - OpenRemote console-registration authorization advisory/source: https://github.com/openremote/openremote/security/advisories/GHSA-gpfc-h59v-63cv and https://github.com/openremote/openremote
