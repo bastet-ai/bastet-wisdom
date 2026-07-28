@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Kubernetes proxy impersonation and agent-auth boundaries](alerts/2026-07-28-kubernetes-proxy-identity-boundaries-ghsa.md)
 - [Joomla Regular Labs code, AJAX, database, and client-IP boundaries](alerts/2026-07-28-joomla-regular-labs-extension-boundaries-ghsa.md)
 - [VeloCloud Orchestrator internal-function command boundary](alerts/2026-07-27-velocloud-orchestrator-internal-function-command-boundary-kev.md)
 - [Identity, tenant, webhook, and package boundaries](alerts/2026-07-27-identity-tenant-package-boundaries-ghsa.md)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [WordPress identity, token, route, and file-write boundaries](alerts/2026-07-27-wordpress-identity-token-route-boundaries-ghsa.md)
 - [Agent identity, approval, MCP, and registration boundaries](alerts/2026-07-26-agent-identity-approval-mcp-boundaries-ghsa.md)
 - [datamodel-code-generator `customBasePath` follow-up](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md#july-26-follow-up-json-schema-custombasepath-to-generated-python-import)
-- [NoteGen skill-to-chat-render-to-desktop-shell boundary chain](alerts/2026-07-26-notegen-skill-render-shell-chain-ghsa.md)
 
 
 
