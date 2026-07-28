@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Litestar and Fission builder boundary checks](alerts/2026-06-10-litestar-fission-builder-boundary-batch-ghsa.md)
+- [Undertow and Rust HTTP proxy-parser boundaries](alerts/2026-06-11-undertow-proxy-parser-request-smuggling-boundary-ghsa.md)
 - [Axis2 cluster-channel and OpenShift WMCO node-identity boundaries](alerts/2026-07-28-axis2-wmco-cluster-identity-boundaries-ghsa.md)
 - [Agent identity, context-compression, approval, and MCP boundaries](alerts/2026-07-26-agent-identity-approval-mcp-boundaries-ghsa.md)
 - [Webhook and OAuth client trust boundaries](alerts/2026-07-28-webhook-oauth-client-trust-boundaries-ghsa.md)
@@ -16,8 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Pocket ID refresh and reauthentication lifecycle boundaries](alerts/2026-07-27-identity-tenant-package-boundaries-ghsa.md)
 - [WordPress nonce, pretix payment, and SICK device filesystem boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md)
 - [Goal-driven agent fuzzing and variant-analysis campaigns](methodology/agent-guided-fuzzing-campaigns.md)
-- [MCP exposure and WordPress identity, object, and restore-state boundaries](alerts/2026-07-28-mcp-wordpress-identity-restore-boundaries-ghsa.md)
-- [zip-lib multi-stage symlink and path-prefix extraction boundary](alerts/2026-07-28-zip-lib-multi-stage-symlink-boundary-ghsa.md)
 
 
 

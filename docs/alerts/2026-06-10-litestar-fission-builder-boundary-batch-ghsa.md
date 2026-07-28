@@ -131,3 +131,55 @@ Promote these as one Fission tenant-control-plane workflow, not seven isolated a
 - For Fission namespace/trigger findings, include the exact CRD kind, actor RBAC, source namespace, target namespace, controller service account, canary object name, expected namespace confinement, actual controller behavior, and fixed-version negative control.
 - For Fission podspec/package-reference findings, include the exact CRD path, create/update verb tested, controller-generated pod-template diff, service-account involved, canary package/environment marker, and fixed-version rejection. Keep node-escape language tied to lab evidence; do not imply production host compromise from an admission decision alone.
 - Keep proof narrow: no real tokens, customer package archives, production command output, production workload event payloads, real Secrets, or other users' cookies should appear in reports or wiki evidence.
+
+## July 28 Fission trigger-path and capability-policy update
+
+Two reviewed advisories extend the same tenant-CRD trust boundary: [GHSA-vchh-r53j-8mpw](https://github.com/advisories/GHSA-vchh-r53j-8mpw) reports that `HTTPTrigger` path checks existed in the CLI but not in Go validation or API-server CEL admission, while [GHSA-qf5v-m7p4-95rp](https://github.com/advisories/GHSA-qf5v-m7p4-95rp) reports that a fixed capability denylist omitted `CAP_SYS_TIME`. Both affect Fission through `v1.24.0` and are fixed in `v1.25.0`.
+
+The reusable operator lessons are:
+
+- test every API object through direct admission as well as the vendor CLI; client-side validation is not a control-plane boundary;
+- compare create, update, CLI, Go webhook, CEL, and reconciler decisions for the same fixture;
+- treat security-sensitive enum and capability denylists as likely incomplete, and account for privileges inherited from runtime defaults;
+- separate an admitted dangerous field from its eventual runtime effect.
+
+### HTTPTrigger admission matrix
+
+Use a disposable Fission namespace and a canary function. Submit the same harmless trigger fixtures through the Fission CLI and direct `kubectl apply` or Kubernetes REST API:
+
+| Fixture | Expected admission result |
+| --- | --- |
+| normal `/skillz-canary` relative URL | accept |
+| both `relativeurl` and `prefix` absent | reject |
+| value without leading `/` | reject |
+| root `/` | reject |
+| path containing a `..` segment | reject |
+| router-owned canary such as `/readyz` | reject |
+| `/fission-function/<namespace>/<name>` prefix | reject |
+
+Capture the raw CRD, actor RBAC, API admission response, controller status condition, generated route, and CLI/API decision difference. A bounded affected result is **tenant can create `HTTPTrigger` directly -> API admits a path the CLI rejects -> router registers or attempts to reconcile the unsafe/colliding route**. Prove only against a disposable router and canary function; do not claim production root routes, health checks, login paths, or other tenants' functions.
+
+### Capability allowlist decision table
+
+The `CAP_SYS_TIME` report requires a cluster where Pod Security Admission or another policy does not already reject the generated pod. Test admission and rendered pod state before any runtime call:
+
+| Container capability request | Expected result |
+| --- | --- |
+| no added capabilities | normal baseline |
+| `NET_BIND_SERVICE` | allow only if the platform policy requires it |
+| `SYS_TIME` | reject |
+| representative non-allowlisted capability | reject |
+| mixed allowed and forbidden values | reject the complete request |
+| `drop: ["ALL"]` plus the narrow allowlist | preferred runtime baseline |
+
+Use an inert admission fixture first. If the engagement requires runtime proof, use an isolated single-node lab and replace wall-clock mutation with a stubbed `clock_settime` wrapper or seccomp/audit counter that records the attempted call without changing time. Never alter a shared node clock: it can disrupt certificates, leases, tokens, scheduling, logs, and unrelated workloads.
+
+For the report, distinguish these edges:
+
+1. the tenant role can write the Function or Environment field;
+2. Fission admission accepts the requested capability;
+3. the generated pod preserves it;
+4. cluster policy admits the pod;
+5. the process actually receives the capability.
+
+Do not infer node-wide clock control from CRD acceptance alone. The strongest safe proof is an affected/fixed admission and rendered-pod comparison, with a no-side-effect syscall counter only in an isolated lab.

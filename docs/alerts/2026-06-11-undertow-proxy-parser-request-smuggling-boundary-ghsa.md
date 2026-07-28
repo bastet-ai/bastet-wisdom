@@ -88,3 +88,46 @@ Keep evidence scoped to canary paths. Do not demonstrate access to another user 
 ## Notes on skipped adjacent items
 
 Updated-feed Keycloak token-revocation and WebAuthn policy-bypass advisories from the same scan were already represented in state as processed identity-boundary items and did not require a new page this hour. Generic availability-only and local-crash entries remained processed without publication unless they exposed a reusable operator boundary.
+
+## July 28 Rust HTTP parser and identity-header update
+
+A later unreviewed GitHub wave adds Rust parser variants and a proxy identity-canonicalization check:
+
+- [GHSA-frmw-v2hf-gvj9](https://github.com/advisories/GHSA-frmw-v2hf-gvj9): Rouille forwards bare-LF header values into an upstream request;
+- [GHSA-fgf8-ph7p-m275](https://github.com/advisories/GHSA-fgf8-ph7p-m275): Rouille forwards `Transfer-Encoding` after `tiny_http` has already de-chunked the body;
+- [GHSA-5hc2-r3jq-vc45](https://github.com/advisories/GHSA-5hc2-r3jq-vc45): `tiny_http` treats any `Transfer-Encoding` value as chunked and discards `Content-Length`;
+- [GHSA-5wm6-g4fr-88x8](https://github.com/advisories/GHSA-5wm6-g4fr-88x8) and [GHSA-998j-f97v-vpgr](https://github.com/advisories/GHSA-998j-f97v-vpgr): CR/LF acceptance crosses into request or response header serialization;
+- [GHSA-f2m2-cc3f-h4j2](https://github.com/advisories/GHSA-f2m2-cc3f-h4j2): OpenShift `oauth-proxy` removes dash-form identity headers but may leave underscore aliases that WSGI or PHP later canonicalizes to the same application variable.
+
+Treat these GitHub entries as leads until the exact source, affected build, deployment topology, and observed parser behavior are confirmed. The durable method is broader than any one library: compare the bytes and normalized fields at every hop, including transformations performed before a proxy reserializes the request.
+
+### Two-hop parser fixture
+
+Build a local chain with the candidate Rouille or `tiny_http` component in front of a mock origin that records raw bytes and parsed request boundaries. Run one mutation per fresh connection:
+
+1. duplicate `Content-Length` / `Transfer-Encoding` controls;
+2. a non-`chunked` transfer coding with a short inert body;
+3. a chunked body that the first hop decodes before forwarding;
+4. an inert request header containing a bare LF canary;
+5. a response-header value derived from a harmless query or cookie marker containing encoded CR/LF;
+6. the same fixtures against a patched or strict-parser negative control.
+
+Record four artifacts: bytes sent to hop one, hop-one parsed fields/body, bytes reserialized toward hop two, and hop-two request/response boundaries. A useful positive result is not merely a 400/500 response. Show that the same input becomes a different message count, body length, header set, route, or cacheable response at the next hop.
+
+Do not aim smuggling probes at shared production connection pools. Use canary routes, one connection per fixture, no victim traffic, and no protected endpoints. Do not open response-splitting output in a browser if doing so could trigger active content; preserve raw bytes instead.
+
+### Dash-versus-underscore identity matrix
+
+For an identity-aware reverse proxy, seed a mock upstream that reports only the normalized identity variable it receives. Use a disposable low-privilege user and fake identity values:
+
+| Incoming client field | Proxy output to upstream | Expected result |
+| --- | --- | --- |
+| no identity header | proxy-generated authenticated identity only | accept baseline |
+| `X-Forwarded-User: canary` | client value removed/replaced | authenticated identity only |
+| `X_Forwarded_User: canary` | client alias removed before framework normalization | authenticated identity only |
+| both forms with different canaries | all client forms removed | one proxy-generated value |
+| case and repeated-header variants | canonicalized and removed | one proxy-generated value |
+
+Capture raw ingress headers, proxy egress headers, the framework server-variable map, and the application-visible principal. The bounded finding is **client-supplied alias survives the trusted proxy -> upstream canonicalization merges it with the protected identity key -> application observes the canary principal**. Do not impersonate a real administrator or access another user's data; a fake principal echoed by a local upstream is sufficient.
+
+Report parser and identity findings separately. An underscore alias is header canonicalization/identity confusion, not HTTP request smuggling unless it also changes message boundaries. Likewise, CR/LF acceptance is an injection primitive until a second parser or serializer demonstrates a security-relevant split.
