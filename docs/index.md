@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Axis2 cluster-channel and OpenShift WMCO node-identity boundaries](alerts/2026-07-28-axis2-wmco-cluster-identity-boundaries-ghsa.md)
 - [Agent identity, context-compression, approval, and MCP boundaries](alerts/2026-07-26-agent-identity-approval-mcp-boundaries-ghsa.md)
 - [Webhook and OAuth client trust boundaries](alerts/2026-07-28-webhook-oauth-client-trust-boundaries-ghsa.md)
 - [Registry provenance and JWT purpose boundaries](alerts/2026-07-28-registry-provenance-jwt-purpose-boundaries-ghsa.md)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Goal-driven agent fuzzing and variant-analysis campaigns](methodology/agent-guided-fuzzing-campaigns.md)
 - [MCP exposure and WordPress identity, object, and restore-state boundaries](alerts/2026-07-28-mcp-wordpress-identity-restore-boundaries-ghsa.md)
 - [zip-lib multi-stage symlink and path-prefix extraction boundary](alerts/2026-07-28-zip-lib-multi-stage-symlink-boundary-ghsa.md)
-- [Kata container-to-guest virtio-pmem boundary](alerts/2026-07-28-kata-container-guest-pmem-boundary-ghsa.md)
+
 
 
 
