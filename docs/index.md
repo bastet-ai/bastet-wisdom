@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [zip-lib multi-stage symlink and path-prefix extraction boundary](alerts/2026-07-28-zip-lib-multi-stage-symlink-boundary-ghsa.md)
 - [Kata container-to-guest virtio-pmem boundary](alerts/2026-07-28-kata-container-guest-pmem-boundary-ghsa.md)
 - [Kubernetes proxy impersonation and agent-auth boundaries](alerts/2026-07-28-kubernetes-proxy-identity-boundaries-ghsa.md)
 - [Joomla Regular Labs code, AJAX, database, and client-IP boundaries](alerts/2026-07-28-joomla-regular-labs-extension-boundaries-ghsa.md)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [pay-uz unauthenticated executable-hook write boundary](alerts/2026-07-27-pay-uz-executable-hook-write-boundary-ghsa.md)
 - [Directory, cluster, agent-fetch, and signed-document boundaries](alerts/2026-07-27-directory-cluster-agent-document-boundaries-ghsa.md)
 - [WordPress identity, token, route, and file-write boundaries](alerts/2026-07-27-wordpress-identity-token-route-boundaries-ghsa.md)
-- [Agent identity, approval, MCP, and registration boundaries](alerts/2026-07-26-agent-identity-approval-mcp-boundaries-ghsa.md)
 
 
 
