@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [NocoBase SQL-scope and Cosmos proxy-identity boundaries](alerts/2026-07-28-nocobase-cosmos-data-identity-boundaries-ghsa.md)
 - [Litestar and Fission builder boundary checks](alerts/2026-06-10-litestar-fission-builder-boundary-batch-ghsa.md)
 - [Undertow and Rust HTTP proxy-parser boundaries](alerts/2026-06-11-undertow-proxy-parser-request-smuggling-boundary-ghsa.md)
 - [Axis2 cluster-channel and OpenShift WMCO node-identity boundaries](alerts/2026-07-28-axis2-wmco-cluster-identity-boundaries-ghsa.md)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Workflow SSRF, CI evaluator, unpack, TLS, and redirect boundaries](alerts/2026-07-28-workflow-ci-unpack-tls-redirect-boundaries-ghsa.md)
 - [Pocket ID refresh and reauthentication lifecycle boundaries](alerts/2026-07-27-identity-tenant-package-boundaries-ghsa.md)
 - [WordPress nonce, pretix payment, and SICK device filesystem boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md)
-- [Goal-driven agent fuzzing and variant-analysis campaigns](methodology/agent-guided-fuzzing-campaigns.md)
 
 
 
