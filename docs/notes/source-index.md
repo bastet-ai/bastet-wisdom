@@ -16,6 +16,8 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - Wakaru advisories/source: https://github.com/pionxzh/wakaru/security/advisories and https://github.com/pionxzh/wakaru
 - lettre advisories/source: https://github.com/lettre/lettre/security/advisories and https://github.com/lettre/lettre
 - Appium Java client advisories/source: https://github.com/appium/java-client/security/advisories and https://github.com/appium/java-client
+- nono registry-pack advisories/source: https://github.com/always-further/nono/security/advisories and https://github.com/nolabs-ai/nono
+- Pterodactyl Panel and Wings advisories/source: https://github.com/pterodactyl/panel/security/advisories, https://github.com/pterodactyl/panel, and https://github.com/pterodactyl/wings
 - zip-lib extraction advisories/source: https://github.com/advisories?query=zip-lib and https://github.com/fpsqdb/zip-lib
 - Prompty advisories/source: https://github.com/microsoft/prompty/security/advisories and https://github.com/microsoft/prompty
 - mcp-memory-keeper advisories/source: https://github.com/mkreyman/mcp-memory-keeper/security/advisories and https://github.com/mkreyman/mcp-memory-keeper
