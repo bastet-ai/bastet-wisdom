@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Build-input, identity, admin, and UI-proxy control boundaries](alerts/2026-07-29-build-identity-admin-proxy-boundaries-ghsa.md)
 - [Koollab LMS and WordPress identity, workflow, and callback boundaries](alerts/2026-07-29-koollab-wordpress-identity-workflow-boundaries-ghsa.md)
 - [Undertow, Rust, and Apache Traffic Server proxy-parser boundaries](alerts/2026-06-11-undertow-proxy-parser-request-smuggling-boundary-ghsa.md)
 - [WordPress import-upload and plugin-provenance boundaries](alerts/2026-07-29-wordpress-import-plugin-provenance-boundaries-ghsa.md)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Ghost, goshs, and export file-boundary checks](alerts/2026-07-02-ghost-goshs-export-boundaries-ghsa.md)
 - [NocoBase SQL-scope and Cosmos proxy-identity boundaries](alerts/2026-07-28-nocobase-cosmos-data-identity-boundaries-ghsa.md)
 - [Litestar and Fission builder boundary checks](alerts/2026-06-10-litestar-fission-builder-boundary-batch-ghsa.md)
-- [Axis2 cluster-channel and OpenShift WMCO node-identity boundaries](alerts/2026-07-28-axis2-wmco-cluster-identity-boundaries-ghsa.md)
+
 
 
 

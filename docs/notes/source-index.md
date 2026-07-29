@@ -10,6 +10,10 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - Andromeda bytecode C2 research framework: https://github.com/vyrus001/andromeda
 - badkeys weak-key checker and web service: https://github.com/badkeys/badkeys and https://badkeys.info/
 - GitHub Security Advisories: https://github.com/advisories
+- GNU Bison grammar-control research and fixes: https://cert.pl/en/posts/2026/07/CVE-2026-56389/, https://cgit.git.savannah.gnu.org/cgit/bison.git/commit/?id=3169c1e7a2c6acc4c59dfcf8b089896d6881925b, and https://cgit.git.savannah.gnu.org/cgit/bison.git/commit/?id=8d101c19d4d9aaedf83a448c925513742d4efcf0
+- Apache Kyuubi Engine UI proxy advisory/source: https://github.com/advisories/GHSA-qvj4-xxw2-22gf and https://github.com/apache/kyuubi/pull/7483
+- Apache Airflow FAB Azure AD token-verification advisory/source: https://github.com/advisories/GHSA-q5r3-w69r-hrfw and https://github.com/apache/airflow/pull/69374
+- Apache Atlas admin-authorization advisory: https://github.com/advisories/GHSA-w667-wgvw-q2hc
 - Pocket ID advisories/source: https://github.com/pocket-id/pocket-id/security/advisories and https://github.com/pocket-id/pocket-id
 - Novu advisories/source: https://github.com/novuhq/novu/security/advisories and https://github.com/novuhq/novu
 - WordPress Coding Standards advisories/source: https://github.com/WordPress/WordPress-Coding-Standards/security/advisories and https://github.com/WordPress/WordPress-Coding-Standards

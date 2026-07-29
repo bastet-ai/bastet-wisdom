@@ -176,3 +176,24 @@ For authority and port parsing, run two owned listeners on separate loopback por
 For origin coalescing, use a local CA, `a.example.test`, and `b.example.test`; configure certificates so the expected coverage is explicit. Send a normal A request, then a B request over the candidate reuse path. A bounded positive is **B request is carried on A's established H2 origin connection even though A's certificate does not cover B**. Prove only listener identity and certificate names; do not intercept credentials or tenant data.
 
 Repeat every fixture on 9.2.15 or 10.1.4. Preserve exact raw bytes, stream IDs, connection IDs, parsed fields, message counts, and fixed-build decisions. Availability and memory-safety-only siblings from the same wave are not separate operator workflows unless an authorized lab can establish a specific non-crash trust-boundary effect.
+
+### Late-wave ATS destination, ACL, and connection-state checks
+
+The later July 29 feed page adds operator-relevant siblings from the same [Apache announcement](https://lists.apache.org/thread/5prl9glcm9g2swnq9hqxvnokylm1gr6d):
+
+- [GHSA-jmf6-wg5m-793g / CVE-2026-58178](https://github.com/advisories/GHSA-jmf6-wg5m-793g): ESI recursion can fetch attacker-selected URLs;
+- [GHSA-f54r-392m-jmr7 / CVE-2026-58189](https://github.com/advisories/GHSA-f54r-392m-jmr7): plugin retry-counter resets can bypass redirect limits and amplify SSRF;
+- [GHSA-vc32-c93g-p2f6 / CVE-2026-58157](https://github.com/advisories/GHSA-vc32-c93g-p2f6): server sessions or tunnels may be reused across client connections;
+- [GHSA-vv89-hv6r-vgqh / CVE-2026-58159](https://github.com/advisories/GHSA-vv89-hv6r-vgqh): Unix-domain-socket listeners and ACL matching can bypass IP access controls;
+- [GHSA-99g5-7fmc-568c / CVE-2026-58158](https://github.com/advisories/GHSA-99g5-7fmc-568c): PROXY protocol parsing can truncate ports in addition to a stack-overflow condition; and
+- [GHSA-xm2f-jc7r-hmhj / CVE-2026-58177](https://github.com/advisories/GHSA-xm2f-jc7r-hmhj): the ATS 10 Cripts framework includes a path-traversal primitive alongside memory-safety issues.
+
+These descriptions are terse. Do not infer a route, parameter, traversal depth, cross-client data class, or ACL normalization rule that the source does not establish. Derive exact request shapes from the matching ATS build in an isolated lab.
+
+For ESI and redirect testing, use two owned HTTP listeners plus an owned redirector. Return only random canaries. Compare direct fetches, nested ESI references, same-authority redirects, cross-authority redirects, loops, and chains immediately below/at/above the configured limit. Capture each normalized URL, retry counter, redirect hop, and final peer. Never target metadata, loopback services outside the fixture, RFC1918 applications, or production origins.
+
+For session/tunnel reuse, create clients A and B and origins A and B with distinct inert markers. Record client connection ID, ATS transaction/session/tunnel ID, origin connection ID, authority, TLS identity, and marker returned. A bounded positive is **client B transaction inherits or reuses client A's server-side state -> B receives A's synthetic marker or reaches A's canary origin**. Do not use real cookies, credentials, cached objects, or user traffic.
+
+For ACL and PROXY protocol checks, put ATS behind a local trusted sender and use only fake source addresses/ports. Compare TCP and UDS listeners, absent/valid/malformed PROXY headers, boundary ports, repeated fields, and the address/port visible at each policy hook. The positive result must show a decision difference—such as a fake denied principal becoming allowed—not merely a crash. Never spoof a production trusted proxy or use a real privileged identity.
+
+For Cripts path handling, instrument the candidate file/path sink and place one marker in a disposable sibling-prefix directory. Test relative, absolute, encoded, symlinked-parent, and sibling-prefix forms. Stop at canonical-path or inert marker evidence; do not read secrets or write application/startup files. Repeat all cases on ATS 9.2.15 or 10.1.4 as applicable.
