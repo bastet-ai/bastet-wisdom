@@ -15,6 +15,7 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - proot-distro advisories/source: https://github.com/termux/proot-distro/security/advisories and https://github.com/termux/proot-distro
 - Easy!Appointments advisories/source: https://github.com/alextselegidis/easyappointments/security/advisories and https://github.com/alextselegidis/easyappointments
 - Spring LDAP, Framework WebSocket, and HATEOAS advisories/source: https://spring.io/security/, https://github.com/spring-projects/spring-ldap, https://github.com/spring-projects/spring-framework, and https://github.com/spring-projects/spring-hateoas
+- Google ADK confirmation, app-builder ZIP extraction, NASA AIT-GUI, and Cisco Secure FMC control-boundary sources: https://github.com/google/adk-python/commit/c03f333769feaeaa9fe8910fbe95cb9f2d513f54, https://github.com/develar/app-builder/pull/163, https://www.kb.cert.org/vuls/id/293714, https://github.com/NASA-AMMOS/AIT-GUI/releases/tag/2.5.1, and https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-fmc-static-cred-BET3Cjh
 - ZITADEL advisories/source: https://github.com/zitadel/zitadel/security/advisories and https://github.com/zitadel/zitadel
 - swagger-typescript-api advisories/source: https://github.com/acacode/swagger-typescript-api/security/advisories and https://github.com/acacode/swagger-typescript-api
 - veraPDF validation advisories/source: https://github.com/veraPDF/veraPDF-validation/security/advisories and https://github.com/veraPDF/veraPDF-validation
