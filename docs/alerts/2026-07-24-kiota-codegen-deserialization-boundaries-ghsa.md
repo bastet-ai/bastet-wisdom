@@ -1,8 +1,8 @@
 ---
-title: Kiota code-generation and Seroval deserialization boundaries from July 24 GHSA updates
+title: OpenAPI and schema code-generation boundaries from July 24-29 GHSA updates
 ---
 
-# Kiota code-generation and Seroval deserialization boundaries from July 24 GHSA updates
+# OpenAPI and schema code-generation boundaries from July 24-29 GHSA updates
 
 A July 24 GitHub advisory wave exposes two reusable review surfaces: OpenAPI metadata crossing into generator network, filesystem, shell, source-code, and downstream plugin-manifest sinks; and typed serialization control nodes resolving attacker-selected values from a general object table. The value is not package-version alerting. It is a set of bounded tests for developer tools and server-side deserializers that consume attacker-influenced structured input.
 
@@ -209,3 +209,47 @@ Report narrow edges: **schema field to generated Python context**, **schema URL/
 Use a fresh Node process per row and synthetic token arrays only. Compare direct `convertTokenData`, Expand enabled/disabled, transform lifecycle, DTCG/legacy token shapes, `__proto__`, `constructor.prototype`, nested segments, and 5.4.4. Before and after each call, inspect a unique inert property on `{}`, the returned object's own keys/prototype, and one no-op sink object. Do not use authentication, process-spawn, filesystem, template-execution, or network gadgets.
 
 Report **untrusted token path -> object conversion/transform -> process-global prototype gains synthetic marker** separately from any downstream effect. Require evidence that a server, collaborative build API, pull-request workflow, or plugin accepts attacker-controlled tokens; repository maintainers transforming only their own trusted tokens have a different boundary. Reset the process between tests so one polluted row cannot contaminate controls.
+
+## July 29 swagger-typescript-api generation wave
+
+Six reviewed advisories expand the same OpenAPI trust model to `swagger-typescript-api <=13.12.1`; all list 13.12.2 as the first patched version:
+
+- [GHSA-w284-33mx-6g9v / CVE-2026-54666](https://github.com/advisories/GHSA-w284-33mx-6g9v): path keys reach generated JavaScript template literals;
+- [GHSA-5f94-x226-ccpm / CVE-2026-54664](https://github.com/advisories/GHSA-5f94-x226-ccpm): enum strings reach generated TypeScript enum declarations;
+- [GHSA-hqj5-cw9f-rx67 / CVE-2026-54662](https://github.com/advisories/GHSA-hqj5-cw9f-rx67): `servers[0].url` reaches the fetch client's class-body initializer;
+- [GHSA-38c3-wv3c-v3xj / CVE-2026-54661](https://github.com/advisories/GHSA-38c3-wv3c-v3xj): the same server URL reaches the axios client constructor;
+- [GHSA-x36r-4347-pm5x / CVE-2026-54663](https://github.com/advisories/GHSA-x36r-4347-pm5x): remote `$ref` traversal causes generation-time outbound fetches; and
+- [GHSA-h754-fxp7-88wx / CVE-2026-54660](https://github.com/advisories/GHSA-h754-fxp7-88wx): generator authorization headers follow cross-origin `$ref` requests.
+
+Do not collapse these into one generic code-execution claim. They expose four different phases:
+
+| Spec-controlled field | Observed boundary | Earliest relevant phase | Inert proof |
+| --- | --- | --- | --- |
+| `paths` key | unescaped template-literal interpolation | affected generated method call | fixed string expression or no-op counter |
+| schema enum value | quoted enum/declaration breakout | generated-module import | harmless module-level marker |
+| `servers[0].url`, fetch client | class-body field breakout | generated-module import | harmless static marker |
+| `servers[0].url`, axios client | constructor object-literal breakout | client construction | constructor-local no-op counter |
+| external `$ref` | unrestricted recursive HTTP resolution | generation | owned callback serving a synthetic schema |
+| external `$ref` plus authorization option | credential forwarded to another origin | generation | fake token observed by a second owned listener |
+
+### Generated-source phase matrix
+
+1. Pin 13.12.1 in a disposable Node project with no credentials, lifecycle hooks, production modules, or unrestricted egress. Generate one client per field and HTTP client type.
+2. Keep markers non-executable at first: inspect whether quote, backslash, backtick, `${...}`, CR, LF, and Unicode line-separator fixtures escape the expected string, enum, path, or class context.
+3. Preserve the source spec hash, command/options, generated tree, exact emitted snippet, and parser/type-check result. A syntactically invalid output proves unsafe emission or build corruption, not execution.
+4. If the assessed workflow imports generated modules, construct clients, or calls generated methods, test those phases separately in fresh processes. Use only an in-memory variable or instrumented no-op counter; do not read files, environment variables, spawn processes, or make callbacks.
+5. Repeat the complete matrix on 13.12.2. Include both default/modular output and fetch/axios modes where the target uses them.
+
+The useful report states **which spec field escaped which generated-code context and exactly when the harmless marker became observable**. Import-time enum or fetch-client effects are different from axios construction and path-method invocation.
+
+### External-reference and credential-origin matrix
+
+Use two owned loopback listeners. Listener A serves the root OpenAPI document; listener B serves one nested schema and records method, path, and only whether an exact fake authorization marker is present.
+
+1. Compare a local-only control, same-origin `$ref`, direct cross-origin `$ref`, same-origin redirect, and redirect to B.
+2. Run once without authorization and once with a unique fake value such as `Bearer STA_CANARY_ONLY`; never place a live PAT, API key, cookie, or CI credential in the harness.
+3. Add one nested `$ref` from B back to an already visited URL and another to a second B path. Record recursion, de-duplication, redirect behavior, and every destination selected by the generator.
+4. For network-policy testing, use only owned listeners and a controlled resolver. Do not request metadata, localhost services you do not own, RFC1918 applications, or corporate/VPN endpoints.
+5. Repeat on 13.12.2. Confirm both that unapproved destinations are not contacted and that authorization is not forwarded when scheme, host, or port changes.
+
+Report separate edges: **spec reference -> generator-side fetch** and **root-spec credential -> cross-origin reference request**. A callback proves SSRF reachability, not response disclosure; a fake header at B proves origin-scope failure without exposing a real secret.
