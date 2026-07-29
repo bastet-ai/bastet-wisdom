@@ -298,6 +298,8 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - ProjectDiscovery Blog: https://projectdiscovery.io/blog/
 - Brutecat Security articles: https://brutecat.com/articles/ (RSS: https://brutecat.com/rss.xml)
 - pretix advisories and releases: https://github.com/pretix/pretix/security/advisories and https://pretix.eu/about/en/blog/
+- Easy Digital Downloads import-upload advisory/source: https://github.com/advisories/GHSA-fcpv-9325-98hg and https://plugins.svn.wordpress.org/easy-digital-downloads/
+- Advanced Responsive Video Embedder compromised-release advisory/source: https://github.com/advisories/GHSA-45wh-rxq4-jqc6 and https://plugins.svn.wordpress.org/advanced-responsive-video-embedder/tags/10.8.7/
 - Eazy Plugin Manager and StoreGrowth source: https://plugins.svn.wordpress.org/plugins-on-steroids/ and https://plugins.svn.wordpress.org/storegrowth-sales-booster/
 - SICK PSIRT CSAF advisories: https://www.sick.com/.well-known/csaf/provider-metadata.json and https://www.sick.com/psirt
 - ProjectDiscovery Neo: https://neo.projectdiscovery.io/
