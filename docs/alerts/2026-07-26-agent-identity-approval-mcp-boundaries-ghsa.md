@@ -166,6 +166,14 @@ The OpenRemote record reports that a console registration endpoint can update an
 
 A valid finding proves **unauthenticated registration input + known existing asset ID -> update path selected -> another synthetic owner's token/metadata changes**. Do not enumerate IDs, intercept notifications, or overwrite a production registration.
 
+## July 29 Dynatrace MCP notebook approval follow-up
+
+[GHSA-pc2w-4mq8-32qw](https://github.com/advisories/GHSA-pc2w-4mq8-32qw) extends the approval workflow to `@dynatrace-oss/dynatrace-mcp-server <1.8.7`. The `create_dynatrace_notebook` write tool did not call the human-elicitation gate used by five neighboring write tools. It could persist tenant-visible Markdown and DQL content without operator consent; opening DQL content may later execute it under the viewer's Dynatrace identity.
+
+Use a fake Dynatrace HTTP backend or disposable tenant with a fake platform token. Instrument the elicitation and document-create calls, then invoke each registered write tool with marker-only arguments. Record tool annotations, scopes requested, whether elicitation occurred, the approval result, backend call count, stored content type, and returned document ID. For the notebook row, use only inert Markdown and a DQL-shaped string that the mock backend records but never evaluates. Compare pre-1.8.7 behavior with 1.8.7 and include denial/cancellation controls.
+
+Report two edges separately: **tool call -> persistent notebook write without approval** and **stored DQL text -> later viewer-triggered evaluation**. The first can be proven with a no-op backend; do not claim the second without a disposable tenant and an instrumented no-data query. Do not expose the server publicly, use a live platform token, query logs/metrics, send messages, publish workflows, or place executable DQL in a real tenant.
+
 ## Reporting checklist
 
 Include:

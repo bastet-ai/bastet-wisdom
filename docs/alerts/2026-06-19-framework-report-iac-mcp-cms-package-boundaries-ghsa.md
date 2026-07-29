@@ -14,6 +14,20 @@ This batch is durable because the advisories expose reusable operator checks: fr
 
 Keep the impact scoped to the managed Code Interpreter sandbox and the capabilities mounted into it. The proof is **remote authenticated package argument -> incomplete delimiter validation -> changed installer command structure -> inert sandbox marker**; do not claim host execution, and never expose real environment values, mounted repositories, cloud credentials, or customer data.
 
+### July 29 Bedrock Agent import code-generation follow-up
+
+[GHSA-m4x6-gwgp-4pm7 / CVE-2026-11393](https://github.com/advisories/GHSA-m4x6-gwgp-4pm7) adds a separate AgentCore CLI boundary. In affected `@aws/agentcore` releases, `agentcore add agent --type import` fetched a Bedrock supervisor agent's `collaborationInstruction` metadata and interpolated it into a triple-double-quoted Python string in generated `main.py`. A same-account principal with `bedrock:AssociateAgentCollaborator` could supply a delimiter-bearing instruction; the generated statement could later execute during local `agentcore dev` or after deployment and invocation under the runtime role. First patched versions are 0.14.2 and 1.0.0-preview.9; the 0.3 preview range has no listed patched release.
+
+Test this as a generated-source supply-chain edge, not as a generic cloud-agent RCE:
+
+1. Use a disposable AWS test account or a fully mocked Bedrock API, fake credentials, a synthetic supervisor/collaborator, and an import directory outside any real project.
+2. Replace execution with an AST/parser harness and inert module-level counter. Compare normal text, single/double quotes, triple delimiters, backslashes, CR/LF, and Unicode line separators in `collaborationInstruction`.
+3. Preserve the API response, import command/options, generated file hash, exact emitted literal, parser result, and the first lifecycle phase that observes the counter: generation, import, `dev`, deploy packaging, or invocation.
+4. Inspect already-generated artifacts separately. Upgrading the CLI changes future generation; it does not rewrite a previously generated or deployed `main.py`.
+5. Repeat on both patched release lines and verify that the metadata remains data inside one valid string literal.
+
+The bounded proof is **same-account collaborator metadata -> generated Python literal breakout -> inert marker observable at a named lifecycle phase**. Never run the harness under production developer credentials or a live execution role, and do not read environment variables, files, cloud metadata, or secrets.
+
 ## June 23 OpenTofu provider-cache symlink update
 
 [GHSA-wcmj-x466-56mm](https://github.com/advisories/GHSA-wcmj-x466-56mm) extends the IaC package-install pattern to OpenTofu provider installation. A repository-controlled symlink under `.terraform/providers` could be followed during `tofu init`, causing provider package contents to be written outside the working tree when the operator initializes an attacker-controlled root module. Treat IaC dependency caches as filesystem write boundaries: a project checkout can contain symlinks and package selectors before the first successful init.

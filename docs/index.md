@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Quarkus path-policy, Prebid outbound-request, and Req multipart boundaries](alerts/2026-07-29-quarkus-prebid-req-boundaries-ghsa.md)
 - [veraPDF embedded-XML validation boundaries](alerts/2026-07-29-verapdf-embedded-xml-boundaries-ghsa.md)
 - [OpenAPI and schema code-generation boundaries](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md)
 - [Build-input, identity, admin, and UI-proxy control boundaries](alerts/2026-07-29-build-identity-admin-proxy-boundaries-ghsa.md)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [WordPress role, nonce, payment-response, and device filesystem boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md)
 - [Agent skill supply-chain testing](methodology/agent-skill-supply-chain-testing.md)
 - [Ghost, goshs, and export file-boundary checks](alerts/2026-07-02-ghost-goshs-export-boundaries-ghsa.md)
-- [NocoBase SQL-scope and Cosmos proxy-identity boundaries](alerts/2026-07-28-nocobase-cosmos-data-identity-boundaries-ghsa.md)
+
 
 
 

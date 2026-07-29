@@ -41,3 +41,20 @@ Archive extraction bugs recur because tar is both a filesystem format and a meta
 - Positive evidence should be limited to marker files, archive listings, resolved path tables, link target metadata, and fixed-version rejection. Do not target `/etc/passwd`, SSH keys, shell startup files, package-manager config, or real build artifacts.
 - Negative controls: realpath containment checked after every link/path resolution, link targets rejected when outside the extraction root, exact path-segment containment instead of string prefixes, special bits stripped, extraction as an unprivileged user, and patched package behavior.
 - Report this as **archive entry metadata to outside-root file/link/mode effect**. Include archive format, entry names, resolved paths, link target, process UID, marker result, and patched negative control.
+
+## July 29 duplicate-entry and operator-download follow-up
+
+Two reviewed advisories add ordering and trust-direction cases that a simple `../` fixture misses:
+
+- [GHSA-h39j-r5qq-r9mm / CVE-2026-10732](https://github.com/advisories/GHSA-h39j-r5qq-r9mm) says all published `decompress <=4.2.1` releases can write through a duplicate-path ZIP sequence where the first entry becomes a symlink and the second regular-file write passes its link check before the first entry is resolved. No patched release is listed.
+- [GHSA-f42x-p2mx-hm8r / CVE-2026-50558](https://github.com/advisories/GHSA-f42x-p2mx-hm8r) says Penelope's Unix Main Menu `download` path accepted a tar stream produced by the remote session and called Python `tarfile.extractall()` without safe filtering. A malicious or compromised session could write outside `~/.penelope/sessions/<session>/downloads`. The advisory text says fixed in 0.19.3, while GitHub's package metadata lists `penelope-shell-handler <0.20.0` with 0.20.0 first patched; preserve that discrepancy and test exact builds.
+
+### Duplicate-path ordering fixture
+
+Use a disposable output root and a sibling canary directory. Build a ZIP with two members sharing one in-root name: a symlink to the sibling canary followed by a regular file containing a fixed text marker. Record archive order, extraction scheduling, every pre-write `lstat`/`readlink` result, resolved final inode, and marker location. Repeat with reversed order, unique names, sequential extraction, concurrency disabled, and a fixed or replacement library. A valid finding is **duplicate entry scheduling -> link safety check observes stale state -> later write follows the resolved symlink into the sibling canary**. Never target startup files, package config, credentials, or executable paths.
+
+### Penelope trust-direction fixture
+
+Model the remote shell as adversarial even though the operator initiated the download. Use a local fake session that returns a minimal tar containing one benign in-root member and one marker aimed only at a temporary sibling directory. Trigger only the Unix Main Menu `download` path; compare the Python-agent path separately because the advisory says it does not depend on the remote `tar` command in the same way. Record remote command, received archive hash/listing, Python version, extraction filter, resolved destinations, and marker result. Do not overwrite `~/.penelope/peneloperc`, reload configuration, write SSH paths, or demonstrate code execution.
+
+The bounded edge is **untrusted remote session -> operator-side archive stream -> outside-download-root marker write**. Confirm 0.19.3 and 0.20.0 independently rather than silently choosing one version claim.

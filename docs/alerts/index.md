@@ -10,6 +10,10 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Quarkus path-policy, Prebid outbound-request, and Req multipart boundaries](2026-07-29-quarkus-prebid-req-boundaries-ghsa.md)
+- [Bedrock Agent import code-generation boundary update](2026-06-19-framework-report-iac-mcp-cms-package-boundaries-ghsa.md#july-29-bedrock-agent-import-code-generation-follow-up)
+- [Dynatrace MCP notebook approval boundary update](2026-07-26-agent-identity-approval-mcp-boundaries-ghsa.md#july-29-dynatrace-mcp-notebook-approval-follow-up)
+- [`decompress` duplicate-entry and Penelope operator-download extraction updates](2026-05-06-archive-and-file-extraction-boundary-batch-ghsa.md#july-29-duplicate-entry-and-operator-download-follow-up)
 - [NoteGen skill-to-chat-render-to-desktop-shell boundary chain](2026-07-26-notegen-skill-render-shell-chain-ghsa.md)
 - [Framework authentication, static-path, and policy-field boundaries](2026-07-24-framework-auth-static-policy-boundaries-ghsa.md)
 - [Open WebUI channel, realtime, knowledge, and delegated-execution follow-up](2026-05-08-open-webui-model-channel-and-knowledge-boundary-batch-ghsa.md#july-24-follow-up-channel-realtime-knowledge-and-delegated-execution-boundaries)
