@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Easy!Appointments object, OAuth, and CalDAV boundaries](alerts/2026-07-29-easyappointments-object-oauth-ssrf-boundaries-ghsa.md)
+- [Logging configuration, tenant storage, and proot restore boundaries](alerts/2026-07-29-logging-storage-proot-boundaries-ghsa.md)
 - [Quarkus path-policy, Prebid outbound-request, and Req multipart boundaries](alerts/2026-07-29-quarkus-prebid-req-boundaries-ghsa.md)
 - [veraPDF embedded-XML validation boundaries](alerts/2026-07-29-verapdf-embedded-xml-boundaries-ghsa.md)
 - [OpenAPI and schema code-generation boundaries](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md)
@@ -16,8 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Undertow, Rust, and Apache Traffic Server proxy-parser boundaries](alerts/2026-06-11-undertow-proxy-parser-request-smuggling-boundary-ghsa.md)
 - [WordPress import-upload and plugin-provenance boundaries](alerts/2026-07-29-wordpress-import-plugin-provenance-boundaries-ghsa.md)
 - [WordPress role, nonce, payment-response, and device filesystem boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md)
-- [Agent skill supply-chain testing](methodology/agent-skill-supply-chain-testing.md)
-- [Ghost, goshs, and export file-boundary checks](alerts/2026-07-02-ghost-goshs-export-boundaries-ghsa.md)
+
 
 
 

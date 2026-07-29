@@ -10,6 +10,10 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Easy!Appointments object, OAuth, and CalDAV boundaries](2026-07-29-easyappointments-object-oauth-ssrf-boundaries-ghsa.md)
+- [Logging configuration, tenant storage, and proot restore boundaries](2026-07-29-logging-storage-proot-boundaries-ghsa.md)
+- [ZITADEL self-verification follow-up](2026-05-08-parser-cache-identity-boundary-batch-ghsa.md#july-29-zitadel-self-verification-follow-up)
+- [netfoil blocked-name loopback-routing follow-up](2026-07-07-better-auth-aider-netfoil-ckan-mcp-boundaries-ghsa.md#july-29-follow-up-netfoil-blocked-name-loopback-routing)
 - [Quarkus path-policy, Prebid outbound-request, and Req multipart boundaries](2026-07-29-quarkus-prebid-req-boundaries-ghsa.md)
 - [Bedrock Agent import code-generation boundary update](2026-06-19-framework-report-iac-mcp-cms-package-boundaries-ghsa.md#july-29-bedrock-agent-import-code-generation-follow-up)
 - [Dynatrace MCP notebook approval boundary update](2026-07-26-agent-identity-approval-mcp-boundaries-ghsa.md#july-29-dynatrace-mcp-notebook-approval-follow-up)

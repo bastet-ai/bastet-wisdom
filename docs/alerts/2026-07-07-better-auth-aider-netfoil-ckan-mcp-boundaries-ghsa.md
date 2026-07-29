@@ -160,3 +160,9 @@ Do not cancel or expose real subscriptions. A mock handler that records `subscri
 6. Repeat on `@better-auth/scim@1.6.22` or `1.7.0-beta.10` or later. Token creation should reject collisions, and lifecycle changes should remain bound to SCIM-owned identities.
 
 Treat these as three results, not one oversized claim: **provider namespace collision to unrelated account selection**, **deactivation signal to stale access**, and **email reassignment to stale verification proof**. Keep bearer tokens redacted and never enumerate real SSO/social identities, delete production users, or collect profile data.
+
+## July 29 follow-up: netfoil blocked-name loopback routing
+
+[GHSA-xvg2-cgv6-6h7v](https://github.com/advisories/GHSA-xvg2-cgv6-6h7v) adds a distinct DNS-policy edge to the multi-question check above. Before 0.4.0, netfoil answered blocked names with `0.0.0.0`; on its target Linux platform, clients can interpret that address as the local host. A request that policy intended to discard can therefore reach a listener in the client's own network namespace.
+
+Extend the local DNS harness with one blocked canary name and a harmless HTTP recorder bound only inside the disposable client namespace. Capture the DNS question, block decision, returned RCODE/address, client socket destination, Host header, and recorder hit. Compare NXDOMAIN, `0.0.0.0`, `127.0.0.1`, and a normal allowed answer, then repeat on netfoil 0.4.0. Positive evidence is **blocked name -> synthetic `0.0.0.0` answer -> client connects to the local canary service**. Do not probe real local admin services or infer cross-host access from this client-local routing behavior.

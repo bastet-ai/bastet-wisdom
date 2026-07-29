@@ -10,6 +10,11 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - Andromeda bytecode C2 research framework: https://github.com/vyrus001/andromeda
 - badkeys weak-key checker and web service: https://github.com/badkeys/badkeys and https://badkeys.info/
 - GitHub Security Advisories: https://github.com/advisories
+- Logging operator advisories/source: https://github.com/kube-logging/logging-operator/security/advisories and https://github.com/kube-logging/logging-operator
+- Active Record Tenanted advisories/source: https://github.com/basecamp/activerecord-tenanted/security/advisories and https://github.com/basecamp/activerecord-tenanted
+- proot-distro advisories/source: https://github.com/termux/proot-distro/security/advisories and https://github.com/termux/proot-distro
+- Easy!Appointments advisories/source: https://github.com/alextselegidis/easyappointments/security/advisories and https://github.com/alextselegidis/easyappointments
+- ZITADEL advisories/source: https://github.com/zitadel/zitadel/security/advisories and https://github.com/zitadel/zitadel
 - swagger-typescript-api advisories/source: https://github.com/acacode/swagger-typescript-api/security/advisories and https://github.com/acacode/swagger-typescript-api
 - veraPDF validation advisories/source: https://github.com/veraPDF/veraPDF-validation/security/advisories and https://github.com/veraPDF/veraPDF-validation
 - Quarkus HTTP path-policy advisory/source: https://github.com/advisories/GHSA-qcxp-gm7m-4j5v and https://github.com/quarkusio/quarkus

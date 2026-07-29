@@ -30,3 +30,9 @@ These are all **canonicalization and authority-binding bugs**. A path is checked
 - Build LDAP, SQL, and filter syntax with typed escaping APIs, not string interpolation; log the escaped query class, not raw secrets.
 - Bind real-time media sessions to expected peer fingerprints and fail closed when SDP/DTLS material changes mid-flow.
 - Scope OIDC audiences per deployment/environment and reject issuer-only validation. Treat redirects as relative-path-only unless the origin is pre-registered.
+
+## July 29 ZITADEL self-verification follow-up
+
+[GHSA-jq8w-8q2f-ffm9 / CVE-2026-54693](https://github.com/advisories/GHSA-jq8w-8q2f-ffm9) extends ZITADEL identity testing beyond LDAP query construction. After an earlier update route stopped accepting a caller-supplied `is_verified` flag, additional self-management API paths could return the email or phone verification code to the same user. That lets proof issuance collapse into proof consumption for an address or number the user does not control.
+
+Use one disposable user, owned email aliases, and test phone numbers only. For each enabled API generation and version, record the subject, old/new contact value, endpoint, caller permissions, whether a challenge was sent to the contact channel, whether the code appeared in the API response, and whether the verified flag changed. Keep direct `is_verified` mutation and returned-code paths as separate rows. Repeat on 4.15.1 or 3.4.11 as applicable. Strong evidence is **self-service contact change -> verification secret returned to the same session -> secret accepted -> synthetic contact marked verified without channel possession**. Never claim account takeover unless a separate relying policy grants it, and never test addresses or numbers you do not own.
