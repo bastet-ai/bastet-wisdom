@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [WordPress role, nonce, payment-response, and device filesystem boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md)
 - [Agent skill supply-chain testing](methodology/agent-skill-supply-chain-testing.md)
 - [Kiota and datamodel-code-generator source, fetch, and file boundaries](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md)
 - [Ghost, goshs, and export file-boundary checks](alerts/2026-07-02-ghost-goshs-export-boundaries-ghsa.md)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Axis2 cluster-channel and OpenShift WMCO node-identity boundaries](alerts/2026-07-28-axis2-wmco-cluster-identity-boundaries-ghsa.md)
 - [Agent identity, context-compression, approval, and MCP boundaries](alerts/2026-07-26-agent-identity-approval-mcp-boundaries-ghsa.md)
 - [Webhook, OAuth client, and SuperPlane automation boundaries](alerts/2026-07-28-webhook-oauth-client-trust-boundaries-ghsa.md)
-- [Registry provenance and JWT purpose boundaries](alerts/2026-07-28-registry-provenance-jwt-purpose-boundaries-ghsa.md)
+
 
 
 

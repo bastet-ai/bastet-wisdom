@@ -1,10 +1,10 @@
 ---
-title: WordPress nonce, payment-response, and device filesystem boundaries from July 28 updates
+title: WordPress role, nonce, payment-response, and device filesystem boundaries from late-July updates
 ---
 
-# WordPress nonce, payment-response, and device filesystem boundaries from July 28 updates
+# WordPress role, nonce, payment-response, and device filesystem boundaries from late-July updates
 
-A July 28 advisory wave yields four durable operator checks: a low-role WordPress nonce disclosing connection material later accepted by a public administrator-login route, a frontend nonce treated as authorization for persistent WooCommerce options, a successful payment response replayed across ticket orders, and unauthenticated virtual-filesystem access on SICK InspectorP6xx devices.
+A late-July advisory wave yields six durable operator checks: a low-role WordPress nonce disclosing connection material later accepted by a public administrator-login route, a frontend nonce treated as authorization for persistent WooCommerce options, an author-owned custom post exposing a role-assignment nonce and client-selected canonical role, contributor access accepted for site-wide event-payment settings, a successful payment response replayed across ticket orders, and unauthenticated virtual-filesystem access on SICK InspectorP6xx devices.
 
 Sources:
 
@@ -22,11 +22,17 @@ Sources:
 - [GHSA-2gm5-4hq3-g753: pretix quick-setup object authorization](https://github.com/advisories/GHSA-2gm5-4hq3-g753)
 - [GHSA-5x3h-wq76-mxqx / CVE-2026-11841: SICK AppEngine Fileaccess exposure](https://github.com/advisories/GHSA-5x3h-wq76-mxqx)
 - [SICK CSAF sca-2026-0010](https://www.sick.com/.well-known/csaf/white/2026/sca-2026-0010.json)
+- [GHSA-fgx3-jj2q-3c9j / CVE-2026-12144: Wholesale for WooCommerce role assignment](https://github.com/advisories/GHSA-fgx3-jj2q-3c9j)
+- [Wholesale for WooCommerce 2.0.5 request-role handler](https://plugins.svn.wordpress.org/woo-wholesale-pricing/tags/2.0.5/inc/class-wwp-wholesale-requests.php)
+- [Wholesale for WooCommerce corrected request-role handler](https://plugins.svn.wordpress.org/woo-wholesale-pricing/trunk/inc/class-wwp-wholesale-requests.php)
+- [GHSA-6p3r-44rr-gcj5 / CVE-2026-17166: Event Booking Manager site-wide payment settings](https://github.com/advisories/GHSA-6p3r-44rr-gcj5)
+- [Event Booking Manager 5.3.7 payment-settings handler](https://plugins.svn.wordpress.org/mage-eventpress/tags/5.3.7/admin/settings/global/admin_setting_panel.php)
+- [Event Booking Manager corrected payment-settings handler](https://plugins.svn.wordpress.org/mage-eventpress/trunk/admin/settings/global/admin_setting_panel.php)
 
 The GitHub records were unreviewed when this page was written. The primary pretix release uses **CVE-2026-57532** for the quick-setup issue, while the initial GitHub record used **CVE-2026-18028** for substantially the same description. Preserve that discrepancy in evidence rather than treating the identifiers as interchangeable. Confirm the exact product slug, version, route, configuration, and fixed behavior before reporting.
 
 !!! warning "Authorized validation only"
-    Use disposable WordPress sites, synthetic users, fake connection values, test-mode ticket orders, mocked payment responses, and owned SICK lab devices with vendor-approved canary storage. Never mint or retain a production administrator session, alter a real store, reuse live payment confirmations, obtain unpaid real tickets, read device passwords, change production vision parameters, or place Lua code on a device.
+    Use disposable WordPress sites, synthetic users and roles, fake connection values, reversible payment-setting markers, test-mode ticket orders, mocked payment responses, and owned SICK lab devices with vendor-approved canary storage. Never mint or retain a production administrator session, promote a real account, alter a real store, reuse live payment confirmations, obtain unpaid real tickets, read device passwords, change production vision parameters, or place Lua code on a device.
 
 ## Build a boundary matrix first
 
@@ -34,6 +40,8 @@ The GitHub records were unreviewed when this page was written. The primary preti
 | --- | --- | --- | --- |
 | WordPress remote management | subscriber-visible nonce and option name | capability plus server-held connection secret | fake option values and a canary user |
 | WooCommerce frontend AJAX | nonce published to anonymous visitors | authenticated role and explicit capability | reversible text-only option marker |
+| Wholesale-request approval | request post, nonce, status, and role slug | request ownership plus role-promotion capability and server allowlist | synthetic author and non-privileged canary role |
+| Event payment settings | authenticated AJAX action and settings fields | `manage_options` plus action-bound nonce | reversible confirmation-page/status markers |
 | Ticket payment callback | successful status response | provider transaction bound to one order and amount | two mocked orders in test mode |
 | Event quick setup | event ID and request timing | current user's organizer/event permissions | one reversible synthetic product marker |
 | Device virtual filesystem | remote path selector | authenticated session and approved virtual root | pre-seeded non-sensitive canary file |
@@ -81,6 +89,43 @@ StoreGrowth 2.1.0 creates `ajd_protected` and publishes it in the frontend `bogo
 The decisive authorization evidence is **anonymous public page yields nonce -> `wp_ajax_nopriv_*` accepts it -> persistent synthetic option changes without a capability decision**. The decisive rendering evidence additionally requires **stored marker reaches the intended frontend sink after the application's normal render path**. Do not call a changed database option XSS by itself.
 
 Generalize this check to any WordPress plugin that localizes nonces into public JavaScript and then registers mutating `nopriv` handlers. Inventory the handler's capability checks and server-owned object scope; nonce verification alone is CSRF resistance, not proof that the caller may perform the action.
+
+## Wholesale for WooCommerce: compose post ownership, nonce visibility, and role selection
+
+The 2.0.5 source registers `wwp_requests` with the ordinary `post` capability model. Its `save_requests_meta()` handler verifies `request_user_role_nonce`, but does not require `manage_options` or `promote_users`; it sanitizes the submitted `user_role_set` as text and passes that value to `WP_User::add_role()`. The advisory's important precondition is that an author who owns a wholesale-request post can reach its edit screen and nonce. This is not a nonce bypass: the valid nonce is available because the custom post type grants the wrong principal access, and the later handler mistakes a client-selected role slug for policy.
+
+The corrected source provides three independent rejection controls worth testing: it maps the custom post type's edit/publish/delete capabilities to `manage_options`, checks `manage_options` in the save handler, and allowlists `user_role_set` against registered wholesale-role taxonomy slugs before calling `add_role()`.
+
+### Marker-only role-assignment workflow
+
+1. Install 2.0.5 on a disposable WordPress site. Create a synthetic author and a harmless custom canary role with no administrative capabilities. Keep the setup administrator in a separate browser.
+2. Create a wholesale request through the normal registration flow for the author. Confirm the resulting request post's `_user_id`, author/owner, status, and edit-screen reachability without collecting another user's request.
+3. As the author, record whether the request edit screen renders `request_user_role_nonce`. Preserve only nonce provenance and a hash; do not retain the raw value.
+4. Capture the ordinary save request. Replay omitted, random, stale, valid-own-request, valid-foreign-request, and fixed-build nonce controls while varying `user_status` and `user_role_set` independently.
+5. First request only the harmless canary role. Read back the target user's canonical roles and capabilities, then restore the original role. Do not request `administrator` or any role that can install plugins, edit users, access secrets, or execute code.
+6. Instrument `WP_User::add_role()` if stronger sink evidence is needed. A call counter plus the submitted canary slug proves role-selector reachability without granting privilege.
+7. Repeat on the corrected build and verify all three controls separately: the author cannot edit the request post, the handler rejects callers without `manage_options`, and an unexpected role slug is replaced or rejected before the role sink.
+
+A bounded positive result is **author owns request post -> edit screen yields valid nonce -> save handler accepts client-selected canary role -> canonical role state or instrumented `add_role()` sink changes without promotion authority**. Report the post-ownership and nonce preconditions; do not generalize this to anonymous or subscriber access.
+
+This pattern generalizes to plugins that use custom post types as approval queues. Test the post type's mapped capabilities, nonce visibility, target-user binding, submitted role/capability allowlist, and sink-level promotion check as separate edges.
+
+## Event Booking Manager: distinguish content editing from site-wide payment authority
+
+Event Booking Manager 5.3.7 registers the authenticated `mep_save_payment_settings_modal` AJAX action. Its handler accepts callers with either `manage_options` **or** `edit_posts`, has no action nonce check, and updates the global `payment_setting_sec` option. That option controls WooCommerce payment enablement, checkout redirects, login and billing requirements, confirmation-page selection, and ticket-confirming order statuses. A contributor's ability to edit content is therefore being reused as authority over every event's payment workflow.
+
+The corrected source adds `check_ajax_referer( 'mep_save_payment_settings', 'nonce' )` and narrows the capability decision to `manage_options`. Treat both controls independently: a nonce fixes request provenance/CSRF exposure, while the capability check decides whether the authenticated principal may change global payment state.
+
+### Reversible global-setting matrix
+
+1. Install 5.3.7 in a disposable WooCommerce/Event Booking Manager lab with no live gateways, customers, orders, or tickets. Snapshot `payment_setting_sec` and create a synthetic contributor plus an expected administrator.
+2. Capture the normal `mep_save_payment_settings_modal` request. Exercise anonymous, subscriber, contributor, editor, and administrator identities with omitted, random, and valid action-nonce variants.
+3. Change only benign values: a disposable confirmation-page ID and a synthetic, non-production order-status marker. Avoid enabling gateways, changing checkout authentication, or selecting statuses used by real orders.
+4. Read the option back through an administrator-side lab harness, record the acting user and before/after hashes, then restore the snapshot immediately.
+5. Test omitted fields as well as supplied fields because the affected handler assigns defaults to absent values; one partial request may change more global keys than it names.
+6. Repeat on the corrected build. Confirm that a valid nonce from a low-role context still fails `manage_options`, and that an administrator request without the action-bound nonce fails before `update_option()`.
+
+The decisive evidence is **`edit_posts`-only principal -> authenticated AJAX action -> global `payment_setting_sec` canary changes without `manage_options`**. A `200` or JSON success response without persisted option evidence is insufficient. Report cross-event/global scope separately from checkout, ticket, or revenue impact; do not process an order to inflate the claim.
 
 ## pretix: bind provider responses to one payment object
 
@@ -133,10 +178,10 @@ Include:
 
 - exact product/plugin slug, version or firmware, configuration state, route/action, method, and authentication context;
 - each chain edge as a decision table rather than one inflated impact label;
-- nonce provenance, capability result, selected option, object owner, payment/order binding, and resolved virtual path;
+- nonce provenance, capability result, selected option or role, request-post owner, target user, global-setting scope, payment/order binding, and resolved virtual path;
 - affected and fixed controls, including feature-disabled and unconfigured states;
 - hashes or redacted identifiers for fake connection values, payment responses, cookies, and canary files;
 - the pretix quick-setup CVE identifier discrepancy and the source attached to each identifier;
 - a bounded impact statement that distinguishes option disclosure, session creation, persistent write, DOM rendering, payment replay, event mutation, filesystem read/write, and execution.
 
-Do not infer administrator takeover from option disclosure alone, XSS from stored markup alone, free tickets from a callback that did not change order state, or device code execution from filesystem reachability alone.
+Do not infer administrator takeover from option disclosure or a harmless canary-role assignment alone, store compromise from a reversible global setting alone, XSS from stored markup alone, free tickets from a callback that did not change order state, or device code execution from filesystem reachability alone.
