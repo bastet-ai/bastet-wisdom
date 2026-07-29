@@ -4,7 +4,7 @@ title: Workflow SSRF, CI evaluator, unpack, TLS, and redirect boundaries from Ju
 
 # Workflow SSRF, CI evaluator, unpack, TLS, and redirect boundaries from July 28 GHSA updates
 
-A July 28 GitHub-reviewed advisory wave yields five durable operator checks: special-use IP ranges omitted from an outbound-request guard, untrusted source evaluated by a CI lint rule, overlapping traversal characters surviving bundle unpack sanitization, inverted TLS-hostname policy, and a bootstrap server redirecting an automation client to a second authority. Each workflow below stops at a synthetic marker and separates parser or policy behavior from the later network, filesystem, or execution effect.
+A July 28 GitHub-reviewed advisory wave and a late July 29 client-library update yield six durable operator checks: special-use IP ranges omitted from an outbound-request guard, untrusted source evaluated by a CI lint rule, overlapping traversal characters surviving bundle unpack sanitization, inverted TLS-hostname policy, a bootstrap server redirecting an automation client to a second authority, and a secure-to-insecure redirect retaining credentials. Each workflow below stops at a synthetic marker and separates parser or policy behavior from the later network, filesystem, or execution effect.
 
 Sources:
 
@@ -17,11 +17,13 @@ Sources:
 - [lettre hostname-verification fix](https://github.com/lettre/lettre/commit/f5efffc88360dbdbfcef80f465e42d5bce68ca35)
 - [GHSA-28f5-38xr-jh2w / CVE-2026-43910: Appium Java client `directConnect` authority change](https://github.com/appium/java-client/security/advisories/GHSA-28f5-38xr-jh2w)
 - [Appium Java client fix](https://github.com/appium/java-client/commit/2b9cd442b9dbf56ccc6f1e83aeeb411c0ec230c9)
+- [GHSA-pfc9-2cqg-9wq6 / CVE-2026-41715: Reactor Netty HTTP client protocol-downgrade credential forwarding](https://github.com/advisories/GHSA-pfc9-2cqg-9wq6)
+- [Reactor Netty redirect-header fix](https://github.com/reactor/reactor-netty/commit/e7ef551eead84ba465324531683fafa03ab96ee9)
 
-The reviewed package ranges are Novu `<3.17.0`, WordPressCS `>=0.14.1,<3.4.1`, `@wakaru/cli >=1.0.0,<1.4.0`, lettre `>=0.10.1,<0.11.22`, and Appium Java client `>=8.2.1,<=10.1.0`. Confirm the exact package, feature, configuration, call path, and fixed-build behavior before reporting.
+The reviewed package ranges are Novu `<3.17.0`, WordPressCS `>=0.14.1,<3.4.1`, `@wakaru/cli >=1.0.0,<1.4.0`, lettre `>=0.10.1,<0.11.22`, and Appium Java client `>=8.2.1,<=10.1.0`. The Reactor advisory lists 1.0.0-1.0.51, 1.1.0-1.1.35, 1.2.0-1.2.17, and 1.3.0-1.3.5. Confirm the exact package, feature, configuration, call path, and fixed-build behavior before reporting.
 
 !!! warning "Authorized validation only"
-    Use isolated workers, local listeners, disposable repositories and output roots, synthetic source files, generated test certificates, fake SMTP credentials, and mock Appium servers. Never query cloud metadata or internal production services, execute a command from untrusted source, overwrite shell or application files, intercept real mail credentials or content, or redirect a production automation session.
+    Use isolated workers, local listeners, disposable repositories and output roots, synthetic source files, generated test certificates, fake SMTP/HTTP credentials, and mock Appium servers. Never query cloud metadata or internal production services, execute a command from untrusted source, overwrite shell or application files, intercept real credentials or content, or redirect a production automation session.
 
 ## Boundary matrix
 
@@ -32,6 +34,7 @@ The reviewed package ranges are Novu `<3.17.0`, WordPressCS `>=0.14.1,<3.4.1`, `
 | Wakaru unpack | every module remains under output root | overlapping traversal characters in module filename | text marker in a temporary sibling directory |
 | lettre with `boring-tls` | certificate name matches SMTP authority | chain-valid certificate for a different lab name | local CA and mock SMTP handshake result |
 | Appium Java client | session traffic remains at approved authority | `directConnect*` values in `NEW_SESSION` | second owned HTTPS listener receives marker command |
+| Reactor Netty HTTP client | sensitive headers remain bound to a secure transport | HTTPS response redirects to HTTP with redirect following enabled | owned HTTP listener receives a fake credential header |
 
 Capture the first representation, the check result, the canonical destination, and the final effect separately. An accepted URL, parsed bundle, successful lint run, TLS handshake, or session creation is not enough unless the intended harmless sink is reached.
 
@@ -113,6 +116,20 @@ GHSA-28f5-38xr-jh2w says the Java client with `directConnect(true)` accepted `di
 
 A bounded positive result is **client trusts A -> A supplies authority B -> a post-session command reaches owned B without caller approval**. This proves a server-to-client network pivot primitive. Claims about credential disclosure, internal-service access, or command impact require separate evidence and are unnecessary for this validation.
 
+## Reactor Netty: scheme is part of redirect authority
+
+GHSA-pfc9-2cqg-9wq6 requires explicit redirect following. The one-line fix shows the important differential: sensitive headers were already stripped when the normalized destination URI changed, but the same URI identity could still move from a secure to an insecure transport. The fixed condition independently checks `fromURI.isSecure()` and `toURI.isSecure()` before retaining redirect headers.
+
+### Two-transport credential canary
+
+1. Run an owned HTTPS server A and plain-HTTP recorder B on loopback or an isolated container network. Use a generated lab CA and a fake authorization/cookie marker that has no value outside the fixture.
+2. Configure the affected Reactor Netty client to follow redirects. Send the fake credential only to A, then have A return one redirect to B.
+3. Record the original and redirected schemes, normalized host/port/path, redirect status, request headers at both listeners, and whether the client reused a connection or created a new one.
+4. Test one variable at a time: HTTPS-to-HTTPS same authority, HTTPS-to-HTTP same host/port representation, HTTPS-to-HTTP different port, HTTPS-to-HTTP different host, HTTP-to-HTTPS, and redirect following disabled.
+5. Repeat on 1.2.18, 1.3.6, or the corresponding fixed maintenance line. The redirected request may proceed according to caller policy, but credentials, cookies, and other sensitive redirect headers must not cross the secure-to-insecure transition.
+
+Strong evidence is **fake credential sent to owned HTTPS A -> followed downgrade redirect -> owned HTTP B receives that credential on the affected version -> fixed version strips it**. A redirect response alone is not disclosure, and this test does not establish an attacker-controlled redirect source in a real application.
+
 ## Reporting checklist
 
 Include:
@@ -121,6 +138,7 @@ Include:
 - raw and canonical URL/path/authority, DNS answers, actual connected peer, or final filesystem path;
 - ruleset and sniff reachability, reconstructed source expression, and no-op evaluator evidence;
 - TLS backend, boolean settings, test certificate SAN/issuer, sync/async path, and handshake result;
+- redirect-follow setting, scheme/authority transition, and header-presence diff using fake credentials;
 - baseline, one-variable mutations, unaffected-feature controls, and fixed-version results;
 - hashes of synthetic markers and proof that all listeners, roots, certificates, credentials, and sessions were disposable;
 - a narrow claim separating validation bypass, evaluator reachability, outside-root write, hostname-check failure, and authority redirect from any untested downstream impact.
