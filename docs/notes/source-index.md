@@ -14,6 +14,7 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - Active Record Tenanted advisories/source: https://github.com/basecamp/activerecord-tenanted/security/advisories and https://github.com/basecamp/activerecord-tenanted
 - proot-distro advisories/source: https://github.com/termux/proot-distro/security/advisories and https://github.com/termux/proot-distro
 - Easy!Appointments advisories/source: https://github.com/alextselegidis/easyappointments/security/advisories and https://github.com/alextselegidis/easyappointments
+- Spring LDAP, Framework WebSocket, and HATEOAS advisories/source: https://spring.io/security/, https://github.com/spring-projects/spring-ldap, https://github.com/spring-projects/spring-framework, and https://github.com/spring-projects/spring-hateoas
 - ZITADEL advisories/source: https://github.com/zitadel/zitadel/security/advisories and https://github.com/zitadel/zitadel
 - swagger-typescript-api advisories/source: https://github.com/acacode/swagger-typescript-api/security/advisories and https://github.com/acacode/swagger-typescript-api
 - veraPDF validation advisories/source: https://github.com/veraPDF/veraPDF-validation/security/advisories and https://github.com/veraPDF/veraPDF-validation
