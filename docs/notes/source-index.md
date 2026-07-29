@@ -409,6 +409,8 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - OmniFaces advisories/source: https://github.com/omnifaces/omnifaces/security/advisories and https://github.com/omnifaces/omnifaces
 - Shescape advisories/source: https://github.com/ericcornelissen/shescape/security/advisories and https://github.com/ericcornelissen/shescape
 - AWS API MCP Server advisories/source: https://github.com/awslabs/mcp/security/advisories and https://github.com/awslabs/mcp
+- Apache Traffic Server security announcements and source: https://trafficserver.apache.org/security/ and https://github.com/apache/trafficserver
+- Koollab LMS advisory cluster: https://www.csa.gov.sg/alerts-and-advisories/alerts/al-2026-094
 
 ## Network and service discovery
 

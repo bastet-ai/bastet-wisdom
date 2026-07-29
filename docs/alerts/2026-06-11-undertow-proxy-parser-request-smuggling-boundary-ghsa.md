@@ -139,3 +139,40 @@ Report parser and identity findings separately. An underscore alias is header ca
 Use an isolated tunnel and a local backend rooted at `TEMP/web`, with one synthetic marker in `TEMP/sibling`. Record four representations of the same path: raw client request target, Go `URL.Path`, `EscapedPath()`, and the exact backend request target. Compare literal `../`, encoded dots, encoded slash, mixed/double encoding, and an ordinary encoded character. The backend should return only route identity and the synthetic sibling marker; do not point it at a real filesystem root.
 
 A bounded positive result is **ingress encoded path passes the public mux -> tunnel forwards a decoded path -> local backend resolves the synthetic sibling marker or a protected route**. This is request-target normalization confusion, not request smuggling. Report backend canonicalization as a separate defense and repeat with both openhole components at 0.1.2; upgrading only one side does not prove the full tunnel preserves the target.
+
+## July 29 Apache Traffic Server multi-protocol update
+
+A July 29 unreviewed advisory wave extends this method to Apache Traffic Server (ATS) 9.x and 10.x deployments. The operator-relevant records are:
+
+- [GHSA-5cvm-p8jm-mcrf / CVE-2026-58150](https://github.com/advisories/GHSA-5cvm-p8jm-mcrf): `Transfer-Encoding` accepted on HTTP/2 ingress and carried into an HTTP/1 downgrade;
+- [GHSA-rphg-9r4x-89j3 / CVE-2026-57834](https://github.com/advisories/GHSA-rphg-9r4x-89j3): malformed chunk framing permits a request-boundary split;
+- [GHSA-crqg-wq4g-597m / CVE-2026-58153](https://github.com/advisories/GHSA-crqg-wq4g-597m): HTTP/2 origin trailers are forwarded to HTTP/1 clients without the expected chunked framing;
+- [GHSA-9jfm-2xhc-ghxj / CVE-2026-58155](https://github.com/advisories/GHSA-9jfm-2xhc-ghxj): over-long header names are truncated, creating header aliases, policy bypass, and request-smuggling preconditions;
+- [GHSA-r6wf-4rwv-gf97 / CVE-2026-58156](https://github.com/advisories/GHSA-r6wf-4rwv-gf97): URL userinfo and port parsing can diverge from port-based access control;
+- [GHSA-4c56-c2ph-pp8x / CVE-2026-65325](https://github.com/advisories/GHSA-4c56-c2ph-pp8x): a multiplexed HTTP/2 origin connection may be reused for a new hostname without checking that the server certificate covers that hostname; and
+- [GHSA-h8g5-f6vh-4g26 / CVE-2026-24033](https://github.com/advisories/GHSA-h8g5-f6vh-4g26): an additional HTTP request/response-smuggling record whose initial description does not identify the exact differential.
+
+The [Apache announcement thread](https://lists.apache.org/thread/5prl9glcm9g2swnq9hqxvnokylm1gr6d) groups these fixes in ATS 9.2.15 and 10.1.4. The GitHub records were unreviewed and several adjacent entries provide only generic labels. Confirm source or byte-level behavior before assigning a specific class; do not turn a generic "improper access control" record into a stronger claim by inference.
+
+### Four-recorder ATS lab
+
+Build an isolated fixture with four evidence points: client bytes, ATS ingress interpretation, ATS egress bytes, and origin/client interpretation. Use one fresh connection and one mutation per case.
+
+| Case | Controlled mutation | Decisive evidence |
+| --- | --- | --- |
+| H2 downgrade | forbidden `Transfer-Encoding` plus inert body | ATS emits an ambiguous HTTP/1 message or origin counts a different number/length of requests |
+| Chunk grammar | one malformed chunk delimiter/size form | ATS and mock origin disagree on body end or next request boundary |
+| H2 origin trailers | one `x-canary-trailer` from a mock H2 origin | HTTP/1 client recorder sees trailer bytes outside valid chunked framing |
+| Header aliasing | two long canary names sharing a prefix near the observed limit | policy and origin resolve different canonical names or values |
+| URL authority | userinfo, explicit port, omitted port, and encoded delimiter variants | ACL authority/port differs from the authority ATS actually dials |
+| H2 connection reuse | two owned TLS hostnames with distinct certificate coverage | request for host B reuses host A's connection without B certificate coverage |
+
+For H2/H3 cases, prefer protocol-capable local clients and byte recorders rather than hand-editing pseudo-headers. Log decoded pseudo-headers and the exact HTTP/1 serialization. Use only `/canary-a` and `/canary-b`; never target protected routes or shared user traffic.
+
+For long-name testing, find the boundary with harmless repeated characters and two marker headers. The positive result is not a crash: prove **client sends distinct names -> ATS truncates or aliases them -> policy/origin sees one protected-equivalent name or a changed routing decision**. Do not use real authentication, forwarding, or tenant headers.
+
+For authority and port parsing, run two owned listeners on separate loopback ports and return only listener identity. Record raw absolute-form target, parsed scheme/userinfo/host/port, ACL decision, DNS result, and selected listener. Do not probe internal services or metadata endpoints.
+
+For origin coalescing, use a local CA, `a.example.test`, and `b.example.test`; configure certificates so the expected coverage is explicit. Send a normal A request, then a B request over the candidate reuse path. A bounded positive is **B request is carried on A's established H2 origin connection even though A's certificate does not cover B**. Prove only listener identity and certificate names; do not intercept credentials or tenant data.
+
+Repeat every fixture on 9.2.15 or 10.1.4. Preserve exact raw bytes, stream IDs, connection IDs, parsed fields, message counts, and fixed-build decisions. Availability and memory-safety-only siblings from the same wave are not separate operator workflows unless an authorized lab can establish a specific non-crash trust-boundary effect.
