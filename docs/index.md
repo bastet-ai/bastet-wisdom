@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [WebSphere/Liberty proxy-parser request-smuggling boundary](alerts/2026-06-11-undertow-proxy-parser-request-smuggling-boundary-ghsa.md#july-30-ibm-websphere-and-liberty-follow-up)
 - [GitLab CI, import, AI, and project-authorization boundaries](alerts/2026-07-29-gitlab-ci-ai-import-boundaries-ghsa.md)
 - [MCP session, package-index path, URL-parser, and generated-config boundaries](alerts/2026-07-29-mcp-package-url-config-boundaries-ghsa.md)
 - [Agent confirmation, Unicode archive, and control-plane identity boundaries](alerts/2026-07-29-agent-archive-control-plane-boundaries-ghsa-kev.md)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Quarkus path-policy, Prebid outbound-request, and Req multipart boundaries](alerts/2026-07-29-quarkus-prebid-req-boundaries-ghsa.md)
 - [veraPDF embedded-XML validation boundaries](alerts/2026-07-29-verapdf-embedded-xml-boundaries-ghsa.md)
 - [OpenAPI and schema code-generation boundaries](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md)
-- [Build-input, identity, admin, and UI-proxy control boundaries](alerts/2026-07-29-build-identity-admin-proxy-boundaries-ghsa.md)
 
 
 

@@ -197,3 +197,36 @@ For session/tunnel reuse, create clients A and B and origins A and B with distin
 For ACL and PROXY protocol checks, put ATS behind a local trusted sender and use only fake source addresses/ports. Compare TCP and UDS listeners, absent/valid/malformed PROXY headers, boundary ports, repeated fields, and the address/port visible at each policy hook. The positive result must show a decision difference—such as a fake denied principal becoming allowed—not merely a crash. Never spoof a production trusted proxy or use a real privileged identity.
 
 For Cripts path handling, instrument the candidate file/path sink and place one marker in a disposable sibling-prefix directory. Test relative, absolute, encoded, symlinked-parent, and sibling-prefix forms. Stop at canonical-path or inert marker evidence; do not read secrets or write application/startup files. Repeat all cases on ATS 9.2.15 or 10.1.4 as applicable.
+
+## July 30 IBM WebSphere and Liberty follow-up
+
+[GHSA-974x-wv37-rccw / CVE-2026-11541](https://github.com/advisories/GHSA-974x-wv37-rccw) adds IBM WebSphere Application Server and Liberty to the same proxy-to-origin parser-differential workflow. IBM's [primary security bulletin](https://www.ibm.com/support/pages/node/7277550) confirms HTTP request smuggling in traditional WebSphere 8.5 and 9.0 and Liberty 17.0.0.3 through 26.0.0.6. The public record does **not** identify the conflicting grammar, header, or intermediary, so do not label it CL.TE, TE.CL, HTTP/2 downgrade, or another specific class without byte-level evidence.
+
+### WebSphere estate discovery
+
+Before sending malformed traffic, establish the actual chain and a trustworthy version control:
+
+1. inventory scoped Java application endpoints and note any WebSphere/Liberty evidence supplied by the customer, deployment manifest, approved version endpoint, or server owner;
+2. map every HTTP hop—CDN/WAF, load balancer, IBM HTTP Server or another reverse proxy, ingress/service mesh, then WebSphere or Liberty;
+3. determine where TLS terminates, where HTTP/2 is downgraded, and which hop performs authentication, route, cache, and connection-pooling decisions;
+4. create `/canary-a` and `/canary-b` handlers that return only route name, request sequence, connection ID, and a random tester-owned marker; and
+5. pair the candidate build with a fixed negative control. IBM maps the correction to Liberty APAR `PH71808` and traditional WebSphere APAR `PH71706`; its bulletin names Liberty 26.0.0.7, traditional 9.0.5.29, and 8.5.5.31 as fix-pack controls when available.
+
+Do not infer exposure from a generic Java response or banner alone. A useful reconnaissance result binds the approved host to the WebSphere/Liberty role, version evidence, and the specific front-end path that reaches it.
+
+### Differential-first fixture
+
+Use the two-hop/four-recorder method already described on this page. Replay a small standards-based corpus rather than guessing a weaponized chain:
+
+- ordinary `Content-Length` and chunked baselines;
+- conflicting or repeated framing fields;
+- transfer-coding token, case, whitespace, and list variants;
+- chunk-size, extension, delimiter, trailer, and premature-termination boundaries;
+- HTTP/2-to-HTTP/1 conversion controls when that conversion exists in the real topology; and
+- connection-close versus keep-alive controls.
+
+Run one mutation on one fresh connection, then a separately identifiable canary request. Record client bytes, front-end decision, bytes emitted toward WebSphere, origin interpretation, response count/order, and connection reuse. The first bounded positive is **one client stream -> different front-end and WebSphere message boundaries**. Only then test a harmless route or fake-principal decision on the same disposable fixture.
+
+Repeat the exact raw fixture against the APAR/fix-pack control. A 400/500 response, timeout, or closed connection is not request-smuggling proof. Likewise, IBM's generic impact rating does not prove that a particular deployment bypasses authentication: report parser split, queued-request desynchronization, route difference, and policy effect as separate edges.
+
+Keep this work off shared production pools unless the rules of engagement explicitly authorize it. Do not target victim traffic, real sessions, protected data, or administrative routes; synthetic route and fake-principal markers are sufficient.
