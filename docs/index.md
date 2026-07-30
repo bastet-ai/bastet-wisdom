@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [AWS Amplify component-schema to generated JSX and event-binding boundaries](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md#july-30-aws-amplify-component-schema-follow-up)
 - [Active Storage unsafe libvips operations, degit shell boundaries, LDAP grammar, and Superset parent authorization](alerts/2026-07-30-media-repository-directory-object-boundaries-ghsa.md)
 - [Spring multipart parser and Kotlin Router filter-coverage checks](alerts/2026-07-30-spring-web-resource-session-boundaries-ghsa.md#multipart-parser-differential)
 - [Langflow MCP environment and build-job ownership checks](alerts/2026-06-19-langflow-mailpit-outerbase-miniflux-render-boundaries-ghsa.md#july-30-mcp-environment-and-build-job-ownership-follow-up)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [SSRF authority, Calico policy-path, tenant-object, OAuth redirect, and Kanboard numeric-IP boundaries](alerts/2026-07-30-url-policy-tenant-oauth-boundaries-ghsa.md)
 - [Spring JavaScript escaping boundary](alerts/2026-07-30-spring-web-resource-session-boundaries-ghsa.md#javascript-escaping-follow-up)
 - [OpenCost Helm-values disclosure and unset-token checks](alerts/2026-07-14-kimai-facturascripts-auth-boundaries-ghsa.md#july-30-opencost-helm-values-disclosure-follow-up)
-- [Spring Web versioned-resource traversal, shared-cache, and session-rotation boundaries](alerts/2026-07-30-spring-web-resource-session-boundaries-ghsa.md)
+
 
 
 

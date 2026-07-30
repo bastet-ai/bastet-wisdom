@@ -1,8 +1,8 @@
 ---
-title: OpenAPI and schema code-generation boundaries from July 24-29 GHSA updates
+title: OpenAPI and schema code-generation boundaries from July 24-30 GHSA updates
 ---
 
-# OpenAPI and schema code-generation boundaries from July 24-29 GHSA updates
+# OpenAPI and schema code-generation boundaries from July 24-30 GHSA updates
 
 A July 24 GitHub advisory wave exposes two reusable review surfaces: OpenAPI metadata crossing into generator network, filesystem, shell, source-code, and downstream plugin-manifest sinks; and typed serialization control nodes resolving attacker-selected values from a general object table. The value is not package-version alerting. It is a set of bounded tests for developer tools and server-side deserializers that consume attacker-influenced structured input.
 
@@ -253,3 +253,34 @@ Use two owned loopback listeners. Listener A serves the root OpenAPI document; l
 5. Repeat on 13.12.2. Confirm both that unapproved destinations are not contacted and that authorization is not forwarded when scheme, host, or port changes.
 
 Report separate edges: **spec reference -> generator-side fetch** and **root-spec credential -> cross-origin reference request**. A callback proves SSRF reachability, not response disclosure; a fake header at B proves origin-scope failure without exposing a real secret.
+
+## July 30 AWS Amplify component-schema follow-up
+
+[GHSA-hf3j-86p7-mfw8 / CVE-2025-4318](https://github.com/advisories/GHSA-hf3j-86p7-mfw8) adds a UI-builder variant of generated-source injection. AWS Amplify Studio and the Amplify CLI consume component schemas and `@aws-amplify/codegen-ui-react` turns binding properties into React/JSX expressions. The advisory says an authenticated user who can create or modify components can reach arbitrary JavaScript during component rendering and build processing.
+
+Primary fix records make the source fields more precise:
+
+- [PR 1174](https://github.com/aws-amplify/amplify-codegen-ui/pull/1174) added escaping for property values used by `buildBindingExpression()` and shipped in 2.20.3; and
+- [PR 1196](https://github.com/aws-amplify/amplify-codegen-ui/pull/1196) identifies residual `bindingEvent`, `field`, default-binding, and collection-binding paths and applies the same validation in 2.20.4.
+
+Preserve the version nuance: GitHub's package metadata labels 2.20.3 as the first patched version, while the advisory narrative calls that fix partial and directs users to 2.20.4 for the additional paths. Use 2.20.4 or later as the complete negative control rather than treating one safe property-binding row on 2.20.3 as proof that every sink is closed.
+
+### Schema-field to execution-phase matrix
+
+| Component-schema source | Generator sink | Earliest phase to test | Bounded evidence |
+| --- | --- | --- | --- |
+| binding `property` value | expression builder | generated-source parse/import or preview render | harmless literal/counter escapes its intended expression position |
+| binding `field` | standard, default, and collection binding builders | generated-source parse/import or preview render | field marker changes generated AST shape without invoking a privileged API |
+| event `bindingEvent` | identifier construction in the workflow event path | generated handler import or event dispatch | synthetic event increments a recorder-only counter |
+| collection child binding | recursive component rendering | collection preview/build | one synthetic child marker reaches the generated child expression |
+
+### Inert Studio/CLI harness
+
+1. Use a disposable Amplify project with no cloud credentials, deployment role, package-publishing token, lifecycle hooks, browser session, or unrestricted egress. Pin `@aws-amplify/codegen-ui-react` 2.20.2, 2.20.3, and 2.20.4 in separate clean workspaces.
+2. Start from a valid exported component schema. Create one fixture per source row: ordinary property binding, default-valued binding, collection child binding, and workflow event binding. Vary quote, backslash, line separator, reserved-word, and expression-boundary characters independently; do not copy an execution payload from a public proof of concept.
+3. Keep the first marker structural. Generate the component and preserve input hash, CLI/API path, package version, emitted file hash, AST diff, and parser/type-check result. Malformed or attacker-shaped generated syntax proves unsafe emission, not JavaScript execution.
+4. Where the assessed workflow actually renders previews, imports generated modules, builds the application, or dispatches generated event handlers, exercise those phases separately in a fresh sandbox. Replace effects with an in-memory variable or recorder-only function; never read environment variables, access files, make network requests, spawn a process, or deploy the component.
+5. For the Studio path, prove the exact authorization precondition with two disposable users: one who can create/modify a test component and one who cannot. Use only a synthetic app/component and capture component ownership plus API decision; do not modify another tenant's component.
+6. Repeat every row on 2.20.3 and 2.20.4. Expect the original property-value row to be useful for demonstrating the partial fix, while the residual event/field/default/collection rows require the complete 2.20.4 control.
+
+Report the narrow chain: **authenticated component-schema control -> exact binding field -> generated JSX/identifier context -> generated source parses -> only the reachable preview/import/build/event phase observes the inert marker**. Do not collapse `create-component` authorization, unsafe source generation, preview rendering, build-time execution, browser execution, or deployment into one “Amplify RCE” claim; each is a separate edge and some workflows stop before later phases.
