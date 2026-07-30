@@ -181,6 +181,9 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - Arc advisories/source: https://github.com/basekick-labs/arc/security/advisories and https://github.com/basekick-labs/arc
 - 1Panel advisories/source: https://github.com/1Panel-dev/1Panel/security/advisories and https://github.com/1Panel-dev/1Panel
 - SGLang advisories: https://github.com/sgl-project/sglang/security/advisories
+- SGLang inference control-boundary advisories: https://github.com/advisories/GHSA-96j3-rjf9-2hxp, https://github.com/advisories/GHSA-vwmc-327h-6x3j, https://github.com/advisories/GHSA-r344-357p-w9pp, https://github.com/advisories/GHSA-x6x2-r266-cx9p, https://github.com/advisories/GHSA-359v-m36h-r94v, and https://github.com/advisories/GHSA-hg26-hr8r-fxc9
+- Apache Tika ISA-Tab and Leantime blueprint file-reference advisories: https://github.com/advisories/GHSA-vrmh-37mg-28h3 and https://github.com/advisories/GHSA-rfxf-9pcf-q3rq
+- Outstatic, Wolf CMS, Spikster, Juggle, and MikroTik control-plane advisories: https://github.com/advisories/GHSA-59rr-38mm-f3g9, https://github.com/advisories/GHSA-xv6g-v6rg-vw4p, https://github.com/advisories/GHSA-3pqf-wrr6-rf9m, https://github.com/advisories/GHSA-rg37-h5w6-fj69, https://github.com/advisories/GHSA-8rhq-39vx-cjqx, and https://github.com/advisories/GHSA-x9w7-jgwj-cp2f
 - ChromaDB advisories and research: https://github.com/chroma-core/chroma/security/advisories and https://www.hiddenlayer.com/research/chromatoast-served-pre-auth
 - ngrok npm wrapper advisory reference: https://gist.github.com/Dremig/90c2a0a2f85b0921f10e0bb3192a0c23
 - astral-tokio-tar advisories: https://github.com/astral-sh/tokio-tar/security/advisories

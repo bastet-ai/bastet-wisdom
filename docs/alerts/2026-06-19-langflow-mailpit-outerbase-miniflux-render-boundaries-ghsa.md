@@ -150,3 +150,25 @@ Strong evidence is **foreign build-job ID -> ownership is not joined to actor/fl
 Use two disposable users and two namespaces containing unique synthetic documents. Establish each owner's search/add baseline, then have user B submit user A's namespace through the exact component/API reached by the target workflow. Test read and write separately: the read proof stops after one synthetic marker appears; the integrity proof inserts one benign `POISON-CANARY` record and then has user A query for that exact marker. Add random, nonexistent, own-namespace, wrong-workspace, and fixed-build controls.
 
 Report **caller-controlled FAISS namespace -> owner binding omitted -> synthetic cross-user vector returned or persisted**. Include user/workspace/flow identity, namespace source, vector-store backend, operation, marker hashes, and post-write cleanup. Never collect real embeddings, prompts, documents, API keys, model output, or another tenant's production namespace.
+
+## July 30 file-route, traversal, and Chroma namespace follow-up
+
+Three additional IBM Langflow records extend the existing file and two-user vector-store workflows:
+
+- [GHSA-c6gg-2q9r-m9jw](https://github.com/advisories/GHSA-c6gg-2q9r-m9jw) describes missing authentication on `/api/v1/files/images/{flow_id}/{file_name}` and insufficient ownership binding on `/api/v1/files/download/{flow_id}/{file_name}`;
+- [GHSA-rmxx-p7v6-pmfp](https://github.com/advisories/GHSA-rmxx-p7v6-pmfp) describes URL path traversal using dot-segment variants; and
+- [GHSA-vrqm-44rp-59j5](https://github.com/advisories/GHSA-vrqm-44rp-59j5) describes cross-user Chroma reads and writes when a caller reuses another flow's `persist_directory` and `collection_name`.
+
+### File route and path matrix
+
+1. Create users A and B, separate flows, and uniquely named synthetic image/text files. Keep a third temporary sibling directory containing one random canary.
+2. Test image and download routes as owner A, non-owner B, anonymous, random flow ID, wrong filename, and administrator. Record whether the server joins `flow_id` and filename back to the authenticated owner.
+3. Test canonical path, repeated dot segments, encoded separators, mixed slash forms accepted by the stack, absolute paths, sibling-prefix paths, and a symlink only against the disposable canary root.
+4. Capture raw request target, proxy-decoded target, framework route parameters, normalized filesystem path, owner lookup, file-open target, and returned marker.
+5. Report unauthenticated route coverage, cross-user object access, and filesystem traversal separately. Never retrieve real uploads, prompts, model artifacts, credentials, or tenant files.
+
+### Chroma two-user namespace matrix
+
+Reuse the FAISS fixture above, but record both `persist_directory` and `collection_name` as authority-bearing selectors. Establish that user B cannot discover user A's namespace through normal list/UI paths; then submit the already known synthetic pair through B's own flow. Prove read and write independently with one random owner marker and one reversible `POISON-CANARY` record. Include mismatched directory/collection pairs, nonexistent values, same-user values, wrong workspace, and fixed-build controls.
+
+Report **caller-controlled Chroma storage pair -> owner binding omitted -> synthetic cross-user vector returned or persisted**. Do not claim arbitrary filesystem access unless the path itself escapes the configured Chroma root and a separate canary proves that edge.
