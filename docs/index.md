@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [CHARX EV charging controller service, backend, firmware, and privilege boundaries](alerts/2026-07-30-charx-ev-charging-control-boundaries-ghsa.md)
+- [WordPress payment, workflow-state, registration, identity, and client-IP boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#july-30-follow-up-bind-public-workflow-state-to-server-authority)
 - [VaahCMS template supply-chain and browser-execution boundaries](alerts/2026-07-30-vaahcms-template-supply-chain-boundary-ghsa.md)
 - [WebSphere/Liberty proxy-parser request-smuggling boundary](alerts/2026-06-11-undertow-proxy-parser-request-smuggling-boundary-ghsa.md#july-30-ibm-websphere-and-liberty-follow-up)
 - [GitLab CI, import, AI, and project-authorization boundaries](alerts/2026-07-29-gitlab-ci-ai-import-boundaries-ghsa.md)
@@ -16,8 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Spring LDAP, WebSocket, and HATEOAS identity-binding boundaries](alerts/2026-07-29-spring-identity-binding-boundaries-ghsa.md)
 - [Easy!Appointments object, OAuth, and CalDAV boundaries](alerts/2026-07-29-easyappointments-object-oauth-ssrf-boundaries-ghsa.md)
 - [Logging configuration, tenant storage, and proot restore boundaries](alerts/2026-07-29-logging-storage-proot-boundaries-ghsa.md)
-- [Quarkus path-policy, Prebid outbound-request, and Req multipart boundaries](alerts/2026-07-29-quarkus-prebid-req-boundaries-ghsa.md)
-- [veraPDF embedded-XML validation boundaries](alerts/2026-07-29-verapdf-embedded-xml-boundaries-ghsa.md)
+
 
 
 

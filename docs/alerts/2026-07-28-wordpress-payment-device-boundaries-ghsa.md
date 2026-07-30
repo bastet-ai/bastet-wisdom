@@ -34,11 +34,18 @@ Sources:
 - [Persian Elementor revision 3613858](https://plugins.trac.wordpress.org/changeset/3613858/persian-elementor)
 - [GHSA-mjmr-35x5-p5hh / CVE-2026-16092: Improved Save Button second-order SQL injection](https://github.com/advisories/GHSA-mjmr-35x5-p5hh)
 - [Improved Save Button 1.2.1 duplicate action](https://plugins.svn.wordpress.org/improved-save-button/tags/1.2.1/actions/class-lb-save-and-then-action-duplicate.php)
+- [GHSA-5mvv-43fh-86fq / CVE-2026-13178: Eventin client-selected paid order status](https://github.com/advisories/GHSA-5mvv-43fh-86fq)
+- [GHSA-vx7q-rhxw-6x3x / CVE-2026-13143: WP Travel unverified PayPal IPN](https://github.com/advisories/GHSA-vx7q-rhxw-6x3x)
+- [GHSA-v6g6-7m7c-3mx6 / CVE-2026-15250: Appointment Booking client-selected approval status](https://github.com/advisories/GHSA-v6g6-7m7c-3mx6)
+- [GHSA-9fxw-6x9j-x2gr / CVE-2026-12687: ProfileGrid privileged-group registration](https://github.com/advisories/GHSA-9fxw-6x9j-x2gr)
+- [GHSA-5cfw-whc5-jqgh / CVE-2026-14356: FleekDash registration-to-account-update chain](https://github.com/advisories/GHSA-5cfw-whc5-jqgh)
+- [GHSA-vm2x-vwh2-372v / CVE-2026-15255: RegistrationMagic OTP identity mismatch](https://github.com/advisories/GHSA-vm2x-vwh2-372v)
+- [GHSA-49jm-q6q7-76gc / CVE-2026-11870: WP Ghost untrusted client-IP headers](https://github.com/advisories/GHSA-49jm-q6q7-76gc)
 
 The GitHub records were unreviewed when this page was written. The primary pretix release uses **CVE-2026-57532** for the quick-setup issue, while the initial GitHub record used **CVE-2026-18028** for substantially the same description. Preserve that discrepancy in evidence rather than treating the identifiers as interchangeable. Confirm the exact product slug, version, route, configuration, and fixed behavior before reporting.
 
 !!! warning "Authorized validation only"
-    Use disposable WordPress sites, synthetic users and roles, fake connection values, reversible payment-setting markers, test-mode ticket orders, mocked payment responses, local SQL recorders, and owned SICK lab devices with vendor-approved canary storage. Never mint or retain a production administrator session, promote a real account, alter a real store, send a payment to a live gateway, reuse live payment confirmations, extract database data, obtain unpaid real tickets, read device passwords, change production vision parameters, or place Lua code on a device.
+    Use disposable WordPress sites, synthetic users and roles, fake connection values, reversible payment-setting markers, test-mode ticket orders, mocked payment responses, local SQL recorders, and owned SICK lab devices with vendor-approved canary storage. Never mint or retain a production administrator session, promote a real account, alter a real store, send a payment to a live gateway, reuse live payment confirmations, extract database data, obtain unpaid real tickets or bookings, read form submissions or customer records, read device passwords, change production vision parameters, or place Lua code on a device.
 
 ## Build a boundary matrix first
 
@@ -217,6 +224,55 @@ SICK's CSAF identifies remote access to unintended internal virtual-filesystem p
 7. Repeat on P61x/P62x firmware 5.4.0. For P63x/P64x/P65x, report the vendor's all-version affected status and do not infer a fixed build.
 
 A safe positive result is **network-reachable FileSystemAccess -> no authenticated identity -> pre-seeded virtual-filesystem canary read or marker-only write outside the intended public root**. Separate unauthenticated read, write, configuration impact, application loading, and code execution in the final report.
+
+## July 30 follow-up: bind public workflow state to server authority
+
+The next WordPress advisory wave adds three related workflow checks. Eventin before 4.1.16 accepts a client-selected order status while creating an order; Appointment Booking Plugin before 5.6.8 lets the public booking funnel set an approval-status field; and WP Travel before 11.8.1 accepts a PayPal Instant Payment Notification without completing the provider post-back verification handshake. In each case, a browser or callback supplies a state label that the application later treats as an authoritative business transition.
+
+### State-transition recorder
+
+1. Use a disposable site with fake events, trips, appointments, customers, prices, and payment-provider credentials. Disconnect outbound networking.
+2. Capture one normal request for each affected flow. Record the public fields separately from server-owned catalog, booking, order, and payment state.
+3. Replace gateway verification, ticket issuance, email, webhook, and fulfillment sinks with local counters. No real booking or deliverable should be created.
+4. For Eventin and Appointment Booking, vary status/approval fields through omitted, expected-pending, alternate valid, unknown, duplicate, and case-changed representations. Preserve the raw request and canonical persisted state.
+5. For WP Travel, use a local PayPal recorder. Send missing, malformed, duplicated, and synthetic-success IPNs; record whether the plugin performs a post-back verification and binds receiver, merchant, amount, currency, booking ID, transaction ID, and lifecycle state before mutation.
+6. Exercise replay, wrong-booking, wrong-user, stale, already-paid, and already-cancelled controls. Repeat on fixed builds.
+
+The safe positive is **anonymous input supplies status or callback claim -> no server-owned transition/verification decision occurs -> synthetic order or booking reaches a paid/approved marker state**. Do not contact PayPal, reserve inventory, issue a ticket, or describe the result as financial loss without a separately authorized end-to-end proof.
+
+## July 30 follow-up: separate registration eligibility from role and target identity
+
+ProfileGrid before 5.9.9.8 reportedly lets an anonymous registration select a privileged group whose configured role may be administrator. FleekDash V2 through 2.6.2.2 reportedly exposes a registration route that creates a subscriber and returns a REST nonce even when normal registration is disabled, after which an account-update path can overwrite another user's email and password. RegistrationMagic before 6.0.9.4 reportedly accepts an OTP cookie without binding it to the identity whose submission is requested.
+
+These are three different authorization edges:
+
+| Edge | Caller proof | Missing server binding | Canary-only evidence |
+| --- | --- | --- | --- |
+| ProfileGrid registration | anonymous form/nonce | public-eligible group and server-chosen non-privileged role | harmless canary group and role |
+| FleekDash bootstrap | newly created subscriber and returned nonce | registration policy, target user, and account-update authority | instrumented update sink targeting a second canary |
+| RegistrationMagic retrieval | OTP cookie | OTP subject, requested identity, form, and submission owner | two synthetic identities and marker-only submissions |
+
+### Two-identity lab matrix
+
+1. Create canary users A and B, a public group, and a harmless restricted group mapped only to a custom role with no administrative capabilities. If the affected logic requires an administrator-mapped group, instrument `set_role()`/`add_role()` and stop at a call counter rather than creating that mapping.
+2. For ProfileGrid, compare omitted group, public group, restricted group, nonexistent group, duplicate group parameters, and fixed-build behavior. Record the server-selected canonical role without granting privilege.
+3. For FleekDash, test registration with site registration enabled and disabled. Hash any returned nonce, then replay the account-update request against self, B, a nonexistent ID, and an instrumented administrator target. The update sink must remain no-op for foreign targets.
+4. For RegistrationMagic, issue separate short-lived OTPs for A and B. Cross the A cookie with B's identity, form, and submission identifiers one field at a time. Return only synthetic marker IDs, never submission bodies.
+5. Invalidate all canary sessions and OTPs after testing. Repeat every matrix on a corrected release.
+
+Report **anonymous group selection**, **self-provisioned nonce**, **foreign account-update sink reachability**, and **cross-identity OTP acceptance** separately. Do not create an administrator, change a real email/password, or read personal form data.
+
+## July 30 follow-up: test client-IP provenance as a proxy chain
+
+WP Ghost before 7.0.05 reportedly trusts client-IP HTTP headers without proving that they came from an approved reverse proxy. That can affect its own brute-force controls and match a hardcoded allowlisted range. This is a hop-by-hop identity issue, not merely “IP spoofing.”
+
+1. Reproduce the deployed edge chain in a lab: direct client, approved proxy, WordPress origin, and the plugin. Give each hop a distinct synthetic address.
+2. Record which headers each proxy strips, appends, or overwrites and which address the plugin finally chooses.
+3. Test direct requests with `X-Forwarded-For`, `X-Real-IP`, `Forwarded`, duplicate headers, comma lists, quoted forms, whitespace, IPv4-mapped IPv6, and malformed values. Use only canary addresses.
+4. Exercise one harmless plugin decision behind counters: allowlist match and brute-force-attempt bucket. Do not submit password guesses or target WordPress core authentication.
+5. Require the fixed control to trust forwarding headers only when the immediate peer is an explicitly configured proxy and to choose the client hop through one documented canonicalization rule.
+
+A bounded positive is **untrusted direct peer supplies forwarding header -> plugin selects attacker-controlled canary address -> allowlist or rate-bucket decision changes**. Do not infer bypass of a WAF, upstream proxy, WordPress core login control, or another security plugin.
 
 ## Reporting checklist
 
