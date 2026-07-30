@@ -4,7 +4,7 @@ title: Spring Web resource, view-name, expression, and session boundaries
 
 # Spring Web resource, view-name, expression, and session boundaries
 
-Six Spring Framework advisories expose durable application-testing patterns across static-resource resolution, default view-name translation, restricted expression evaluation, JavaScript escaping, and concurrent WebFlux session rotation.
+Nine Spring Framework advisories expose durable application-testing patterns across static-resource resolution, default view-name translation, restricted expression evaluation, JavaScript escaping, JSP tag attributes, multipart parsing, Kotlin Router filters, and concurrent WebFlux session rotation.
 
 Sources:
 
@@ -12,7 +12,10 @@ Sources:
 - [GHSA-mq64-j8f9-9gcj / CVE-2026-41841](https://github.com/advisories/GHSA-mq64-j8f9-9gcj) and the [Spring advisory](https://spring.io/security/cve-2026-41841): a shared static-resource cache may return an authenticated handler's resource through a public handler with the same name; and
 - [GHSA-4hfh-6x8g-gwpp / CVE-2026-41839](https://github.com/advisories/GHSA-4hfh-6x8g-gwpp), the [Spring advisory](https://spring.io/security/cve-2026-41839), and the [session-store fix](https://github.com/spring-projects/spring-framework/commit/b8ddd2c690fe3f00bb5e3d9f913a37504aab49a0): a race in the in-memory WebFlux session store may exchange an attacker-known session ID for an authenticated user's ID;
 - [GHSA-h3qp-gqrc-q736 / CVE-2026-41844](https://github.com/advisories/GHSA-h3qp-gqrc-q736), the [Spring advisory](https://spring.io/security/cve-2026-41844), and the [default-view-name fix](https://github.com/spring-projects/spring-framework/commit/3aaec987651cf82fd4ed7e0ed9b3deddcdf58853): a catch-all mapping with no explicit view name can reinterpret a request path beginning with `redirect:` or, in MVC, `forward:` as a view-resolver instruction; and
-- [GHSA-9f52-rjqv-25qv / CVE-2026-41852](https://github.com/advisories/GHSA-9f52-rjqv-25qv) and the [Spring advisory](https://spring.io/security/cve-2026-41852): untrusted SpEL may invoke arbitrary zero-argument methods even in restricted or read-only evaluation contexts.
+- [GHSA-9f52-rjqv-25qv / CVE-2026-41852](https://github.com/advisories/GHSA-9f52-rjqv-25qv) and the [Spring advisory](https://spring.io/security/cve-2026-41852): untrusted SpEL may invoke arbitrary zero-argument methods even in restricted or read-only evaluation contexts;
+- [GHSA-957g-f97v-vppc / CVE-2026-41846](https://github.com/advisories/GHSA-957g-f97v-vppc) and the [Spring advisory](https://spring.io/security/cve-2026-41846): user-controlled `cssClass`, `cssErrorClass`, or `cssStyle` values in JSP form tags may cross into HTML/JavaScript structure;
+- [GHSA-cjpg-rgq5-fr37 / CVE-2026-41853](https://github.com/advisories/GHSA-cjpg-rgq5-fr37) and the [Spring advisory](https://spring.io/security/cve-2026-41853): multipart requests may be interpreted differently across Spring MVC/WebFlux and another HTTP component; and
+- [GHSA-vqgp-pf68-6947 / CVE-2026-41847](https://github.com/advisories/GHSA-vqgp-pf68-6947) and the [Spring advisory](https://spring.io/security/cve-2026-41847): Spring WebFlux 5.3 Kotlin Router DSL filters may not cover the route set the application expects.
 
 The vendor lists Spring Framework 7.0.0–7.0.7, 6.2.0–6.2.18, 6.1.0–6.1.27, and 5.3.48 and earlier as affected, with fixes in 7.0.8 and 6.2.19 plus support-channel builds. GitHub's package-range fields differed from the vendor text when this page was written; use the vendor advisory and the exact deployed artifact as the version authority.
 
@@ -28,6 +31,9 @@ The vendor lists Spring Framework 7.0.0–7.0.7, 6.2.0–6.2.18, 6.1.0–6.1.27,
 | WebFlux session rotation | known pre-auth session ID and request timing | in-memory session object during `changeSessionId()`/`save()` | authenticated marker remains reachable under the known ID |
 | default view name | path under a `/**` mapping with no explicit view | `redirect:` or MVC `forward:` view-resolver prefix | owned external redirect or internal no-op route selected |
 | restricted SpEL | user-controlled expression | zero-argument method resolution in a restricted/read-only context | recorder object's no-op counter changes |
+| JSP form tag | user-controlled style/class attribute | tag renderer and browser HTML/JavaScript parser | harmless DOM marker escapes the intended attribute context |
+| multipart request | boundary/header/body bytes | front end, Spring multipart parser, and route/body consumer | components disagree on part or request boundaries in an isolated connection |
+| Kotlin Router DSL | route nesting and filter placement | expected security filter coverage | protected canary handler is reached without its recorder filter |
 
 Keep **route match**, **resolver selection**, **cache key**, **filesystem candidate**, **authorization decision**, **session-ID rotation**, and **authenticated-state attachment** as distinct edges. A path-shaped request is not traversal without an out-of-root result; a cache collision is not disclosure unless it crosses an authorization boundary; and knowing a session ID is not account access unless authenticated state remains bound to it.
 
@@ -119,6 +125,38 @@ Keep parser layers separate. If a reverse proxy rejects or rewrites a colon-bear
 5. A positive is **untrusted expression -> context intended to prevent behavior -> arbitrary recorder zero-argument method resolves and changes the no-op counter**. A parse error, property getter, or method allowed by explicit application policy is not equivalent evidence.
 
 Report the concrete reachable method surface separately from the framework primitive. The advisory establishes unintended zero-argument invocation, not universal code execution. Fixed OSS versions are 7.0.8 and 6.2.19, with support-channel fixes for older lines.
+
+## JSP form-tag attribute context
+
+This issue is not generic Spring MVC XSS. The application must pass attacker-controlled data into `cssClass`, `cssErrorClass`, or `cssStyle` on a JSP form tag. Trace actual tag attributes from their source to the rendered response before testing.
+
+1. Build a disposable JSP form with separate server-owned and user-controlled values for each affected attribute. Render one attribute at a time.
+2. Use a corpus of quote boundaries, whitespace, HTML metacharacters, CSS punctuation, and one harmless marker such as setting `window.__jspTagCanary = 1`. Do not read cookies, storage, DOM data, or network resources.
+3. Preserve input bytes, the complete generated start tag, browser-parsed attributes, CSP state, and marker result. Page-source punctuation without a parser-context escape is not proof.
+4. Compare ordinary body text, a JSP attribute not named by the advisory, a server-owned class/style, the corrected Spring build, and a context-appropriate encoder.
+5. A positive is **untrusted tag attribute -> renderer fails to preserve the intended attribute boundary -> browser creates a new inert attribute or statement**.
+
+## Multipart parser differential
+
+Treat multipart smuggling as a disagreement experiment, not a generic malformed-upload test. Use an isolated proxy/application pair and a single disposable connection so no shared user traffic can be desynchronized.
+
+1. Put a raw-byte recorder before a minimal MVC or WebFlux application. Expose `/upload-canary` and `/after-canary`; each only increments a different counter.
+2. Start from a valid multipart request captured from the exact stack. Mutate one grammar dimension at a time: boundary quoting, leading/trailing whitespace, duplicate `Content-Type` parameters, line endings, terminal delimiters, part-header folding, and declared versus actual body length.
+3. Record the exact bytes received by every hop, each component's request count, selected route, part count/names/lengths, unread bytes, connection reuse, and counter deltas.
+4. Add direct-to-Spring, connection-close, one-request-per-connection, MVC-versus-WebFlux, front-end parser, and corrected-build controls.
+5. Strong evidence is **same byte stream -> front end and Spring disagree on request or multipart boundaries -> trailing canary bytes are interpreted under a different request/route context**. A 400/500 response or parser exception alone is not smuggling.
+
+Never place a second user's request behind the test, poison a shared connection pool, or target authentication-changing routes.
+
+## WebFlux Kotlin Router filter coverage
+
+The affected record is specific to Spring WebFlux 5.3 applications using the Kotlin Router DSL. Review how nested routes and filters are assembled; do not infer bypass from the presence of Kotlin code alone.
+
+1. Build the application's route tree in a disposable fixture with `/public-canary` and `/protected-canary`. The expected security filter should increment a recorder and attach a fixed principal marker.
+2. Enumerate the effective route tree from source and runtime mappings. Test nesting, `and`/`andOther`, path predicates, method predicates, trailing slashes, and route declaration order independently.
+3. For each request, capture the selected handler, filter recorder count, principal marker, authorization decision, and handler counter.
+4. Compare a request that definitely traverses the filter, one outside the protected subtree, an explicit per-route filter, equivalent Java DSL if relevant, and a corrected/support-channel build.
+5. A positive is **route intended to be inside the filtered Kotlin DSL subtree -> protected handler runs -> expected filter recorder remains zero**. Prove only with a marker handler, never a real privileged action.
 
 ## Evidence and reporting checklist
 

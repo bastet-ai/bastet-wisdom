@@ -93,6 +93,18 @@ The Engine UI route reportedly accepts host and port in the request path. Kyuubi
 
 A bounded positive is **remote request -> path-selected unlisted authority -> Kyuubi connects to owned listener B**. Never probe loopback services other than your fixture, cloud metadata, RFC1918 targets, control planes, or another tenant's Engine UI.
 
+## July 30 Kyuubi multipart filename follow-up
+
+[GHSA-h9qj-gx4p-69cp / CVE-2026-52680](https://github.com/advisories/GHSA-h9qj-gx4p-69cp) adds a filesystem edge to Kyuubi's REST batch surface: versions 1.7.0 through 1.11.1 used the client-supplied multipart filename when creating a temporary uploaded resource. Kyuubi 1.12.0 is the fixed control.
+
+1. Use a disposable Kyuubi instance, temporary upload root, and one empty sibling directory containing only a random marker. Do not mount credentials, Spark configuration, user homes, or production batch resources.
+2. Capture a normal REST batch multipart upload from the exact version. Keep body content inert and vary only the filename: basename, nested path, dot segments, absolute temp path, encoded/mixed separators accepted by the HTTP stack, duplicate filename parameters, and a symlinked parent fixture.
+3. Instrument the raw `Content-Disposition`, multipart parser output, filename normalization, intended upload root, canonical final path, create/open flags, and before/after hashes.
+4. Positive evidence is **remote multipart filename -> canonical write path escapes the upload root -> inert marker file appears only in the disposable sibling directory**. Stop after one new file; never overwrite an existing path.
+5. Compare 1.12.0, a server-generated basename, component-aware containment, an unrelated form field, and a request denied from the batch endpoint.
+
+Report filename parsing, outside-root path selection, and controlled write as separate edges. Do not target configuration, startup files, authorized keys, logs, jars, or executable paths.
+
 ## WordPress calculator: prove evaluator reachability without a payload
 
 The Cost Calculator Builder PRO record says front-end order data reaches a generated PHP formula and then `eval()`, while the required nonce is emitted publicly. It also describes a punctuation-only bypass technique; do not reproduce or publish that gadget.

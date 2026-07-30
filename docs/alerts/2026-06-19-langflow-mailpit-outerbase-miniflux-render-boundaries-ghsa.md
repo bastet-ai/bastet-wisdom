@@ -117,6 +117,27 @@ Keep validation marker-only because this route is unauthenticated and exploitati
 
 Report **unauthenticated validation input -> caller-controlled `exec_globals` -> inert server-side evaluation marker**. Do not publish executable payloads, read environment variables, or test an internet-facing production instance.
 
+## July 30 MCP environment and build-job ownership follow-up
+
+Two IBM Langflow OSS records covering 1.0.0 through 1.10.1 extend the existing execution and two-user authorization workflows:
+
+- [GHSA-gx45-8jc3-gqqr / CVE-2026-12940](https://github.com/advisories/GHSA-gx45-8jc3-gqqr) states that the MCP stdio launcher used a dangerous-environment-variable blocklist that omitted `SHELLOPTS`, `BASHOPTS`, and `PS4`. Treat this as **request-controlled environment to interpreter startup behavior**, not as a reason to run a shell payload.
+- [GHSA-xxrp-rxf8-3mmx / CVE-2026-12945](https://github.com/advisories/GHSA-xxrp-rxf8-3mmx) states that authenticated users could access or manipulate another user's build jobs through log retrieval and unauthenticated build endpoints.
+
+### MCP stdio environment recorder
+
+1. Run an isolated Langflow build with no credentials, sensitive environment, network egress, or production MCP servers. Replace the stdio child program with a recorder that serializes received argv and environment-key names, writes one temp marker, and exits; it must not invoke a shell.
+2. Capture a normal MCP stdio launch from the product UI/API. Change only benign values for ordinary variables and the three named shell-control variables. Use fixed strings with no commands, substitutions, paths, or callbacks.
+3. Record request field, validation/blocklist decision, environment map reaching the child-process API, selected executable, argv, and recorder marker. Never print inherited environment values.
+4. Compare omitted variables, a blocked named variable, direct `env` object input versus nested configuration, and a corrected build or allowlist-only wrapper.
+5. A bounded positive is **unauthenticated/request-controlled MCP launch field -> named shell-control variable survives policy -> recorder child receives it**. This proves policy reachability; do not claim code execution unless an approved no-op interpreter harness separately proves a startup behavior change.
+
+### Build-job ownership matrix
+
+Create build jobs for users A and B with synthetic logs and artifact markers. Test list, status, log retrieval, cancellation, update, and unauthenticated build routes independently. As B, submit A's already known lab job ID; then repeat without credentials, with a random ID, wrong flow/workspace, owner A, administrator, and corrected build. Capture route, authentication state, actor, job owner, action, marker returned, state transition, and handler authorization decision.
+
+Strong evidence is **foreign build-job ID -> ownership is not joined to actor/flow/workspace -> synthetic log marker is returned or harmless job state changes**. Do not retrieve real prompts, generated code, environment output, build artifacts, credentials, or another tenant's production jobs.
+
 ## Reporting notes
 
 - Name the crossed boundary precisely: **widget content to token-bearing dashboard origin**, **AI file-node parameter to server file read**, **flow response ID to another user's history**, **monitor `flow_id` to another user's transaction/build logs**, **message/session ID to cross-user history mutation**, **caller-controlled Langflow key to cross-user authorization context**, **unauthenticated `exec_globals` to server-side validation context**, **IPv6 transition URL to link-check SSRF**, **redirect parser bypass to privileged navigation**, **embed class to stored HTML**, or **provider error text to stored HTML**.

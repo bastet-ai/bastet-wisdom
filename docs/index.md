@@ -8,16 +8,16 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Active Storage unsafe libvips operations, degit shell boundaries, LDAP grammar, and Superset parent authorization](alerts/2026-07-30-media-repository-directory-object-boundaries-ghsa.md)
+- [Spring multipart parser and Kotlin Router filter-coverage checks](alerts/2026-07-30-spring-web-resource-session-boundaries-ghsa.md#multipart-parser-differential)
+- [Langflow MCP environment and build-job ownership checks](alerts/2026-06-19-langflow-mailpit-outerbase-miniflux-render-boundaries-ghsa.md#july-30-mcp-environment-and-build-job-ownership-follow-up)
 - [Spring default-view prefix and restricted SpEL method-invocation checks](alerts/2026-07-30-spring-web-resource-session-boundaries-ghsa.md#default-view-name-prefix-confusion-follow-up)
 - [OpenRemote stored asset-name to crosstab SQL boundary](alerts/2026-07-06-cilium-formie-openremote-parser-boundaries-ghsa.md#july-6-openremote-datapoint-crosstab-sql-follow-up)
 - [CentreStack token, session, API, storage-import, XML, and query boundaries](alerts/2026-07-30-centrestack-token-session-storage-boundaries-ghsa.md)
-- [SSRF authority, Calico policy-path, tenant-object, and OAuth redirect boundaries](alerts/2026-07-30-url-policy-tenant-oauth-boundaries-ghsa.md)
+- [SSRF authority, Calico policy-path, tenant-object, OAuth redirect, and Kanboard numeric-IP boundaries](alerts/2026-07-30-url-policy-tenant-oauth-boundaries-ghsa.md)
 - [Spring JavaScript escaping boundary](alerts/2026-07-30-spring-web-resource-session-boundaries-ghsa.md#javascript-escaping-follow-up)
 - [OpenCost Helm-values disclosure and unset-token checks](alerts/2026-07-14-kimai-facturascripts-auth-boundaries-ghsa.md#july-30-opencost-helm-values-disclosure-follow-up)
 - [Spring Web versioned-resource traversal, shared-cache, and session-rotation boundaries](alerts/2026-07-30-spring-web-resource-session-boundaries-ghsa.md)
-- [flyto-core outbound authority, environment, and file-write parity checks](alerts/2026-07-06-flyto-mcp-ssrf-boundaries-ghsa.md#july-30-follow-up-outbound-authority-secret-and-file-write-parity)
-- [MCP Ruby session-ownership and browser-origin transport checks](alerts/2026-07-29-mcp-package-url-config-boundaries-ghsa.md#july-30-mcp-ruby-transport-follow-up)
-- [OliveTin shell-type and synchronous-output authorization checks](alerts/2026-06-24-olivetin-openam-concrete-boundaries-ghsa.md#july-30-olivetin-shell-type-and-synchronous-output-follow-up)
 
 
 

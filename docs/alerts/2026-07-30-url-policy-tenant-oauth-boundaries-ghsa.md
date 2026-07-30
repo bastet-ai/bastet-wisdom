@@ -72,6 +72,18 @@ Strong evidence is **valid low-privilege session + foreign global ID -> backend 
 
 Report **registered host suffix comparison -> attacker-owned lookalike host accepted -> synthetic authorization response delivered to that host**. Redact all actual codes and tokens.
 
+## July 30 Kanboard numeric-IPv4 follow-up
+
+[GHSA-rj28-q96f-28vw / CVE-2026-57862](https://github.com/advisories/GHSA-rj28-q96f-28vw) adds a concrete parser differential to this methodology. Kanboard 1.2.52 and earlier reportedly passed a user-controlled web-link URL through `FILTER_VALIDATE_IP`; hexadecimal IPv4 was rejected as an IP literal by that validator and therefore treated as safe, while cURL still resolved it as an address.
+
+1. Use a lab Kanboard user, an owned HTTP canary on an isolated private test address, and no route to production networks or metadata services.
+2. Submit the same canary destination as canonical dotted decimal, hexadecimal IPv4, decimal integer, octal-like form, mixed-base form if the exact cURL build accepts it, and an owned hostname. Change one representation at a time.
+3. Record raw URL, PHP validator result, parsed hostname, cURL version, DNS use, connected peer, redirect chain, and final canary receipt.
+4. Compare direct client behavior, application behavior, a public owned address, malformed numeric forms, and a corrected implementation that converts every accepted representation to a canonical address before policy.
+5. A positive is **validator classifies alternate numeric host as non-IP/safe -> cURL connects to the same blocked-class lab address -> owned canary records the request**.
+
+Do not use localhost, RFC1918 production services, cloud metadata, or any internal service as proof.
+
 ## Evidence checklist
 
 Preserve exact package/product versions, enabled feature flags, raw and normalized inputs, parser outputs, DNS and connected-peer evidence, route/policy decisions, synthetic ownership tables, and fixed-version differentials. Keep claims narrow: parser disagreement, final-destination reachability, policy bypass, foreign-object access, and redirect delivery are distinct findings.
