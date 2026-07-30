@@ -4,7 +4,7 @@ title: WordPress role, nonce, payment-response, and device filesystem boundaries
 
 # WordPress role, nonce, payment-response, and device filesystem boundaries from late-July updates
 
-A late-July advisory wave yields six durable operator checks: a low-role WordPress nonce disclosing connection material later accepted by a public administrator-login route, a frontend nonce treated as authorization for persistent WooCommerce options, an author-owned custom post exposing a role-assignment nonce and client-selected canonical role, contributor access accepted for site-wide event-payment settings, a successful payment response replayed across ticket orders, and unauthenticated virtual-filesystem access on SICK InspectorP6xx devices.
+A late-July advisory wave yields eight durable operator checks: a low-role WordPress nonce disclosing connection material later accepted by a public administrator-login route, a frontend nonce treated as authorization for persistent WooCommerce options, an author-owned custom post exposing a role-assignment nonce and client-selected canonical role, contributor access accepted for site-wide event-payment settings, a successful payment response replayed across ticket orders, a public payment form whose hidden amount becomes the gateway amount, author-controlled post metadata reinterpreted as SQL during a later duplicate action, and unauthenticated virtual-filesystem access on SICK InspectorP6xx devices.
 
 Sources:
 
@@ -28,11 +28,17 @@ Sources:
 - [GHSA-6p3r-44rr-gcj5 / CVE-2026-17166: Event Booking Manager site-wide payment settings](https://github.com/advisories/GHSA-6p3r-44rr-gcj5)
 - [Event Booking Manager 5.3.7 payment-settings handler](https://plugins.svn.wordpress.org/mage-eventpress/tags/5.3.7/admin/settings/global/admin_setting_panel.php)
 - [Event Booking Manager corrected payment-settings handler](https://plugins.svn.wordpress.org/mage-eventpress/trunk/admin/settings/global/admin_setting_panel.php)
+- [GHSA-4hpv-v74p-q5cg / CVE-2026-1982: Persian Elementor ZarinPal amount manipulation](https://github.com/advisories/GHSA-4hpv-v74p-q5cg)
+- [Persian Elementor 2.8.1 ZarinPal form](https://plugins.svn.wordpress.org/persian-elementor/tags/2.8.1/widget/zarinpal/zarinpal-button.php)
+- [Persian Elementor 2.8.1 ZarinPal request and verification handler](https://plugins.svn.wordpress.org/persian-elementor/tags/2.8.1/widget/zarinpal/zarinpal-ajax.php)
+- [Persian Elementor revision 3613858](https://plugins.trac.wordpress.org/changeset/3613858/persian-elementor)
+- [GHSA-mjmr-35x5-p5hh / CVE-2026-16092: Improved Save Button second-order SQL injection](https://github.com/advisories/GHSA-mjmr-35x5-p5hh)
+- [Improved Save Button 1.2.1 duplicate action](https://plugins.svn.wordpress.org/improved-save-button/tags/1.2.1/actions/class-lb-save-and-then-action-duplicate.php)
 
 The GitHub records were unreviewed when this page was written. The primary pretix release uses **CVE-2026-57532** for the quick-setup issue, while the initial GitHub record used **CVE-2026-18028** for substantially the same description. Preserve that discrepancy in evidence rather than treating the identifiers as interchangeable. Confirm the exact product slug, version, route, configuration, and fixed behavior before reporting.
 
 !!! warning "Authorized validation only"
-    Use disposable WordPress sites, synthetic users and roles, fake connection values, reversible payment-setting markers, test-mode ticket orders, mocked payment responses, and owned SICK lab devices with vendor-approved canary storage. Never mint or retain a production administrator session, promote a real account, alter a real store, reuse live payment confirmations, obtain unpaid real tickets, read device passwords, change production vision parameters, or place Lua code on a device.
+    Use disposable WordPress sites, synthetic users and roles, fake connection values, reversible payment-setting markers, test-mode ticket orders, mocked payment responses, local SQL recorders, and owned SICK lab devices with vendor-approved canary storage. Never mint or retain a production administrator session, promote a real account, alter a real store, send a payment to a live gateway, reuse live payment confirmations, extract database data, obtain unpaid real tickets, read device passwords, change production vision parameters, or place Lua code on a device.
 
 ## Build a boundary matrix first
 
@@ -43,6 +49,8 @@ The GitHub records were unreviewed when this page was written. The primary preti
 | Wholesale-request approval | request post, nonce, status, and role slug | request ownership plus role-promotion capability and server allowlist | synthetic author and non-privileged canary role |
 | Event payment settings | authenticated AJAX action and settings fields | `manage_options` plus action-bound nonce | reversible confirmation-page/status markers |
 | Ticket payment callback | successful status response | provider transaction bound to one order and amount | two mocked orders in test mode |
+| ZarinPal payment request | public hidden `amount` field | server-stored widget price and selected product/quantity | local gateway recorder plus synthetic amount |
+| Duplicate-post metadata | author-controlled `meta_key` stored first and interpolated later | parameterized metadata copy preserving exact value | query recorder and inert delimiter-shaped marker |
 | Event quick setup | event ID and request timing | current user's organizer/event permissions | one reversible synthetic product marker |
 | Device virtual filesystem | remote path selector | authenticated session and approved virtual root | pre-seeded non-sensitive canary file |
 
@@ -127,6 +135,44 @@ The corrected source adds `check_ajax_referer( 'mep_save_payment_settings', 'non
 
 The decisive evidence is **`edit_posts`-only principal -> authenticated AJAX action -> global `payment_setting_sec` canary changes without `manage_options`**. A `200` or JSON success response without persisted option evidence is insufficient. Report cross-event/global scope separately from checkout, ticket, or revenue impact; do not process an order to inflate the claim.
 
+## Persian Elementor: bind a public payment request to server-owned price state
+
+Persian Elementor 2.8.1 renders the configured ZarinPal total into a hidden `amount` input. The public `zarinpal_payment_request` AJAX handler verifies the frontend nonce, then derives its transaction amount from that submitted field. It stores the same amount in transient transaction state, passes it to the payment-request helper, and later uses the stored value for provider verification. The nonce therefore proves request provenance but does not bind the submitted amount to the widget's configured price.
+
+The durable check is broader than one gateway: whenever a storefront renders amount, currency, product, discount, quantity, or merchant fields into the browser, determine whether the server reconstructs the payable tuple from authoritative catalog/order state before both **payment creation** and **payment verification**.
+
+### Local gateway-recorder workflow
+
+1. Install 2.8.1 on a disposable WordPress/Elementor site. Configure one ZarinPal widget with a synthetic product and amount; use a fake merchant identifier and prevent outbound DNS/network access.
+2. Capture the public form and record the displayed total, hidden amount, nonce provenance, callback URL, and product description. Use only the normal anonymous page context.
+3. Replace the ZarinPal request helper with a local recorder that accepts no payments and returns a fixed canary authority. Instrument transient writes as well. Do not redirect to or contact the real provider.
+4. Replay the request with the expected amount, a different positive canary amount, zero, negative, fractional, oversized, omitted, and duplicate amount fields. Keep the values non-monetary inside the recorder.
+5. For each case, record the raw submitted representation, integer/conversion result, transient amount, helper amount, and response state. Vary product/description fields separately so amount binding is not confused with descriptive metadata.
+6. Invoke the callback path only through a stub verification helper. Confirm whether it verifies the attacker-selected stored amount rather than independently recovering the configured widget price.
+7. Repeat against the corrected revision and require the server to derive the expected amount from server-owned widget/product state before the request helper and to bind callback verification to that same transaction tuple.
+
+A bounded positive result is **public form exposes reusable request proof -> modified hidden amount -> local request recorder receives the modified amount -> transaction state and stub verification preserve it without a server-side price lookup**. This proves amount authority drift; it does not prove that a live payment completed, goods were delivered, or a specific monetary loss occurred.
+
+Preserve unit conversions explicitly. The affected handler divides the submitted value before its helper restores the provider-facing unit, so evidence should show browser value, normalized internal value, and recorder value rather than assuming all three numbers use the same currency unit.
+
+## Improved Save Button: replay stored metadata through a later SQL sink
+
+Improved Save Button 1.2.1 illustrates a second-order SQL injection boundary. The duplicate action first reads `meta_key` and `meta_value` rows for an editable source post. It escapes the values but interpolates each metadata key into a hand-built `INSERT ... SELECT` statement joined with `UNION ALL`, then passes the assembled string to `$wpdb->query()`. The attacker's first action stores a metadata key through an otherwise ordinary post-edit path; interpretation occurs later when an authorized **Save and Duplicate** operation copies that stored row.
+
+This differs from direct request-to-query injection. Map four moments independently: **write principal -> stored bytes -> later trigger principal -> constructed SQL grammar**. A scanner that mutates only the duplicate request may miss the actual controllable input.
+
+### Recorder-only second-order harness
+
+1. Install 1.2.1 in a disposable WordPress database containing only synthetic posts and metadata. Create an author-owned source post and a separate clean control post.
+2. Confirm which supported custom-field, REST, XML-RPC, importer, or plugin path lets that author create a metadata key on their own post. Preserve the exact capability and API used; do not assume every WordPress role can set arbitrary keys.
+3. Store an inert delimiter-shaped canary key containing a quote marker and unique token, plus a plain control key. The marker must not contain a second SQL statement, comment sequence, data-extraction expression, timing function, or destructive verb.
+4. Replace or wrap `$wpdb->query()` in the lab so the duplicate action records the final SQL string and returns without executing it. Trigger **Save and Duplicate** through the normal UI as the same author and, separately, as an expected editor.
+5. Compare the stored key bytes, values returned by the first metadata query, final recorded SQL, and tokenized SQL parse. The key should remain one bound data value; if the marker changes quote/token boundaries in the recorded grammar, the sink is reachable.
+6. Exercise controls for a plain key, delimiter-shaped metadata **value**, protected-key prefix, metadata belonging to another author, a post the caller cannot duplicate, and no metadata. This separates key handling, value escaping, object authorization, and trigger reachability.
+7. Repeat on a corrected build or locally parameterized implementation. Require metadata copying through WordPress APIs or bound placeholders, with both key and value remaining data in the parser output.
+
+The safe positive result is **authorized author stores inert metadata key on own post -> later duplicate action reads it -> recorder shows the key crossing a SQL token boundary**. Do not execute the malformed query against even a lab database merely to prove disclosure. Query construction plus a parser diff and the fixed control provide stronger, less destructive evidence.
+
 ## pretix: bind provider responses to one payment object
 
 The primary pretix release says `pretix-girosolution` before 1.0.1 accepted a successful GiroCheckout status response from one payment for a different payment. That is a transaction-binding failure: authenticity of a provider response is insufficient when the response is not bound to the local order, payment ID, amount, currency, merchant context, and lifecycle state.
@@ -179,9 +225,11 @@ Include:
 - exact product/plugin slug, version or firmware, configuration state, route/action, method, and authentication context;
 - each chain edge as a decision table rather than one inflated impact label;
 - nonce provenance, capability result, selected option or role, request-post owner, target user, global-setting scope, payment/order binding, and resolved virtual path;
+- browser, normalized, stored, and gateway-recorder amount representations for payment-integrity checks;
+- first-stage metadata write authority, exact inert key hash, later duplicate trigger identity, and recorded SQL token-boundary diff for second-order checks;
 - affected and fixed controls, including feature-disabled and unconfigured states;
 - hashes or redacted identifiers for fake connection values, payment responses, cookies, and canary files;
 - the pretix quick-setup CVE identifier discrepancy and the source attached to each identifier;
 - a bounded impact statement that distinguishes option disclosure, session creation, persistent write, DOM rendering, payment replay, event mutation, filesystem read/write, and execution.
 
-Do not infer administrator takeover from option disclosure or a harmless canary-role assignment alone, store compromise from a reversible global setting alone, XSS from stored markup alone, free tickets from a callback that did not change order state, or device code execution from filesystem reachability alone.
+Do not infer administrator takeover from option disclosure or a harmless canary-role assignment alone, store compromise from a reversible global setting alone, XSS from stored markup alone, completed underpayment from a local gateway recorder, database disclosure from a SQL grammar diff, free tickets from a callback that did not change order state, or device code execution from filesystem reachability alone.
