@@ -92,19 +92,20 @@ Later July 6 GitHub Advisory Database entries add two adjacent OpenRemote checks
 
 ## July 6 OpenRemote datapoint crosstab SQL follow-up
 
-A later July 6 GitHub Advisory Database entry adds [GHSA-cgfv-jrfp-2r7v](https://github.com/advisories/GHSA-cgfv-jrfp-2r7v), an authenticated SQL injection boundary in OpenRemote's Datapoint Crosstab Export path.
+A later July 6 GitHub Advisory Database entry adds [GHSA-cgfv-jrfp-2r7v](https://github.com/advisories/GHSA-cgfv-jrfp-2r7v), subsequently mirrored as [GHSA-rw7h-h988-gfff / CVE-2026-62238](https://github.com/advisories/GHSA-rw7h-h988-gfff), an authenticated SQL injection boundary in OpenRemote's Datapoint Crosstab Export path. The later record makes the second-order source precise: an asset display name is stored through create or rename capability and later concatenated into the export query.
 
 | Advisory | Component | Boundary | Operator value |
 | --- | --- | --- | --- |
-| [GHSA-cgfv-jrfp-2r7v](https://github.com/advisories/GHSA-cgfv-jrfp-2r7v) | OpenRemote Datapoint Crosstab Export | authenticated export parameters can cross into SQL construction for datapoint crosstab queries | Export/report builders are query compilers; test selector, attribute, time-bucket, order, and crosstab dimensions with synthetic rows and SQL parser canaries. |
+| [GHSA-cgfv-jrfp-2r7v](https://github.com/advisories/GHSA-cgfv-jrfp-2r7v) and [GHSA-rw7h-h988-gfff](https://github.com/advisories/GHSA-rw7h-h988-gfff) | OpenRemote Datapoint Crosstab Export | a stored asset display name can become a raw PostgreSQL query fragment when the crosstab export is generated | Export/report builders are query compilers; trace stored labels and aliases into dynamic identifier generation rather than testing only direct export parameters. |
 
 ### OpenRemote crosstab export SQL harness
 
-- Preconditions: disposable OpenRemote realm, one synthetic asset/attribute, seeded datapoints containing only marker values, and a low-privilege user allowed to export that synthetic data.
-- Map normal crosstab export parameters first, then mutate one candidate SQL-shaping field at a time with harmless syntax-error or fixed-expression canaries.
-- Positive evidence: database parser errors, generated-query logs, or export output prove the parameter entered SQL structure rather than a bound value.
-- Negative controls: patched build, fixed enum/identifier allowlists, parameterized values, and the same export succeeding with only valid dimensions.
-- Do not dump unrelated tables, enumerate tenants, run time-heavy queries, or export production telemetry. Report this as **authenticated export parameter to SQL crosstab construction**.
+- Preconditions: disposable OpenRemote realm, one synthetic asset/attribute, seeded datapoints containing only marker values, and a test user with the exact asset create or rename and export capabilities under review.
+- Create two otherwise identical assets: one ordinary control and one whose display name contains only a harmless delimiter-shaped or syntax-error canary. Keep selector, attribute, time window, bucket, ordering, and every direct export parameter constant.
+- Trigger the ordinary application crosstab export for each asset. Capture the stored display name, generated-query structure or parser error, response schema, and synthetic CSV marker. Prefer instrumented query logs in a local database; never use data-extraction expressions.
+- Positive evidence: **stored asset display name -> later export query construction -> query grammar changes or a deterministic parser error occurs**, while the ordinary name and corrected build remain data values. This distinguishes second-order name injection from a direct export-parameter bug.
+- Negative controls: corrected build, a principal unable to create or rename assets, the same canary stored in a field not used as a crosstab identifier, and the same export with an ordinary display name.
+- Do not dump unrelated tables, enumerate tenants, run time-heavy queries, or export production telemetry. Report this as **authenticated stored asset name to later SQL crosstab construction**, with create/rename and export permissions stated separately.
 
 ## July 6 Cilium Local Redirect Policy cross-namespace service follow-up
 

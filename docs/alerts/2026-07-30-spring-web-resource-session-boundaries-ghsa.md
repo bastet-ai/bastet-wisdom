@@ -1,16 +1,18 @@
 ---
-title: Spring Web static-resource and session-rotation boundaries
+title: Spring Web resource, view-name, expression, and session boundaries
 ---
 
-# Spring Web static-resource and session-rotation boundaries
+# Spring Web resource, view-name, expression, and session boundaries
 
-Three Spring Framework advisories expose two durable application-testing patterns: static-resource resolution can cross handler and filesystem boundaries, while concurrent WebFlux session rotation can leave an attacker-known identifier attached to authenticated state.
+Six Spring Framework advisories expose durable application-testing patterns across static-resource resolution, default view-name translation, restricted expression evaluation, JavaScript escaping, and concurrent WebFlux session rotation.
 
 Sources:
 
 - [GHSA-72pg-x5f8-j25j / CVE-2026-41843](https://github.com/advisories/GHSA-72pg-x5f8-j25j) and the [Spring advisory](https://spring.io/security/cve-2026-41843): versioned filesystem resources may resolve outside configured locations;
 - [GHSA-mq64-j8f9-9gcj / CVE-2026-41841](https://github.com/advisories/GHSA-mq64-j8f9-9gcj) and the [Spring advisory](https://spring.io/security/cve-2026-41841): a shared static-resource cache may return an authenticated handler's resource through a public handler with the same name; and
-- [GHSA-4hfh-6x8g-gwpp / CVE-2026-41839](https://github.com/advisories/GHSA-4hfh-6x8g-gwpp), the [Spring advisory](https://spring.io/security/cve-2026-41839), and the [session-store fix](https://github.com/spring-projects/spring-framework/commit/b8ddd2c690fe3f00bb5e3d9f913a37504aab49a0): a race in the in-memory WebFlux session store may exchange an attacker-known session ID for an authenticated user's ID.
+- [GHSA-4hfh-6x8g-gwpp / CVE-2026-41839](https://github.com/advisories/GHSA-4hfh-6x8g-gwpp), the [Spring advisory](https://spring.io/security/cve-2026-41839), and the [session-store fix](https://github.com/spring-projects/spring-framework/commit/b8ddd2c690fe3f00bb5e3d9f913a37504aab49a0): a race in the in-memory WebFlux session store may exchange an attacker-known session ID for an authenticated user's ID;
+- [GHSA-h3qp-gqrc-q736 / CVE-2026-41844](https://github.com/advisories/GHSA-h3qp-gqrc-q736), the [Spring advisory](https://spring.io/security/cve-2026-41844), and the [default-view-name fix](https://github.com/spring-projects/spring-framework/commit/3aaec987651cf82fd4ed7e0ed9b3deddcdf58853): a catch-all mapping with no explicit view name can reinterpret a request path beginning with `redirect:` or, in MVC, `forward:` as a view-resolver instruction; and
+- [GHSA-9f52-rjqv-25qv / CVE-2026-41852](https://github.com/advisories/GHSA-9f52-rjqv-25qv) and the [Spring advisory](https://spring.io/security/cve-2026-41852): untrusted SpEL may invoke arbitrary zero-argument methods even in restricted or read-only evaluation contexts.
 
 The vendor lists Spring Framework 7.0.0–7.0.7, 6.2.0–6.2.18, 6.1.0–6.1.27, and 5.3.48 and earlier as affected, with fixes in 7.0.8 and 6.2.19 plus support-channel builds. GitHub's package-range fields differed from the vendor text when this page was written; use the vendor advisory and the exact deployed artifact as the version authority.
 
@@ -24,6 +26,8 @@ The vendor lists Spring Framework 7.0.0–7.0.7, 6.2.0–6.2.18, 6.1.0–6.1.27,
 | versioned resources | URL path plus guessed resource metadata | version resolver and filesystem location | one out-of-root canary hash |
 | shared resource cache | public handler request and filename | cache entry populated under another handler/location | synthetic protected canary returned publicly |
 | WebFlux session rotation | known pre-auth session ID and request timing | in-memory session object during `changeSessionId()`/`save()` | authenticated marker remains reachable under the known ID |
+| default view name | path under a `/**` mapping with no explicit view | `redirect:` or MVC `forward:` view-resolver prefix | owned external redirect or internal no-op route selected |
+| restricted SpEL | user-controlled expression | zero-argument method resolution in a restricted/read-only context | recorder object's no-op counter changes |
 
 Keep **route match**, **resolver selection**, **cache key**, **filesystem candidate**, **authorization decision**, **session-ID rotation**, and **authenticated-state attachment** as distinct edges. A path-shaped request is not traversal without an out-of-root result; a cache collision is not disclosure unless it crosses an authorization boundary; and knowing a session ID is not account access unless authenticated state remains bound to it.
 
@@ -92,15 +96,39 @@ Do not call a stale map entry session fixation unless it remains usable after au
 
 The vendor identifies affected lines through 7.0.7, 6.2.18, 6.1.27, and 5.3.48, with public fixes in 7.0.8 and 6.2.19 plus support-channel releases. Report the exact artifact and call site; do not generalize this helper flaw to every Spring template or call it exploitable without a reachable JavaScript sink.
 
+## Default view-name prefix confusion follow-up
+
+[GHSA-h3qp-gqrc-q736 / CVE-2026-41844](https://github.com/advisories/GHSA-h3qp-gqrc-q736) applies only when an MVC or WebFlux application maps `/**` and does not explicitly select a view name. Spring can then derive the view name from the request path. In affected builds, a derived name beginning with `redirect:` is interpreted as an external redirect; MVC also recognizes `forward:` as an internal forward. This is default-view translation, not a generic redirect in every Spring route.
+
+1. Inventory catch-all mappings and determine whether their handler return values cause Spring to derive a default view name. Exclude explicit view names, response-body routes, and unrelated redirect parameters.
+2. In a disposable application, use one owned external listener and one inert internal route that increments a recorder counter. Send path variants matching the application's real servlet context, proxy normalization, and route decoding.
+3. Capture the raw target, framework path, selected mapping, derived view name, response status and `Location`, or selected internal route. Do not rely on a browser screenshot alone.
+4. Compare MVC with WebFlux: test `redirect:` on both, but test `forward:` only as an MVC-specific edge. Add an explicit-view handler, a non-catch-all mapping, ordinary path text, and a corrected build as negative controls.
+5. A positive is **request path -> implicit default view name begins with a special resolver prefix -> 302 reaches only the owned origin, or MVC forwards to the inert internal route**. Never use privileged internal actions, credential-bearing destinations, or third-party hosts.
+
+Keep parser layers separate. If a reverse proxy rejects or rewrites a colon-bearing path before Spring sees it, record the failed reachability precondition rather than claiming the application is exploitable. The public fix rejects these prefixes during default view-name generation; fixed OSS versions are 7.0.8 and 6.2.19, with support-channel fixes for older lines.
+
+## Restricted SpEL zero-argument method follow-up
+
+[GHSA-9f52-rjqv-25qv / CVE-2026-41852](https://github.com/advisories/GHSA-9f52-rjqv-25qv) requires an application to accept and evaluate untrusted SpEL. The reusable audit question is whether a context advertised as restricted or read-only still permits a zero-argument method to cross from data selection into application behavior.
+
+1. Locate the exact expression ingress and evaluator construction. Record the parser, root object, variables, property and method resolvers, type/construction access, bean access, and whether the application calls the context restricted, read-only, or data-binding-only.
+2. Build a purpose-made root object exposing a harmless zero-argument method such as `mark()` that increments an in-memory counter and returns a fixed string. Do not test process, file, network, reflection, class-loading, or environment-access gadgets.
+3. Evaluate a decision corpus: literal/property access, the recorder method, a method requiring arguments, constructor/type references, bean references, assignment, and an unknown method. Run every case in the application's normal context, its intended restricted context, and a corrected Spring build.
+4. Capture the input expression, parsed AST or normalized form where available, evaluator/context class, resolver list, return value, exception type, and recorder count before and after. Reset the object for every case.
+5. A positive is **untrusted expression -> context intended to prevent behavior -> arbitrary recorder zero-argument method resolves and changes the no-op counter**. A parse error, property getter, or method allowed by explicit application policy is not equivalent evidence.
+
+Report the concrete reachable method surface separately from the framework primitive. The advisory establishes unintended zero-argument invocation, not universal code execution. Fixed OSS versions are 7.0.8 and 6.2.19, with support-channel fixes for older lines.
+
 ## Evidence and reporting checklist
 
 Preserve:
 
-- exact Spring artifacts, versions, MVC versus WebFlux mode, resource-handler configuration, version strategy, cache implementation, session-store implementation, and any `JavaScriptUtils.javaScriptEscape()` call site;
+- exact Spring artifacts, versions, MVC versus WebFlux mode, resource-handler configuration, version strategy, cache implementation, session-store implementation, default-view mapping, SpEL context/resolvers, and any `JavaScriptUtils.javaScriptEscape()` call site;
 - raw and normalized paths, selected handler/resolver, configured root, and synthetic returned-file hash;
 - cache state and request order, opaque key hashes, route authorization context, and public/private marker labels;
 - cookie scope, old/new session-ID hashes, request schedule, session-object identity, and authenticated marker decision;
 - vulnerable and corrected build results using identical fixtures; and
-- separate claims for path escape, response disclosure, cache-context collision, session race, old-ID persistence, authenticated-state access, escape mismatch, and browser-side statement execution.
+- separate claims for path escape, response disclosure, cache-context collision, session race, old-ID persistence, authenticated-state access, escape mismatch, browser-side statement execution, special-prefix view selection, external redirect, internal forward, and restricted-context method invocation.
 
 Stop at the smallest synthetic proof. These advisories do not by themselves establish arbitrary file read in every Spring application, universal cache poisoning, XSS on a sibling domain, or compromise of a production account.
