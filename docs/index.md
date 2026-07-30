@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Spring Web versioned-resource traversal, shared-cache, and session-rotation boundaries](alerts/2026-07-30-spring-web-resource-session-boundaries-ghsa.md)
 - [flyto-core outbound authority, environment, and file-write parity checks](alerts/2026-07-06-flyto-mcp-ssrf-boundaries-ghsa.md#july-30-follow-up-outbound-authority-secret-and-file-write-parity)
 - [MCP Ruby session-ownership and browser-origin transport checks](alerts/2026-07-29-mcp-package-url-config-boundaries-ghsa.md#july-30-mcp-ruby-transport-follow-up)
 - [OliveTin shell-type and synchronous-output authorization checks](alerts/2026-06-24-olivetin-openam-concrete-boundaries-ghsa.md#july-30-olivetin-shell-type-and-synchronous-output-follow-up)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [CHARX EV charging controller service, backend, firmware, and privilege boundaries](alerts/2026-07-30-charx-ev-charging-control-boundaries-ghsa.md)
 - [WordPress payment, workflow-state, registration, identity, and client-IP boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#july-30-follow-up-bind-public-workflow-state-to-server-authority)
 - [VaahCMS template supply-chain and browser-execution boundaries](alerts/2026-07-30-vaahcms-template-supply-chain-boundary-ghsa.md)
-- [WebSphere/Liberty proxy-parser request-smuggling boundary](alerts/2026-06-11-undertow-proxy-parser-request-smuggling-boundary-ghsa.md#july-30-ibm-websphere-and-liberty-follow-up)
+
 
 
 
