@@ -64,3 +64,48 @@ Capture a decision table rather than a payload dump:
 - Include version, bind address, route path, authentication state, module name category, URL class, normalized destination, response-body exposure, and patched-version negative controls.
 - Keep all artifacts synthetic: inert module markers, fake workflow names, owned callback domains, disposable internal services, and redacted headers.
 - Avoid impact inflation. Claim host command execution only if an authorized lab proves it safely; otherwise report the stronger, safer finding as authentication/denylist drift reaching a dangerous-tool dispatch path.
+
+## July 30 follow-up: outbound authority, secret, and file-write parity
+
+Six later flyto-core advisories expand the same workflow-author trust boundary. Versions before `2.26.7` can expose operator environment values or write outside the configured sandbox; versions through `2.26.6` also contain outbound-request and verification-callback gaps. Version `2.26.7` is the fixed control identified by all six records.
+
+| Advisory | Caller-controlled input | Privileged behavior added later |
+| --- | --- | --- |
+| [GHSA-c9hr-64h3-gxpc / CVE-2026-67424](https://github.com/advisories/GHSA-c9hr-64h3-gxpc) | initial URL accepted by `http.get`, `http.request`, or `http.batch` | automatic redirect reaches a destination that was never revalidated |
+| [GHSA-pgwh-4jj4-qm8v / CVE-2026-67428](https://github.com/advisories/GHSA-pgwh-4jj4-qm8v) | URL supplied to an HTTP-emitting module outside the guarded sibling family | module performs the fetch because an `ssrf_protected` metadata label is not an enforcing guard |
+| [GHSA-jx74-cqjv-2c67 / CVE-2026-67426](https://github.com/advisories/GHSA-jx74-cqjv-2c67) | unauthenticated `flyto-verification` `/run` `callback_url` | service posts a result and attaches its internal runner-secret header |
+| [GHSA-qq9q-xgm3-xv9g / CVE-2026-67425](https://github.com/advisories/GHSA-qq9q-xgm3-xv9g) | public `base_url` for LLM, agent, model, or vector modules | module attaches an operator-configured provider key |
+| [GHSA-hr7p-wg7r-hg9m / CVE-2026-67427](https://github.com/advisories/GHSA-hr7p-wg7r-hg9m) | `${env.VAR}` in workflow data | pre-dispatch interpolation reads a host variable even while `env.get` is denied |
+| [GHSA-2956-977x-2w3r / CVE-2026-67429](https://github.com/advisories/GHSA-2956-977x-2w3r) | `image.download` `output_dir` plus `output_path`, or output paths in sibling media/document modules | process writes outside `FLYTO_SANDBOX_DIR`; `image.download` also accepts attacker-hosted bytes |
+
+### Build a module-by-capability differential
+
+Do not test only the nominally guarded module. Inventory every registered module that can open a socket, attach a credential, resolve a workflow variable, or write a file. Record the enforcement function reached by each concrete code path.
+
+| Capability | Positive control | Differential rows | Bounded positive evidence |
+| --- | --- | --- | --- |
+| outbound fetch | guarded `http.get` to an owned listener | sibling HTTP/API/GraphQL/notification/AI module; direct URL; one owned redirect | unapproved canary listener receives a marker request |
+| callback | configured engine callback | `/run` with an owned alternate callback and no auth | alternate listener receives a fake runner-key fingerprint |
+| provider request | fixed provider endpoint | caller-selected owned `base_url` | listener receives only a deliberately fake provider-token marker |
+| environment read | denied `env.get` | `${env.SKILLZ_CANARY}` in text, URL, header, and nested values | resolver returns the inert canary despite module denial |
+| file write | `file.write` under the sandbox | `image.download` and one format-constrained sibling to a disposable sibling directory | marker file exists outside sandbox but inside the temporary fixture |
+
+For redirects, use two owned listeners and capture initial parsed authority, DNS answer, every `Location`, resolved next-hop authority, socket peer, and returned marker. Compare direct private-class canaries, public-to-public redirects, public-to-prohibited-class lab redirects, cross-port redirects, loops, and over-limit chains. Never substitute cloud metadata or a real internal service for the second listener.
+
+For callback and provider-key tests, seed unique fake values such as `runner-canary-A` and `provider-canary-B`. Record only a hash or short fingerprint. A positive requires **caller chooses authority -> flyto attaches the identified fake credential class -> owned listener receives it**. An outbound request without the marker is not credential disclosure.
+
+For environment-policy parity, place only `SKILLZ_CANARY=env-marker-C` in the process. Compare direct `env.get`, whole-value interpolation, embedded interpolation, nested object/list values, and trace/result serialization. Stop when the inert value crosses the denied policy boundary; do not enumerate process variables or test real key names.
+
+For file confinement, create `tmp/sandbox` and `tmp/sibling`, set `FLYTO_SANDBOX_DIR` to the former, and serve a random text marker from an owned local HTTP server. Test absolute, relative, sibling-prefix, normalized `..`, caller-selected base, and symlink rows as an unprivileged user. A positive is an actual marker write under `tmp/sibling`, not merely a resolved path string. Never target startup files, credentials, service configuration, executable search paths, or files outside the disposable tree.
+
+### Reporting boundaries
+
+Keep each edge independent:
+
+- a metadata tag without an enforcing call is **module-policy drift**, not proof that every module is exploitable;
+- a redirect callback proves final-destination reachability only when the owned second listener receives it;
+- an alternate provider or callback authority proves secret relay only with a fake marker attached;
+- pre-dispatch interpolation bypasses the environment capability policy only when the denied module and interpolation path are tested in the same configuration; and
+- an outside-sandbox write is not code execution unless a separately authorized consumer executes that exact artifact.
+
+Preserve the module ID, caller role, raw and normalized selector, guard reached, credential class, redirect chain or final path, affected-versus-`2.26.7` result, and synthetic marker hash. Do not publish the advisories' live-secret, metadata, or shell-oriented examples as assessment payloads.

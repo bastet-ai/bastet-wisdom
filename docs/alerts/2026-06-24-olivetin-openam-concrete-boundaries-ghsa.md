@@ -119,3 +119,40 @@ These advisories are durable for operators because they expose reusable trust bo
 - Lead with the exact boundary: **reserved argument to command template/environment**, **shared template to cross-user command contamination**, **unauthenticated validation RPC to action enumeration**, **user-writable IdP attribute to deserialization**, **anonymous SOAP to identity-store write**, **push-registration state to anonymous object construction**, **shared token-store row to OAuth/OIDC token acceptance**, **unauthenticated RADIUS reply to application session minting**, **OAuth2 re-login to local credential rewrite**, **MSISDN input to LDAP-filter injection**, **PKCE challenge to token redemption without verifier**, **JWKS cache state to cross-client private-key authentication**, **script sandbox allow/deny list to JVM command execution**, **public calendar widget to private event**, **admin/editor field to trusted browser origin**, **file-version workflow to tokenless approval**, or **Express relationship UI to cross-entity state mutation**.
 - Include product version, package/advisory ID, route or module, role/auth state, canary value, concurrency level where relevant, and a negative control.
 - Keep artifacts synthetic and redacted: marker arguments, lab binding IDs, fake identity records, synthetic calendars/events, and harmless DOM markers.
+
+## July 30 OliveTin shell-type and synchronous-output follow-up
+
+Two additional records show why action execution, argument validation, and output authorization must be tested as independent controls:
+
+- [GHSA-xc5w-4v5w-7x65 / CVE-2026-67438](https://github.com/advisories/GHSA-xc5w-4v5w-7x65): a `regex:` argument type passed the Shell-mode safety check and was interpolated into a `sh -c` command; and
+- [GHSA-jm28-2wcr-qf3h / CVE-2026-67439](https://github.com/advisories/GHSA-jm28-2wcr-qf3h): `StartActionAndWait` and `StartActionByGetAndWait` returned action output to callers with `exec:true` even when `logs:false`.
+
+OliveTin release `3000.17.0` contains the cited fixes. The advisory database maps the command-boundary fix to commit `995ff79736f2` and the output-authorization fix to `e421780c9885`; preserve the exact package or pseudo-version when testing development builds.
+
+### Argument-type-to-shell decision matrix
+
+Use a disposable action whose handler invokes a no-op argument recorder rather than a shell. If reproducing the real Shell branch is necessary, the only permitted effect should be printing a fixed marker inside an isolated container.
+
+1. Define equivalent actions using a literal choice, integer, plain string, raw string, and custom `regex:` type. Keep the visible accepted language as similar as the type system permits.
+2. Feed inert separator-shaped and substitution-shaped strings that the recorder treats only as bytes. Capture validator result, selected argument type, rendered command bytes, execution mode, and recorder argument vector.
+3. Determine whether Shell safety is based on the complete type semantics or a stale list of exact type names. A custom type prefix must not silently enter a less restrictive branch.
+4. Compare direct process/argv mode and Shell mode. If one input value becomes more than one shell token or creates a second no-op recorder event only in Shell mode, preserve the parser differential without escalating the payload.
+5. Repeat on `3000.17.0`. Unsafe custom types should be rejected for Shell mode or passed through a construction path that preserves one argument as one value.
+
+Do not use command-substitution, file-write, callback, reverse-shell, or environment-read payloads from public demonstrations. The bounded report is **custom argument type passes Shell safety -> rendered command changes grammar at the recorder**, with exact action configuration and a fixed-build control.
+
+### Execute-versus-output ACL matrix
+
+Create a synthetic action that prints `output-canary-A` and has no secrets or side effects. Define principals with `exec/logs` combinations `false/false`, `true/false`, `false/true`, and `true/true`, then call each execution and log route family:
+
+| Route family | `exec:true, logs:false` expectation |
+| --- | --- |
+| asynchronous start | action may run; response must not disclose output |
+| `StartActionAndWait` | action may run; returned `LogEntry.Output` must be absent or denied |
+| `StartActionByGetAndWait` | same output decision as the synchronous POST/RPC path |
+| `GetLogs` / `GetActionLogs` | denied |
+| `ExecutionStatus` / `EventStream` | no output-bearing event |
+
+Capture execution count independently from response body. A positive requires **principal is allowed to execute but denied logs -> synchronous route returns the synthetic output marker**. Do not put credentials, tokens, filesystem content, or command results into the test action merely to increase impact. Repeat against `3000.17.0` and require output behavior to match the explicit `logs` permission across every route family.
+
+Update OliveTin reports with the argument type, execution mode, rendered-byte hash, caller identity, `exec` and `logs` decisions, route name, output-marker presence, and affected-versus-fixed result. Keep the command-construction and log-disclosure findings separate even if the same action can reach both.

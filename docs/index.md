@@ -8,6 +8,9 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [flyto-core outbound authority, environment, and file-write parity checks](alerts/2026-07-06-flyto-mcp-ssrf-boundaries-ghsa.md#july-30-follow-up-outbound-authority-secret-and-file-write-parity)
+- [MCP Ruby session-ownership and browser-origin transport checks](alerts/2026-07-29-mcp-package-url-config-boundaries-ghsa.md#july-30-mcp-ruby-transport-follow-up)
+- [OliveTin shell-type and synchronous-output authorization checks](alerts/2026-06-24-olivetin-openam-concrete-boundaries-ghsa.md#july-30-olivetin-shell-type-and-synchronous-output-follow-up)
 - [Kubernetes credential relay, proxy certificate identity, and ACME fetch boundaries](alerts/2026-07-30-kubernetes-credential-relay-proxy-identity-acme-boundaries-ghsa.md)
 - [Uniswap v4 hook authorization, pool-identity, accounting, and callback boundaries](methodology/uniswap-v4-hook-boundary-testing.md)
 - [OpenSSH client-side X11 abstract-socket binding boundary](alerts/2026-07-30-openssh-x11-socket-binding-boundary-ghsa.md)
@@ -15,9 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [WordPress payment, workflow-state, registration, identity, and client-IP boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#july-30-follow-up-bind-public-workflow-state-to-server-authority)
 - [VaahCMS template supply-chain and browser-execution boundaries](alerts/2026-07-30-vaahcms-template-supply-chain-boundary-ghsa.md)
 - [WebSphere/Liberty proxy-parser request-smuggling boundary](alerts/2026-06-11-undertow-proxy-parser-request-smuggling-boundary-ghsa.md#july-30-ibm-websphere-and-liberty-follow-up)
-- [GitLab CI, import, AI, and project-authorization boundaries](alerts/2026-07-29-gitlab-ci-ai-import-boundaries-ghsa.md)
-- [MCP session, package-index path, URL-parser, and generated-config boundaries](alerts/2026-07-29-mcp-package-url-config-boundaries-ghsa.md)
-- [Agent confirmation, Unicode archive, and control-plane identity boundaries](alerts/2026-07-29-agent-archive-control-plane-boundaries-ghsa-kev.md)
 
 
 
