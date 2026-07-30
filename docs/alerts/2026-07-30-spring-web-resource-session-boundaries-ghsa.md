@@ -80,15 +80,27 @@ The vendor requires WebFlux and a compromised sibling subdomain, for example thr
 
 Do not call a stale map entry session fixation unless it remains usable after authentication. Conversely, do not require a real victim or real XSS: owned sibling cookie placement and a deterministic barrier schedule are safer, stronger evidence.
 
+## JavaScript escaping follow-up
+
+[GHSA-3chg-m5w7-qfv5 / CVE-2026-41845](https://github.com/advisories/GHSA-3chg-m5w7-qfv5) adds a separate output-context boundary: `JavaScriptUtils.javaScriptEscape()` in affected Spring Framework releases can leave input able to change generated JavaScript structure. This is only relevant when an application places attacker-controlled data into a JavaScript context through that helper; Spring MVC use alone is not sufficient.
+
+1. Locate actual helper call sites and trace whether a scoped low-privilege input reaches an inline script, event handler, JavaScript URL, JSON-in-script block, or quoted JavaScript string.
+2. Build a canary corpus for the exact sink context: quote terminators, backslashes, line terminators, closing script text, and harmless expression markers. Do not use cookie, storage, navigation, or network APIs.
+3. Capture source input, helper output bytes, complete enclosing script context, parsed browser syntax tree, and a recorder-only marker such as `window.__springCanary = 1` in a disposable browser profile.
+4. Add controls for literal text/HTML contexts, a framework encoder intended for a different context, a fixed build, and a strict JSON serializer where appropriate.
+5. A positive is **attacker-controlled string -> `javaScriptEscape()` output -> browser parses a new inert statement or expression outside the intended string**. Merely seeing punctuation in page source is not enough.
+
+The vendor identifies affected lines through 7.0.7, 6.2.18, 6.1.27, and 5.3.48, with public fixes in 7.0.8 and 6.2.19 plus support-channel releases. Report the exact artifact and call site; do not generalize this helper flaw to every Spring template or call it exploitable without a reachable JavaScript sink.
+
 ## Evidence and reporting checklist
 
 Preserve:
 
-- exact Spring artifacts, versions, MVC versus WebFlux mode, resource-handler configuration, version strategy, cache implementation, and session-store implementation;
+- exact Spring artifacts, versions, MVC versus WebFlux mode, resource-handler configuration, version strategy, cache implementation, session-store implementation, and any `JavaScriptUtils.javaScriptEscape()` call site;
 - raw and normalized paths, selected handler/resolver, configured root, and synthetic returned-file hash;
 - cache state and request order, opaque key hashes, route authorization context, and public/private marker labels;
 - cookie scope, old/new session-ID hashes, request schedule, session-object identity, and authenticated marker decision;
 - vulnerable and corrected build results using identical fixtures; and
-- separate claims for path escape, response disclosure, cache-context collision, session race, old-ID persistence, and authenticated-state access.
+- separate claims for path escape, response disclosure, cache-context collision, session race, old-ID persistence, authenticated-state access, escape mismatch, and browser-side statement execution.
 
 Stop at the smallest synthetic proof. These advisories do not by themselves establish arbitrary file read in every Spring application, universal cache poisoning, XSS on a sibling domain, or compromise of a production account.

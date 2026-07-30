@@ -154,6 +154,18 @@ Report this as **multipart filename -> unnormalized destination join -> file wri
 
 Report this as **network-reachable cost-control route -> unauthenticated service-key write -> cloud credential trust boundary mutation**. Evidence should be route/auth/write-marker state and redacted fake key metadata only.
 
+### July 30 OpenCost Helm-values disclosure follow-up
+
+[GHSA-fq2p-hx59-r7g8 / CVE-2026-67349](https://github.com/advisories/GHSA-fq2p-hx59-r7g8) extends the OpenCost boundary: before 1.121.0, `GET /helmValues` can return the base64-decoded `HELM_VALUES` environment value without authentication, while the adjacent `/serviceKey` administration middleware may fail open when `ADMIN_TOKEN` is unset.
+
+1. Deploy only a disposable OpenCost instance with `HELM_VALUES` containing a fake marker such as `OPENCOST-HELM-CANARY`; include no cloud key, token, endpoint, or customer billing data.
+2. Test `/helmValues` without credentials, with an invalid synthetic token, and with the expected lab administrator token. Record status, content type, length, and marker presence rather than retaining the body.
+3. Run the existing `/serviceKey` marker-write check twice: once with a configured fake `ADMIN_TOKEN` and once with the variable intentionally unset. Keep `CONFIG_PATH` in a temporary directory.
+4. Repeat against 1.121.0 or later and behind any deployment-specific proxy authentication.
+5. Report the edges separately: **unauthenticated route -> decoded deployment-value marker disclosure** and **unset admin token -> middleware permits fake service-key mutation**. Do not treat one as a prerequisite for the other.
+
+Never request this route from a production deployment if it may contain real cloud credentials. Route/auth/version evidence is sufficient when safe synthetic data cannot be guaranteed.
+
 ### Signed-data OCSP freshness replay
 
 1. Build an offline harness around `appstoreserverlibrary.signed_data_verifier.SignedDataVerifier` with `enable_online_checks=True` and synthetic or vendor-provided test-chain material.
