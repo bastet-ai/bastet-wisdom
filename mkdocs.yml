@@ -96,6 +96,7 @@ nav:
       - Return URL Scheme Bypasses: methodology/return-url-scheme-bypass-testing.md
       - Rich-text Import SSRF: methodology/rich-text-import-ssrf-testing.md
       - CVE Reversing: methodology/cve-reversing-web-vulnerabilities.md
+      - Uniswap v4 Hook Boundary Testing: methodology/uniswap-v4-hook-boundary-testing.md
   - Templates:
       - Vulnerability Report: report-templates/vulnerability-report.md
   - Notes:
