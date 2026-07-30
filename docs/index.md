@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [OpenSSH client-side X11 abstract-socket binding boundary](alerts/2026-07-30-openssh-x11-socket-binding-boundary-ghsa.md)
 - [CHARX EV charging controller service, backend, firmware, and privilege boundaries](alerts/2026-07-30-charx-ev-charging-control-boundaries-ghsa.md)
 - [WordPress payment, workflow-state, registration, identity, and client-IP boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#july-30-follow-up-bind-public-workflow-state-to-server-authority)
 - [VaahCMS template supply-chain and browser-execution boundaries](alerts/2026-07-30-vaahcms-template-supply-chain-boundary-ghsa.md)
@@ -17,8 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Agent confirmation, Unicode archive, and control-plane identity boundaries](alerts/2026-07-29-agent-archive-control-plane-boundaries-ghsa-kev.md)
 - [Spring LDAP, WebSocket, and HATEOAS identity-binding boundaries](alerts/2026-07-29-spring-identity-binding-boundaries-ghsa.md)
 - [Easy!Appointments object, OAuth, and CalDAV boundaries](alerts/2026-07-29-easyappointments-object-oauth-ssrf-boundaries-ghsa.md)
-- [Logging configuration, tenant storage, and proot restore boundaries](alerts/2026-07-29-logging-storage-proot-boundaries-ghsa.md)
-
 
 
 
