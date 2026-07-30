@@ -10,6 +10,7 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [VaahCMS template supply-chain and browser-execution boundaries](2026-07-30-vaahcms-template-supply-chain-boundary-ghsa.md)
 - [Agent confirmation, Unicode archive, and control-plane identity boundaries](2026-07-29-agent-archive-control-plane-boundaries-ghsa-kev.md)
 - [Easy!Appointments object, OAuth, and CalDAV boundaries](2026-07-29-easyappointments-object-oauth-ssrf-boundaries-ghsa.md)
 - [Logging configuration, tenant storage, and proot restore boundaries](2026-07-29-logging-storage-proot-boundaries-ghsa.md)
