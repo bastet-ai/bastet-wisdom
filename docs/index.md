@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Template, CMS, token, model, signature, and HTTP-proxy trust boundaries](alerts/2026-07-31-template-cms-token-model-proxy-boundaries-ghsa.md)
 - [Low-code SQL, CMS upload, SOAP code generation, and survey trust boundaries](alerts/2026-07-31-low-code-cms-soap-survey-boundaries-ghsa.md)
 - [Editor sanitizer, image proxy, pgAdmin, and automation event boundaries](alerts/2026-07-31-editor-image-database-automation-boundaries-ghsa.md)
 - [Kubernetes admission webhook outbound and token-mint authority checks](alerts/2026-07-31-kubernetes-admission-webhook-vault-authority-ghsa.md)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [WordPress transaction-proof and unauthenticated REST mutation follow-up](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#july-31-follow-up-transaction-proofs-and-unauthenticated-rest-mutation)
 - [Keycloak URI, introspection, broker, group, revocation, and parameter-precedence follow-up](alerts/2026-06-11-kolibri-hapi-keycloak-flowise-arc-boundary-batch-ghsa.md#july-31-keycloak-identity-policy-differential-follow-up)
 - [WordPress authentication-proof, payment, email-routing, backup, and deserialization follow-up](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#july-31-follow-up-authentication-proofs-workflow-authority-and-artifact-exposure)
-- [MCP Toolbox OAuth, route-scope, dataset, redirect, package-argument, and Node permission boundaries](alerts/2026-07-31-mcp-toolbox-package-permission-boundaries-ghsa.md)
+
 
 
 

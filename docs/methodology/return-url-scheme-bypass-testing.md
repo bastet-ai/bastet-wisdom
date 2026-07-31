@@ -20,6 +20,8 @@ Apache Shiro Jakarta EE [GHSA-7pq2-fhx9-x464 / CVE-2026-48589](https://github.co
 
 React Router [GHSA-wrjc-x8rr-h8h6 / CVE-2026-53669](https://github.com/advisories/GHSA-wrjc-x8rr-h8h6) and [GHSA-jjmj-jmhj-qwj2 / CVE-2026-53668](https://github.com/advisories/GHSA-jjmj-jmhj-qwj2) extend the same method to client-side navigation: mixed leading slash/backslash forms and relative colon-bearing paths can cross from route interpretation into browser URL interpretation. Test `<Link>`, `useNavigate()`, and redirect results independently; the full [React Router navigation and hydration workflow](../alerts/2026-06-03-react-router-redirect-rsc-and-manifest-boundary-batch-ghsa.md#july-23-navigation-rsc-and-hydration-follow-up) also covers RSC protocol checks and manual SSR error deserialization.
 
+GeoNetwork [GHSA-pjp7-q6wp-97qx / CVE-2026-53573](https://github.com/advisories/GHSA-pjp7-q6wp-97qx) adds a post-authentication differential across both OAuth2/OIDC and Keycloak login filters: a target classified as an in-application relative path before login can still normalize to an off-origin browser destination afterward. Preserve the login adapter, pre-login target, stored representation, final `Location`, and browser-normalized URL as separate evidence.
+
 The reusable lesson is broader than any one framework: URL sinks need URL parsing, canonicalization, and origin decisions made in the same representation the browser or redirect client will follow.
 
 ## Preconditions
@@ -110,6 +112,14 @@ Do not send payloads that steal cookies, make privileged changes, or call extern
 - Positive evidence is the post-login `Location` or browser navigation following the client-controlled `Referer` rather than a server-owned saved destination.
 - Capture the module/version, raw `Referer`, login response chain, browser-normalized destination, and patched negative control. Do not send crafted login links to other users or collect credentials.
 
+### GeoNetwork OAuth2/OIDC and Keycloak post-login differential
+
+- Use one disposable GeoNetwork account, an owned identity-provider lab, and an `example.invalid` or owned destination. Do not send login links to another user.
+- Exercise the OAuth2/OIDC and Keycloak filters independently. Start with a normal local target, then test protocol-relative, slash/backslash, encoded-separator, dot-segment, userinfo, and mixed-normalization forms one at a time.
+- Capture the target as received, any session-stored value, the filter's local/foreign decision, final response `Location`, and the browser's resolved origin. A positive requires an off-origin result after a pre-login local-target decision; a rejected malformed value is not a bypass.
+- Compare affected branches with 4.2.16 and 4.4.11. GeoNetwork 3.x and 4.0.x are archived according to the advisory, so do not infer a corrected build for those lines.
+- Stop at navigation to a harmless marker page. This issue does not itself bypass authentication or disclose GeoNetwork data.
+
 ## What to report
 
 A strong bug-bounty report should include:
@@ -169,3 +179,5 @@ https://allowed.example.invalid@evil.example/
 - [GitHub Advisory Database: Apache Shiro Jakarta EE GHSA-7pq2-fhx9-x464 / CVE-2026-48589](https://github.com/advisories/GHSA-7pq2-fhx9-x464)
 - [GitHub Advisory Database: React Router GHSA-wrjc-x8rr-h8h6 / CVE-2026-53669](https://github.com/advisories/GHSA-wrjc-x8rr-h8h6)
 - [GitHub Advisory Database: React Router GHSA-jjmj-jmhj-qwj2 / CVE-2026-53668](https://github.com/advisories/GHSA-jjmj-jmhj-qwj2)
+- [GitHub Advisory Database: GeoNetwork GHSA-pjp7-q6wp-97qx / CVE-2026-53573](https://github.com/advisories/GHSA-pjp7-q6wp-97qx)
+- [GeoNetwork post-login redirect fix PR 9307](https://github.com/geonetwork/core-geonetwork/pull/9307)
