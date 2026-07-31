@@ -119,8 +119,22 @@ Adjacent OpenClaw advisories published later on July 2 continue the same operato
 - Negative controls: fixed version, package allowlist requiring immutable digests, scanner resolving the same metadata as runtime, and runtime refusing out-of-manifest paths.
 - Do not install untrusted marketplace packages on production gateways or run payloads beyond marker-only code.
 
+### July 31 transcript-to-dashboard rendering follow-up
+
+[GHSA-hc44-65x2-rvc2 / CVE-2026-66421](https://github.com/advisories/GHSA-hc44-65x2-rvc2) reports that unauthenticated agent transcript messages reached the OpenClaw Dashboard landing page through unsanitized `innerHTML`, including within a 60-character rendering budget. The GitHub Advisory Database entry was unreviewed at scan time, so confirm the exact artifact, sessions API route, and render implementation before treating the affected path as established.
+
+The durable boundary is **lower-trust transcript producer -> stored session message -> privileged same-origin dashboard DOM**. Test storage and rendering separately:
+
+1. Deploy the affected candidate build with a disposable administrator, no real agents or tools, fake session tokens, and browser APIs instrumented to block network, navigation, storage reads, and privileged API calls.
+2. Submit a unique plain-text transcript marker through the sessions API as the lowest-trust supported caller. Record authentication state, route, stored representation, session ID hash, and whether the marker appears on the default landing page.
+3. Replace executable markup with a harmless event-shaped DOM canary whose handler is rewritten by the test harness to increment an in-memory counter only. Keep the complete fixture within the advisory's stated rendering budget; do not read cookies or invoke admin endpoints.
+4. Capture input bytes, stored bytes, generated HTML, DOM nodes before and after parsing, sanitizer/template decisions, and counter value. Compare escaped text, ordinary HTML, malformed tags, alternate transcript fields, direct session views, and the landing-page summary.
+5. Repeat on the corrected artifact when identified. The lower-trust marker may remain visible as text, but it must not create active attributes/elements or trigger the recorder.
+
+A bounded positive is **unauthenticated or lower-trust sessions API message -> persisted transcript -> landing-page `innerHTML` creates an active DOM node -> inert recorder fires**. Do not collect session tokens, modify instruction files, call live administrative APIs, or claim agent takeover from storage alone.
+
 ## Reporting notes
 
-- Lead with the crossed boundary: **scoped route to admin command**, **approval display to hidden execution**, **hook token to owner MCP tools**, **native approval widget to approver identity**, **browser action to private-network read**, **proxy/locality signal to operator identity**, or **unauthenticated documents route to memory read/write/delete**.
+- Lead with the crossed boundary: **scoped route to admin command**, **approval display to hidden execution**, **hook token to owner MCP tools**, **native approval widget to approver identity**, **browser action to private-network read**, **proxy/locality signal to operator identity**, **transcript storage to privileged dashboard DOM**, or **unauthenticated documents route to memory read/write/delete**.
 - Include version, feature flags, identity used, exact route/transport, positive/negative decision table, and sanitized canary values.
 - Avoid broad claims such as “agent takeover” unless the tested deployment proves a lower-trust principal can reach a real high-impact tool or state transition.
