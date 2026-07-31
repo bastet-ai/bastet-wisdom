@@ -274,6 +274,39 @@ WP Ghost before 7.0.05 reportedly trusts client-IP HTTP headers without proving 
 
 A bounded positive is **untrusted direct peer supplies forwarding header -> plugin selects attacker-controlled canary address -> allowlist or rate-bucket decision changes**. Do not infer bypass of a WAF, upstream proxy, WordPress core login control, or another security plugin.
 
+## July 31 follow-up: authentication proofs, workflow authority, and artifact exposure
+
+The July 31 unreviewed feed adds six durable WordPress checks. Sources: [Realtyna authenticated upload GHSA-2982-9p75-vfp8](https://github.com/advisories/GHSA-2982-9p75-vfp8), [Realtyna static-credential upload GHSA-cfr3-ggcx-jjf3](https://github.com/advisories/GHSA-cfr3-ggcx-jjf3), [FlxWoo payment-state GHSA-j2wf-m8xp-xm7q](https://github.com/advisories/GHSA-j2wf-m8xp-xm7q), [ShopMonitor trusted-source GHSA-g4w8-444w-x9q8](https://github.com/advisories/GHSA-g4w8-444w-x9q8), [miniOrange 2FA GHSA-24j9-5c5r-9c88](https://github.com/advisories/GHSA-24j9-5c5r-9c88), [Demi backup GHSA-q89r-49r9-5hmx](https://github.com/advisories/GHSA-q89r-49r9-5hmx), and [Kirki stored-deserialization GHSA-rpvq-6gf9-58vg](https://github.com/advisories/GHSA-rpvq-6gf9-58vg). Confirm the exact plugin slug, version, reachable function, and corrected behavior before reporting.
+
+### Static plugin proof must not become installation-wide authority
+
+Realtyna illustrates two paths into the same file sink: subscriber-reachable key retrieval plus a weakly gated import route, and a public I/O endpoint whose API values are reportedly seeded identically across installations. In a disposable site, replace the upload/move sink with a recorder and use a benign GIF-like marker carrying a non-executable extension.
+
+1. Compare anonymous, subscriber, and administrator contexts for key retrieval, REST import, and public I/O route families.
+2. Test generated per-installation fake credentials against static migration-seeded fake credentials. Never publish or replay the vendor defaults.
+3. Record authentication proof acceptance separately from extension/content validation and final public-path selection.
+4. Stop when the recorder receives the benign marker and proposed canonical path. Do not upload PHP, probe a real media library, or request execution.
+
+The safe positive is **public or low-role caller -> reusable installation-independent proof or insufficient route authorization -> file recorder accepts attacker-selected bytes/path**. “Upload returned 200” is insufficient, and code execution remains unproven without a separately authorized executable sink—which this workflow deliberately avoids.
+
+### Bind 2FA to the server-held subject secret
+
+Create users A and B with disposable passwords and TOTP seeds. Intercept the final session-creation sink. For B's login, cross server-held seed B with a caller-supplied seed or provisioning value controlled by A, then submit an OTP generated only from A's value. Exercise missing, malformed, expired, replayed, wrong-user, and fixed-build controls.
+
+The proof is **B's valid first factor -> OTP checked against attacker-supplied material rather than B's enrolled server secret -> no-op session sink for B increments**. Do not target an administrator, preserve QR/provisioning URIs, or create a live privileged session.
+
+### Bind payment and email-routing transitions to server authority
+
+- **FlxWoo:** replace the payment provider with a local recorder and fulfillment with a counter. Submit paid, unpaid, unknown, wrong-order, replayed, and malformed checkout-session states. The counter must move only after server-to-provider verification binds payment status, merchant, amount, currency, order, and transaction ID.
+- **ShopMonitor:** reproduce direct client, approved proxy, and origin hops. Supply forwarding/trusted-source headers only with canary addresses and replace email delivery with a recorder. Trigger password reset only for a disposable user. A positive requires an untrusted direct request to satisfy source trust and change the recorder destination; do not deliver mail or take over an account.
+
+### Treat backups and stored objects as two-stage boundaries
+
+- **Demi backup exposure:** create a synthetic backup containing only a unique marker, record its generated URL, then test anonymous access during and after export. Compare predictable-name guesses, directory listing disabled, expired/removed artifact, and fixed-build controls. Stop at the marker; never download a real database, hashes, configuration, or media.
+- **Kirki stored deserialization:** store an inert serialized object whose permitted test class only increments a recorder when instantiated. Capture write principal, stored bytes, later administrator-review trigger, allowed-class decision, and recorder event separately. Use no magic method that executes commands, reads files, makes network requests, or mutates application state.
+
+These are compound chains. Public artifact naming does not prove sensitive content unless the synthetic marker is returned; attacker-controlled storage does not prove object injection until the later deserializer instantiates the inert class.
+
 ## Reporting checklist
 
 Include:

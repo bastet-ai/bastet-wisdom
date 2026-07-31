@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Keycloak URI, introspection, broker, group, revocation, and parameter-precedence follow-up](alerts/2026-06-11-kolibri-hapi-keycloak-flowise-arc-boundary-batch-ghsa.md#july-31-keycloak-identity-policy-differential-follow-up)
+- [WordPress authentication-proof, payment, email-routing, backup, and deserialization follow-up](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#july-31-follow-up-authentication-proofs-workflow-authority-and-artifact-exposure)
 - [MCP Toolbox OAuth, route-scope, dataset, redirect, package-argument, and Node permission boundaries](alerts/2026-07-31-mcp-toolbox-package-permission-boundaries-ghsa.md)
 - [MeshCentral WebSocket origin, SFTPGo symlink permission, RapidRAW preset, and Leapp controller-file boundaries](alerts/2026-07-31-browser-filesystem-controller-boundaries-ghsa.md)
 - [OpenClaw transcript-to-dashboard DOM rendering follow-up](alerts/2026-07-02-openclaw-mcp-memory-agent-boundaries-ghsa.md#july-31-transcript-to-dashboard-rendering-follow-up)
@@ -16,8 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Tika and Leantime secondary file-reference boundaries](alerts/2026-07-30-tika-leantime-file-reference-boundaries-ghsa.md)
 - [Langflow file-route, traversal, and Chroma namespace checks](alerts/2026-06-19-langflow-mailpit-outerbase-miniflux-render-boundaries-ghsa.md#july-30-file-route-traversal-and-chroma-namespace-follow-up)
 - [AWS Amplify component-schema to generated JSX and event-binding boundaries](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md#july-30-aws-amplify-component-schema-follow-up)
-- [Active Storage unsafe libvips operations, degit shell boundaries, LDAP grammar, and Superset parent authorization](alerts/2026-07-30-media-repository-directory-object-boundaries-ghsa.md)
-- [Spring multipart parser and Kotlin Router filter-coverage checks](alerts/2026-07-30-spring-web-resource-session-boundaries-ghsa.md#multipart-parser-differential)
 
 
 

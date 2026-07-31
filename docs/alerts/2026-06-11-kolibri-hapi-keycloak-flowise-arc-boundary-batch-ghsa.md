@@ -10,6 +10,8 @@ July 1 Keycloak update: GitHub advisories [GHSA-rr5q-3xwr-f323](https://github.c
 
 July 15 Keycloak update: GitHub advisories [GHSA-22rm-wp4x-v5cx](https://github.com/advisories/GHSA-22rm-wp4x-v5cx) / CVE-2026-4874 and [GHSA-5v8v-xvjv-57x7](https://github.com/advisories/GHSA-5v8v-xvjv-57x7) / CVE-2026-37977.
 
+July 31 Keycloak update: GitHub advisories [GHSA-6j79-4gfx-fm6f](https://github.com/advisories/GHSA-6j79-4gfx-fm6f) / CVE-2026-18211, [GHSA-jg59-c35g-76r8](https://github.com/advisories/GHSA-jg59-c35g-76r8) / CVE-2026-18208, [GHSA-v8h5-7wp9-qxxv](https://github.com/advisories/GHSA-v8h5-7wp9-qxxv) / CVE-2026-18215, [GHSA-wx5m-whr8-48h5](https://github.com/advisories/GHSA-wx5m-whr8-48h5) / CVE-2026-18203, [GHSA-vhxw-j6h3-48jm](https://github.com/advisories/GHSA-vhxw-j6h3-48jm) / CVE-2026-18218, [GHSA-2w88-g477-cxmj](https://github.com/advisories/GHSA-2w88-g477-cxmj) / CVE-2026-18206, [GHSA-82v3-6227-jc8x](https://github.com/advisories/GHSA-82v3-6227-jc8x) / CVE-2026-18217, [GHSA-w32v-46r7-99r7](https://github.com/advisories/GHSA-w32v-46r7-99r7) / CVE-2026-16105, [GHSA-c8xx-fr3x-6m5w](https://github.com/advisories/GHSA-c8xx-fr3x-6m5w) / CVE-2026-18209, and [GHSA-wmhp-w67v-6jm5](https://github.com/advisories/GHSA-wmhp-w67v-6jm5) / CVE-2026-18214.
+
 This batch is durable because each advisory exposes a reusable operator pattern: server-side URL fetches that reflect remote responses, string-prefix filesystem confinement, identity-provider proof scoping, low-privilege AI-workflow object control, and accidentally public Go `pprof` debug surfaces.
 
 ## What changed
@@ -127,6 +129,53 @@ This batch is durable because each advisory exposes a reusable operator pattern:
 - Check for `/debug/pprof/` unauthenticated access with a single request. If more evidence is needed, prefer `/debug/pprof/goroutine?debug=1` over heap/profile/trace on production.
 - Never collect or publish heap contents that may include tokens, SQL strings, request bodies, or tenant data. Redact runtime excerpts to route names and proof of unauthenticated access.
 - If testing CPU profiling is authorized, keep `seconds` small and perform it only on a lab clone.
+
+## July 31 Keycloak identity-policy differential follow-up
+
+This unreviewed advisory cluster adds six reusable identity checks. Treat the records as source leads: reproduce the exact artifact and configuration, identify the reachable server-side decision, and compare with a fixed vendor build before reporting.
+
+| Boundary | Attacker-controlled representation | Required server binding | Bounded positive |
+| --- | --- | --- | --- |
+| client URI policy | hostname that merely starts with or ends in an allowed string | parsed scheme, DNS-label-bounded host, port, and path | crafted owned host passes a rule intended for another host |
+| token introspection | token for another audience | caller client to token audience before claim serialization | response says inactive but signed response still contains synthetic foreign claims |
+| broker token exchange | Microsoft tenant or Google hosted-domain token | upstream issuer subject plus configured tenant/domain restriction | out-of-policy owned upstream account receives a canary realm token |
+| group policy | group path/name sharing a text prefix | canonical group-tree ancestry | sibling prefix-collision group receives a marker permission |
+| token revocation | realm and client `not-before` timestamps | effective maximum revocation boundary | pre-boundary token still refreshes or reaches synthetic user info |
+| protocol parameters | duplicate values in query or fragment | one canonical parameter set and client-bound response | recorder client consumes attacker-supplied value before the legitimate response |
+
+### URI policy and reverse-DNS suffix checks
+
+Use owned domains such as `allowed.example.test`, `allowed.example.test.attacker.test`, and `notallowed-example.test`; do not use lookalikes of third-party domains. Exercise both the secure-client-URI executor and any dynamic-client-registration host restriction. Record the raw input, one canonical URI parse, forward and reverse DNS results where relevant, and the policy decision. A string prefix/suffix match is not a finding until it permits a synthetic client create/update or redirect configuration that the intended host rule should reject.
+
+Test DNS labels, not text endings: `host.example.test` is under `example.test`, while `hostexample.test` is not. Pin every test address to owned infrastructure and prevent rebinding or private-address resolution.
+
+### Introspection claim-withholding matrix
+
+Create confidential clients A and B plus a synthetic token intended only for A. Configure B for signed JWT introspection responses, then introspect A's token as B. Compare ordinary JSON and signed-response modes and separately record the top-level `active` decision, presence of the signed field, and decoded **synthetic** claim names. The safe positive is `active:false` accompanied by foreign canary claims in the signed payload. Never retain real access tokens or user claims.
+
+### Broker token-exchange restriction parity
+
+Configure one Microsoft broker restricted to tenant A and one Google broker restricted to owned domain A. Use disposable upstream identities from allowed and disallowed owned tenants/domains. Compare interactive broker login with token exchange for the same identity and client. The decisive result is **interactive path rejects the disallowed upstream identity while token exchange issues a marker-only Keycloak token**. Record only issuer, hashed subject, tenant/domain label, route family, and decision; do not test real organizations or harvest profile data.
+
+### Group ancestry and delegated-role route families
+
+Create synthetic groups `/team`, `/team-child`, and `/team-other` plus a policy that extends only to true descendants of `/team`. Exercise exact member, true child, text-prefix sibling, and unrelated controls. Prove only with a no-op protected resource or marker permission.
+
+For the adjacent composite-role advisory, give a delegated canary administrator only the minimum realm-management permission described by the source. Compare ID-based and name-based admin REST route families while attempting to detach only a disposable child role from a synthetic composite. Instrument the role mutation if possible. A status difference is insufficient; require a persisted marker or sink count, then restore it. Never alter built-in administrative composites in a production realm.
+
+### Revocation and parameter-precedence barriers
+
+For revocation, mint one disposable token, set a non-zero realm `not-before`, then move the client boundary forward. Test refresh, user-info, and introspection independently. Capture timestamp ordering and yes/no decisions, not token bytes. The fixed result must use the effective revocation boundary rather than silently ignoring the newer client value.
+
+For SAML HTTP-Redirect and OIDC wildcard callback handling, use a recorder-only service provider/client with a deliberately broad callback in an isolated realm. Submit baseline, duplicate-query, duplicate-fragment, query-versus-fragment, reordered, and encoded-separator cases. The recorder must distinguish attacker canaries from the legitimate server-generated response. Stop at precedence evidence; do not log a real user into another account or forward assertions/codes to a third party.
+
+### Evidence standard
+
+- exact Keycloak build, realm features, client policy, broker restriction, route family, and caller role;
+- raw inputs plus canonical URI/group/parameter representations;
+- guard decision and separate marker-only sink event;
+- positive, negative, and fixed-build controls; and
+- narrow claims: URI-policy bypass, claim disclosure, broker restriction drift, group ancestry confusion, revocation failure, or parameter-precedence confusion—not generic account takeover.
 
 ## Reporting heuristics
 

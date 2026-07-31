@@ -10,6 +10,8 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Keycloak URI, introspection, broker, group, revocation, and parameter-precedence follow-up](2026-06-11-kolibri-hapi-keycloak-flowise-arc-boundary-batch-ghsa.md#july-31-keycloak-identity-policy-differential-follow-up)
+- [WordPress authentication-proof, payment, email-routing, backup, and deserialization follow-up](2026-07-28-wordpress-payment-device-boundaries-ghsa.md#july-31-follow-up-authentication-proofs-workflow-authority-and-artifact-exposure)
 - [VaahCMS template supply-chain and browser-execution boundaries](2026-07-30-vaahcms-template-supply-chain-boundary-ghsa.md)
 - [Agent confirmation, Unicode archive, and control-plane identity boundaries](2026-07-29-agent-archive-control-plane-boundaries-ghsa-kev.md)
 - [Easy!Appointments object, OAuth, and CalDAV boundaries](2026-07-29-easyappointments-object-oauth-ssrf-boundaries-ghsa.md)
