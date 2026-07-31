@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [MCP Toolbox OAuth, route-scope, dataset, redirect, package-argument, and Node permission boundaries](alerts/2026-07-31-mcp-toolbox-package-permission-boundaries-ghsa.md)
 - [MeshCentral WebSocket origin, SFTPGo symlink permission, RapidRAW preset, and Leapp controller-file boundaries](alerts/2026-07-31-browser-filesystem-controller-boundaries-ghsa.md)
 - [OpenClaw transcript-to-dashboard DOM rendering follow-up](alerts/2026-07-02-openclaw-mcp-memory-agent-boundaries-ghsa.md#july-31-transcript-to-dashboard-rendering-follow-up)
 - [SGLang inference API, safe-loader, model-transfer, and multimodal fetch boundaries](alerts/2026-07-30-sglang-inference-api-boundaries-ghsa.md)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [AWS Amplify component-schema to generated JSX and event-binding boundaries](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md#july-30-aws-amplify-component-schema-follow-up)
 - [Active Storage unsafe libvips operations, degit shell boundaries, LDAP grammar, and Superset parent authorization](alerts/2026-07-30-media-repository-directory-object-boundaries-ghsa.md)
 - [Spring multipart parser and Kotlin Router filter-coverage checks](alerts/2026-07-30-spring-web-resource-session-boundaries-ghsa.md#multipart-parser-differential)
-- [Langflow MCP environment and build-job ownership checks](alerts/2026-06-19-langflow-mailpit-outerbase-miniflux-render-boundaries-ghsa.md#july-30-mcp-environment-and-build-job-ownership-follow-up)
+
 
 
 
