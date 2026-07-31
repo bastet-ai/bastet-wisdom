@@ -307,6 +307,45 @@ The proof is **B's valid first factor -> OTP checked against attacker-supplied m
 
 These are compound chains. Public artifact naming does not prove sensitive content unless the synthetic marker is returned; attacker-controlled storage does not prove object injection until the later deserializer instantiates the inert class.
 
+## July 31 follow-up: transaction proofs and unauthenticated REST mutation
+
+Three adjacent plugin records add reusable object-proof and route-authorization checks:
+
+- [Fluent Forms GHSA-gx6f-fm4p-x72r / CVE-2026-17567](https://github.com/advisories/GHSA-gx6f-fm4p-x72r) says payment receipt lookup accepts a bounded, guessable transaction hash derived from observable submission/form/time context;
+- [MailerPress GHSA-gjcp-gv56-hccw / CVE-2026-18437](https://github.com/advisories/GHSA-gjcp-gv56-hccw) says `mailerpress/v1/contact` permits unauthenticated contact updates through 1.5.0; and
+- [MailPress GHSA-vfgx-g9m5-wfgv / CVE-2026-18436](https://github.com/advisories/GHSA-vfgx-g9m5-wfgv) says the campaign revision-restore route was registered without a permission callback through 1.5.0.
+
+The GitHub records were unreviewed at scan time. Confirm the exact plugin slug—the records use both **MailerPress** and **MailPress**—version, route registration, identifier construction, and corrected behavior before reporting.
+
+### Fluent Forms: measure proof entropy without collecting receipts
+
+Use a disposable site containing only two synthetic forms, submissions, transactions, and payment receipts. Replace receipt rendering with a recorder that returns the matched canary transaction ID and no customer fields.
+
+1. Create transactions A and B with distinct marker amounts/statuses and record the server-side inputs used to construct their public transaction proofs.
+2. Capture A's legitimate receipt URL. Change submission ID, form ID, transaction timestamp component, and proof one field at a time.
+3. Reconstruct the candidate space only for B's synthetic tuple. Rate the local function or recorder, not a network endpoint, and record candidate count, alphabet, entropy assumptions, and first match.
+4. Exercise random, expired, wrong-form, wrong-submission, wrong-time-window, cross-session, and fixed-build controls.
+5. Stop when B's canary transaction ID reaches the recorder. Do not render or retain names, email addresses, billing addresses, order items, payment methods, or any production receipt.
+
+The bounded positive is **anonymous caller plus observable synthetic object context -> practical search over transaction proof -> foreign canary transaction reaches the receipt-selection sink**. Do not call the proof predictable solely because it is short; demonstrate the effective candidate space under the application's actual construction and validation rules.
+
+### MailerPress/MailPress: inventory permission callbacks and object binding
+
+Create two contacts and two campaigns owned by a disposable administrator. Campaign A should have two plain-text revisions; campaign B is the foreign-object control. Intercept contact writes and campaign content writes with reversible recorders where possible.
+
+| Route | Anonymous | Low role | Expected manager | Required secure decision |
+| --- | --- | --- | --- | --- |
+| `mailerpress/v1/contact` | reject | reject unless explicitly delegated | update in-scope canary | authenticate, check capability, bind contact ID and writable fields |
+| campaign restore-revision route | reject | reject unless explicitly delegated | restore revision belonging to campaign | authenticate, check campaign capability, bind revision to parent campaign |
+
+1. Enumerate the WordPress REST route definitions and capture `permission_callback`, accepted methods, argument schema, and handler names. Source evidence is useful, but retain a request-to-sink control as well.
+2. For contact update, test omitted ID, own canary, foreign canary, nonexistent ID, duplicate ID, and immutable-looking fields. Change only a reversible marker field; never use a real subscriber record or email address.
+3. For revision restore, cross campaign A with A's revision, campaign A with B's revision, campaign B with A's revision, nonexistent IDs, and an already-current revision. Instrument the content assignment sink or use plain-text markers only.
+4. Record authentication, capability decision, canonical object lookup, parent-child binding, before/after marker hashes, and response independently.
+5. Restore all canaries and repeat on a corrected build.
+
+The safe positives are **anonymous REST request -> contact write recorder accepts a foreign canary ID** and **anonymous REST request -> revision restore changes a synthetic campaign without a capability decision**. A route visible in the REST index or a missing callback in source is not by itself proof of mutation. A valid revision must also belong to the selected campaign; otherwise report parent-child authorization drift separately.
+
 ## Reporting checklist
 
 Include:
