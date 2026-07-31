@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [SDK URL, SSRF, tenant-controller, payment binding, corpus, local-server, filesystem, and node-template boundaries](alerts/2026-07-31-library-tenant-commerce-file-boundaries-ghsa.md)
 - [Dynatrace MCP transport authentication, DQL contract, and persistent workflow-template boundaries](alerts/2026-07-31-dynatrace-mcp-observability-boundaries-ghsa.md)
 - [Zeppelin notebook paths, Kyuubi config aliases, 389 LDAP oracle, and RHACS policy identity](alerts/2026-07-31-notebook-directory-policy-boundaries-ghsa.md)
 - [WordPress transaction-proof and unauthenticated REST mutation follow-up](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#july-31-follow-up-transaction-proofs-and-unauthenticated-rest-mutation)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [MeshCentral WebSocket origin, SFTPGo symlink permission, RapidRAW preset, and Leapp controller-file boundaries](alerts/2026-07-31-browser-filesystem-controller-boundaries-ghsa.md)
 - [OpenClaw transcript-to-dashboard DOM rendering follow-up](alerts/2026-07-02-openclaw-mcp-memory-agent-boundaries-ghsa.md#july-31-transcript-to-dashboard-rendering-follow-up)
 - [SGLang inference API, safe-loader, model-transfer, and multimodal fetch boundaries](alerts/2026-07-30-sglang-inference-api-boundaries-ghsa.md)
-- [Control-plane default authority, route coverage, capability composition, and stale-session checks](alerts/2026-07-30-control-plane-auth-session-boundaries-ghsa.md)
+
 
 
 
