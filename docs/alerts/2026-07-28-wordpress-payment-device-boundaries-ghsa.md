@@ -346,6 +346,52 @@ Create two contacts and two campaigns owned by a disposable administrator. Campa
 
 The safe positives are **anonymous REST request -> contact write recorder accepts a foreign canary ID** and **anonymous REST request -> revision restore changes a synthetic campaign without a capability decision**. A route visible in the REST index or a missing callback in source is not by itself proof of mutation. A valid revision must also belong to the selected campaign; otherwise report parent-child authorization drift separately.
 
+## August 1 follow-up: plan roles, attachment paths, and structural markup allowlists
+
+Three WordPress plugin records add reusable composition checks:
+
+- [Subscriptions for WooCommerce GHSA-x6w6-m8vc-m6cp / CVE-2026-15414](https://github.com/advisories/GHSA-x6w6-m8vc-m6cp), with the [2.0.0 plan save handler](https://plugins.svn.wordpress.org/subscriptions-for-woocommerce/tags/2.0.0/includes/membership/class-wps-membership-plan-cpt.php);
+- [Bit Integrations GHSA-j262-2rh9-xjv4 / CVE-2026-15006](https://github.com/advisories/GHSA-j262-2rh9-xjv4), with the [2.9.0 mail attachment handler](https://plugins.svn.wordpress.org/bit-integrations/tags/2.9.0/backend/Actions/Mail/MailController.php) and [Contact Form 7 trigger](https://plugins.svn.wordpress.org/bit-integrations/tags/2.9.0/backend/Triggers/CF7/CF7Controller.php); and
+- [SendPulse Email Marketing Newsletter GHSA-5jrx-957p-3f93 / CVE-2026-13362](https://github.com/advisories/GHSA-5jrx-957p-3f93), with the [2.2.5 form-meta writer](https://plugins.svn.wordpress.org/sendpulse-email-marketing-newsletter/tags/2.2.5/inc/class-senpulse-newsletter-forms.php) and [shortcode renderer](https://plugins.svn.wordpress.org/sendpulse-email-marketing-newsletter/tags/2.2.5/inc/class-senpulse-newsletter-shortcodes.php).
+
+The records were unreviewed at scan time. Confirm the exact free/Pro plugin combination, configured integration flow, custom-post capability mapping, reachable render path, and corrected behavior before reporting.
+
+### Compose content capabilities with delayed role assignment
+
+Subscriptions for WooCommerce 2.0.0 registers `wps_membership_plan` with the ordinary `post` capability model. Its plan save handler accepts a valid plan nonce plus `edit_post`, sanitizes `_wps_plan_user_role` as a key, verifies only that the slug names a registered role, and stores it. The advisory says the Pro companion later reads that meta and applies the role during membership lifecycle events. A disabled role selector in the browser is not a server policy, and “registered role” is not a safe privilege allowlist.
+
+1. Use a disposable site with the exact affected free/Pro combination, a synthetic contributor, and a harmless custom role with no administrative capabilities. Replace the Pro role-application sink with a recorder when possible.
+2. Determine whether the contributor can create or edit a membership-plan post and obtain the plan nonce. Preserve nonce provenance and a hash, not the token.
+3. Capture an ordinary plan save, then vary only `_wps_plan_user_role`: omitted, harmless custom role, nonexistent slug, expected membership role, and a privileged-looking slug sent only to a recorder that rejects before mutation.
+4. Trigger each configured purchase, subscription, auto-enrolment, expiry, and removal lifecycle path using synthetic users and products. Record plan ID, canonical stored slug, lifecycle event, target canary user, and the argument reaching `add_role()` or its equivalent.
+5. Repeat on the corrected build. Require a plan-management capability separate from generic content editing and a server-side allowlist containing only purpose-built membership roles.
+
+The bounded positive is **content-editing principal -> editable plan plus valid nonce -> caller-selected harmless role persists -> later membership event reaches the role-assignment recorder without promotion authority**. Do not request `administrator`, grant capabilities, buy a real product, or create a privileged session. Report edit-screen reachability, persistence, and delayed role application as separate edges.
+
+### Trace public form fields into mail attachment paths
+
+Bit Integrations 2.9.0 merges Contact Form 7 posted data with uploaded-file values, then executes configured flows. Its mail action treats the configured attachment selector as a key into that field map; `processAttachment()` accepts each readable path and forwards it to `wp_mail()` without a visible allowed-root check. This is a configured chain: anonymous form submission alone is not enough unless an attacker-controlled field is selected as the mail attachment input and survives into the action.
+
+1. Build a disposable WordPress/Contact Form 7/Bit Integrations site with one public canary form and a mail flow whose transport is replaced by an attachment-path recorder. Disable real email delivery.
+2. Seed a normal uploaded-file canary inside the expected temporary upload root and a second plain-text canary in a disposable sibling directory. No WordPress configuration, keys, user data, logs, or host files should exist in the lab.
+3. Record the configured attachment field name. Submit expected upload metadata, a plain field containing the sibling canary path, relative and absolute benign path forms, a nonexistent path, a directory, a symlink to an in-root canary, and a symlink to the sibling canary. Change one representation at a time.
+4. Intercept `wp_mail()` before it opens or sends attachments. Capture only the canonical paths proposed by the plugin and return a synthetic success response; do not attach, copy, or email the sibling file.
+5. Establish controls with no matching flow, a flow whose attachment selector names only the real upload field, authenticated-only form access, unreadable canaries, and the corrected plugin.
+
+A safe positive is **anonymous synthetic submission -> configured attachment field -> readable sibling-canary path reaches the mail attachment recorder outside the approved upload root**. A public form, readable local path, or mail-flow configuration by itself is insufficient. Do not use traversal to read content; path selection plus canonical-root evidence proves the boundary.
+
+### Validate the whole markup tree, not one approved child
+
+SendPulse 2.2.5 stores raw `_sp_form_code` for users who can edit a `sendpulse_form`. The shortcode renderer parses that string, verifies that the DOM contains exactly one `script` whose host and attributes are allowed, then returns the **entire original string** unchanged. The structural mismatch is durable: a validator approves one descendant while the renderer trusts the complete container, including sibling elements it did not validate.
+
+1. Use a disposable site, synthetic contributor, test form post, and a page containing only the test shortcode. Block outbound requests and replace browser script/event/navigation sinks with counters.
+2. First store one inert script element whose `src` uses an approved host but is prevented from loading. Confirm that the validator's positive branch returns the original markup.
+3. Add harmless sibling markup carrying a unique `data-*` marker before and after the approved script. Do not use event handlers, external resources, forms, navigation, CSS, or executable JavaScript.
+4. Record the raw stored string, DOM tree seen by the validator, selected script count/host/attributes, returned output bytes, final page DOM, and marker presence.
+5. Exercise controls with zero scripts, two scripts, a non-approved host, a disallowed script attribute, sibling text only, malformed nesting, contributor versus expected manager, and the corrected build.
+
+The safe positive is **low-role author stores container markup -> validator approves its one allowed script descendant -> renderer returns unvalidated sibling markup unchanged -> inert sibling marker appears in the shortcode DOM**. This proves policy-scope drift, not script execution. Claim stored XSS only when an independently authorized harmless browser counter demonstrates an executable sink; do not load SendPulse or any attacker-controlled host during validation.
+
 ## Reporting checklist
 
 Include:
