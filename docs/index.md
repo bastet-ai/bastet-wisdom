@@ -17,7 +17,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [SDK URL, SSRF, tenant-controller, payment binding, corpus, local-server, filesystem, and node-template boundaries](alerts/2026-07-31-library-tenant-commerce-file-boundaries-ghsa.md)
 - [Dynatrace MCP transport authentication, DQL contract, and persistent workflow-template boundaries](alerts/2026-07-31-dynatrace-mcp-observability-boundaries-ghsa.md)
 - [Zeppelin notebook paths, Kyuubi config aliases, 389 LDAP oracle, and RHACS policy identity](alerts/2026-07-31-notebook-directory-policy-boundaries-ghsa.md)
-- [WordPress file-deletion confinement across missing upload-root states](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-1-follow-up-test-file-confinement-in-every-root-lifecycle-state)
+- [WordPress identity-proof, business-action, and filesystem-selector boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-1-follow-up-bind-identity-proofs-to-one-subject-and-one-browser-flow)
 
 
 

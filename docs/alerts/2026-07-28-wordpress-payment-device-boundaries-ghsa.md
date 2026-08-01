@@ -412,6 +412,79 @@ The bounded positive is **anonymous delete request -> caller-selected token reso
 
 Generalize this check to any upload, cache, extraction, or workspace helper that calls `realpath()` on both a candidate and an intended base. Build explicit fixtures for absent, empty, populated, symlinked, moved, and permission-denied roots; reject on any failed canonicalization before comparing paths.
 
+## August 1 follow-up: bind identity proofs to one subject and one browser flow
+
+The August 1 WordPress wave adds several authentication failures that look different at the route level but share one durable question: **which server-held subject and initiating browser flow does this proof authorize?** Relevant records were unreviewed at scan time:
+
+- [Single Sign On For TNG unauthenticated password reset GHSA-75h6-5h53-j8cq](https://github.com/advisories/GHSA-75h6-5h53-j8cq)
+- [User Profile Builder post-registration login binding GHSA-p782-jwj4-rqqc](https://github.com/advisories/GHSA-p782-jwj4-rqqc)
+- [Authora one-time-code disclosure GHSA-qh94-hqp6-76h4](https://github.com/advisories/GHSA-qh94-hqp6-76h4)
+- [Login & Register Forms reset-counter binding GHSA-79h9-6m37-f387](https://github.com/advisories/GHSA-79h9-6m37-f387)
+- [Chat On Desk OTP-state enforcement GHSA-ggm5-8542-75h6](https://github.com/advisories/GHSA-ggm5-8542-75h6)
+- [Builderall OAuth `state` session binding GHSA-q7qm-9x83-phwf](https://github.com/advisories/GHSA-q7qm-9x83-phwf)
+- [DynamicKit reset-link authority selection GHSA-wrwc-chj8-j397](https://github.com/advisories/GHSA-wrwc-chj8-j397)
+- [YOP Poll forwarding-header vote-limit bypass GHSA-jqjg-6w6p-5mh7](https://github.com/advisories/GHSA-jqjg-6w6p-5mh7)
+
+Confirm the exact plugin slug, affected version, feature configuration, route, and fixed behavior. A WordPress nonce is request provenance, not account ownership. An OTP or OAuth `state` value is useful only when the server binds it to the intended subject, purpose, initiating session, attempt budget, and expiry. A reset key can still be compromised if the requester chooses the authority placed into the emailed link.
+
+### Two-user proof-binding matrix
+
+1. Use a disposable site, users A and B, a local mail sink, fake mobile numbers, fake OAuth credentials, and an intercepted session-creation sink. Neither user should have administrative capabilities.
+2. Record each flow as a tuple: `initiating browser`, `subject`, `purpose`, `proof`, `attempt bucket`, `redirect authority`, and `final sink`. Hash short-lived proofs in retained evidence.
+3. For the TNG reset route, vary valid public nonce, email A/B, operation name, missing ownership proof, and fixed-build behavior. Intercept `reset_password()` before mutation. A public nonce must not authorize a caller-selected account reset.
+4. For User Profile Builder, create user A through the affected non-default registration mode, then vary any caller-controlled identity field so the post-registration login resolver points at A, B, a nonexistent ID, and a recorder-only privileged sentinel. The newly created canonical user ID—not a request value—must select the session subject.
+5. For Authora and Chat On Desk, cross A's OTP request, verification token, claimed mobile number, verification state, and reset request with B one field at a time. The issue is proven when the response exposes a usable proof or the reset/session recorder for B increments without a server-held verified state for B; do not create a live session or change a password.
+6. For Login & Register Forms, keep the target fixed and vary the unauthenticated value used to key the code and attempt counter. Use a patched verifier with a tiny synthetic code space and no password mutation. Show whether changing that value resets the budget while the same target/code verification remains reachable; never brute-force a network endpoint.
+7. For Builderall, start independent OAuth flows in browsers A and B against a mocked provider. Cross `state`, callback code, browser cookie, and already-connected integration state. Record only which fake token would reach the option-write recorder. Durable overwrite and first-time connection are separate cases.
+8. For DynamicKit, submit only owned callback authorities and capture the local mail sink. Compare configured site origin, caller-selected origin, userinfo, explicit port, mixed case, trailing dot, encoded separators, and malformed values. Redact the reset key; the result is the authority decision, not account takeover.
+9. Repeat all cases on corrected builds and require single-use proofs, one subject, one purpose, one initiating session, a server-side attempt budget, and a server-owned reset-link authority.
+
+The bounded positives are **public request proof -> foreign-subject reset/session recorder**, **same target plus caller-resettable counter -> verification budget restarts**, **OAuth callback from browser B -> browser A's fake integration token is replaced**, or **caller URL -> valid synthetic reset key is addressed to an owned foreign authority**. Report these separately; do not collapse them into generic “authentication bypass.”
+
+YOP Poll belongs in the same identity-provenance family but uses a network principal. Recreate direct client, approved proxy, and origin hops; test only synthetic forwarding addresses and a vote-counter recorder. A positive is **untrusted immediate peer -> caller header selects the rate-limit identity -> a second canary vote reaches the recorder**. Do not manipulate a public poll or infer that another proxy or security control is bypassed.
+
+## August 1 follow-up: separate object ownership from business-action authority
+
+The same wave exposes reusable role, order, ticket, and delegated-credential boundaries:
+
+- [Pronamic Pay caller-selected user role GHSA-72h4-7f42-rjh6](https://github.com/advisories/GHSA-72h4-7f42-rjh6)
+- [RealHomes Memberships unverified premium tier GHSA-mm9c-22g4-wf37](https://github.com/advisories/GHSA-mm9c-22g4-wf37)
+- [Direct Payments for WooCommerce order mutation GHSA-cp6p-3j8j-57c9](https://github.com/advisories/GHSA-cp6p-3j8j-57c9)
+- [Buckaroo refund authorization GHSA-63p2-7wgc-gxrq](https://github.com/advisories/GHSA-63p2-7wgc-gxrq)
+- [Event Tickets order-status mutation GHSA-rpwc-gx32-cjcf](https://github.com/advisories/GHSA-rpwc-gx32-cjcf)
+- [Event Tickets seating-object authorization GHSA-cfmh-2g6m-xpvm](https://github.com/advisories/GHSA-cfmh-2g6m-xpvm)
+- [Fluent Support per-ticket customer reassignment GHSA-vprj-v253-jvjv](https://github.com/advisories/GHSA-vprj-v253-jvjv)
+- [Pixel Tag Manager delegated conversion event GHSA-9mjw-584w-6228](https://github.com/advisories/GHSA-9mjw-584w-6228)
+- [Pixelavo delegated conversion event GHSA-gm56-v4px-r8mh](https://github.com/advisories/GHSA-gm56-v4px-r8mh)
+
+### No-op business-action harness
+
+1. Build a two-user lab with orders A/B, tickets A/B, events A/B, one harmless custom role, and mocked payment/advertising providers. Replace refunds, fulfillment, email, role assignment, inventory writes, and external API dispatch with argument recorders.
+2. For Pronamic Pay, use the ordinary Gravity Forms path and vary only the role field. Confirm form ownership and the caller's current role independently. Send a harmless role to `set_role()`; send privileged-looking slugs only to a rejecting recorder.
+3. For RealHomes and Direct Payments, cross user A's request with order/membership objects owned by A and B. Vary status, tier, payment label, and proof-file metadata independently. Persist only marker states and restore them immediately.
+4. For Buckaroo and Event Tickets, compare anonymous, subscriber, contributor, scoped event manager, and expected operator. A valid nonce does not replace a refund/order capability check; event-level edit access does not authorize every seating layout or attendee assignment.
+5. For Fluent Support, create agents scoped to separate synthetic inboxes. Cross ticket ID, current customer, replacement customer, inbox, and agent one field at a time. Stop at a no-op reassignment recorder; never read ticket bodies.
+6. For Pixel Tag Manager and Pixelavo, block outbound networking and substitute a local conversion-API recorder loaded with a fake token. Compare missing, public-page, stale, wrong-action, and expected nonces plus malformed event fields. Record whether an anonymous caller can spend the site's delegated API authority, not whether the provider accepted an event.
+7. Repeat on fixed builds and require capability, object ownership, parent-child scope, writable-field allowlists, server-side payment state, and idempotency before any sink.
+
+The safe result is a decision table showing **caller -> proof -> canonical object -> required capability -> recorder action**. A JSON success, guessed object ID, or public nonce alone is not enough. Do not issue refunds, alter real orders, grant premium service, reassign customer records, modify event inventory, or send advertising events.
+
+## August 1 follow-up: prove chained filesystem selectors without touching host files
+
+Two records add useful multi-stage filesystem checks:
+
+- [Nex Forms stored-location to deletion chain GHSA-2446-gfm3-96v2](https://github.com/advisories/GHSA-2446-gfm3-96v2)
+- [Support Genix ticket-attachment traversal GHSA-g8p2-p6hq-8pw4](https://github.com/advisories/GHSA-g8p2-p6hq-8pw4)
+
+Nex Forms reportedly lets the same authenticated principal first store a caller-selected `location` value and later send the resulting record through a deletion handler that passes the stored path to `unlink()`. Support Genix reportedly applies an extension allowlist to an attachment-download selector without first proving that the canonical file belongs to the selected ticket and attachment root. HTML sanitization does not make a string safe as a path, and an extension allowlist does not provide confinement.
+
+1. Use disposable directories containing only an in-root attachment and a sibling text canary. Patch `unlink()` and file-open/read helpers to record canonical paths without deleting or returning content.
+2. For Nex Forms, capture write principal, stored raw bytes, canonicalized stored value, deletion trigger principal, and final sink argument separately. Test own record, foreign record, nonexistent record, relative sibling path, absolute sibling path, mixed separators, and symlinked canaries.
+3. For Support Genix, compare valid own-ticket attachment ID, foreign-ticket attachment ID, sibling canary with an allowed extension, disallowed extension, encoded separators, duplicate path parameters, and fixed-build behavior. Stop when the recorder receives an outside-root path.
+4. Require corrected builds to resolve an attachment by a server-side object ID, bind it to the selected ticket and caller, canonicalize an existing target, verify root containment, reject symlink escape, and only then open or delete it.
+
+The bounded positives are **authorized first-stage record write -> stored synthetic path -> later delete recorder receives sibling canary** and **download route -> extension-approved but outside-root sibling path reaches read recorder**. Do not delete a file, return canary content, inspect another user's ticket, or use configuration, credential, log, backup, plugin, or operating-system paths.
+
 ## Reporting checklist
 
 Include:
@@ -420,6 +493,8 @@ Include:
 - each chain edge as a decision table rather than one inflated impact label;
 - intended-root lifecycle state, raw/decoded token, canonical target, containment result, and delete-sink decision for filesystem operations;
 - nonce provenance, capability result, selected option or role, request-post owner, target user, global-setting scope, payment/order binding, and resolved virtual path;
+- proof subject, initiating browser/session, attempt-bucket key, reset-link authority, immediate network peer, and chosen client identity;
+- canonical order/ticket/event owner, parent object, delegated provider authority, recorder action, and idempotency state;
 - browser, normalized, stored, and gateway-recorder amount representations for payment-integrity checks;
 - first-stage metadata write authority, exact inert key hash, later duplicate trigger identity, and recorded SQL token-boundary diff for second-order checks;
 - affected and fixed controls, including feature-disabled and unconfigured states;
