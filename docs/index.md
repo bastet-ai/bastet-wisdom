@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [AI dataset deserialization, scheduler fetch, and stale-session boundaries](alerts/2026-08-01-ai-scheduler-session-boundaries-ghsa.md)
 - [File-browser subtitle, agent file, and GraphQL recovery boundaries](alerts/2026-07-31-file-agent-graphql-boundaries-ghsa.md)
 - [Template, CMS, token, model, signature, and HTTP-proxy trust boundaries](alerts/2026-07-31-template-cms-token-model-proxy-boundaries-ghsa.md)
 - [Low-code SQL, CMS upload, SOAP code generation, and survey trust boundaries](alerts/2026-07-31-low-code-cms-soap-survey-boundaries-ghsa.md)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Dynatrace MCP transport authentication, DQL contract, and persistent workflow-template boundaries](alerts/2026-07-31-dynatrace-mcp-observability-boundaries-ghsa.md)
 - [Zeppelin notebook paths, Kyuubi config aliases, 389 LDAP oracle, and RHACS policy identity](alerts/2026-07-31-notebook-directory-policy-boundaries-ghsa.md)
 - [WordPress transaction-proof and unauthenticated REST mutation follow-up](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#july-31-follow-up-transaction-proofs-and-unauthenticated-rest-mutation)
-- [Keycloak URI, introspection, broker, group, revocation, and parameter-precedence follow-up](alerts/2026-06-11-kolibri-hapi-keycloak-flowise-arc-boundary-batch-ghsa.md#july-31-keycloak-identity-policy-differential-follow-up)
+
 
 
 
