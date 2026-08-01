@@ -392,12 +392,33 @@ SendPulse 2.2.5 stores raw `_sp_form_code` for users who can edit a `sendpulse_f
 
 The safe positive is **low-role author stores container markup -> validator approves its one allowed script descendant -> renderer returns unvalidated sibling markup unchanged -> inert sibling marker appears in the shortcode DOM**. This proves policy-scope drift, not script execution. Claim stored XSS only when an independently authorized harmless browser counter demonstrates an executable sink; do not load SendPulse or any attacker-controlled host during validation.
 
+## August 1 follow-up: test file confinement in every root-lifecycle state
+
+[FormGent GHSA-68f5-7j6g-q5r2 / CVE-2026-3141](https://github.com/advisories/GHSA-68f5-7j6g-q5r2) adds a filesystem-validation edge that is easy to miss when a test fixture creates its upload directory too early. In versions through 1.9.2, the public `responses/attachments` route family includes a delete handler that base64-decodes a caller-supplied file token, appends it beneath the WordPress uploads path, resolves the result with `realpath()`, and compares it with `realpath()` of the intended `uploads/formgent` root. The [1.9.2 controller](https://plugins.svn.wordpress.org/formgent/tags/1.9.2/app/Http/Controllers/AttachmentController.php) builds that comparison even when the intended root does not exist. The advisory reports that this default post-install state weakens the containment check and permits traversal outside the FormGent directory. The [1.10.0 controller](https://plugins.svn.wordpress.org/formgent/tags/1.10.0/app/Http/Controllers/AttachmentController.php) instead validates a structured file token and resolves an existing upload path through a dedicated helper.
+
+This is two independent boundaries: **may the caller invoke deletion**, and **is the resolved existing target inside the intended root for every root state**. A happy-path test performed only after the first FormGent upload may exercise a different branch from a fresh installation.
+
+### Disposable sibling-canary matrix
+
+1. Use a disposable WordPress site and snapshot it immediately after installing FormGent 1.9.2. Do not submit a form or upload an attachment before capturing the **root absent** fixture.
+2. Create only harmless marker files in disposable directories: one beneath the intended FormGent root for the **root present** fixture and one sibling canary beneath the lab uploads directory. Do not place canaries at `wp-config.php`, plugin/theme paths, media owned by another user, logs, backups, or operating-system paths.
+3. Confirm route registration, method, authentication middleware or permission callback, and normalized request parameters from source and a normal request. Record anonymous, subscriber, expected form submitter, and administrator decisions independently; route visibility alone is not proof that deletion reaches the sink.
+4. Replace `wp_delete_file()` with a recorder if possible. Feed it a normal in-root token, a nonexistent target, an encoded sibling-canary traversal, repeated separators, dot segments, mixed separator forms relevant to the host, and malformed base64. The recorder should retain only the proposed canonical path and whether it is inside the expected root.
+5. Run the same matrix with the FormGent root absent, present, replaced by a file, and represented through a symlink to another disposable directory. Recreate the snapshot between cases so one upload does not silently change the root lifecycle state.
+6. If sink-level proof is explicitly required, permit deletion only of the disposable sibling canary, verify its pre/post hash and absence, then restore the fixture. Stop after one marker. Never delete application configuration or use a missing configuration file to trigger WordPress reinstallation.
+7. Repeat on 1.10.0. Require malformed or unsigned tokens, traversal-shaped relative paths, symlink escapes, and targets outside the canonical upload root to fail before the delete sink in every lifecycle state.
+
+The bounded positive is **anonymous delete request -> caller-selected token resolves to the disposable sibling canary while the FormGent root is absent -> delete recorder accepts that outside-root path**. An optional marker-only deletion can confirm impact in the lab, but site takeover is not necessary and must not be attempted. Report root state, token representation, canonical target, route authorization, and sink decision separately.
+
+Generalize this check to any upload, cache, extraction, or workspace helper that calls `realpath()` on both a candidate and an intended base. Build explicit fixtures for absent, empty, populated, symlinked, moved, and permission-denied roots; reject on any failed canonicalization before comparing paths.
+
 ## Reporting checklist
 
 Include:
 
 - exact product/plugin slug, version or firmware, configuration state, route/action, method, and authentication context;
 - each chain edge as a decision table rather than one inflated impact label;
+- intended-root lifecycle state, raw/decoded token, canonical target, containment result, and delete-sink decision for filesystem operations;
 - nonce provenance, capability result, selected option or role, request-post owner, target user, global-setting scope, payment/order binding, and resolved virtual path;
 - browser, normalized, stored, and gateway-recorder amount representations for payment-integrity checks;
 - first-stage metadata write authority, exact inert key hash, later duplicate trigger identity, and recorded SQL token-boundary diff for second-order checks;
