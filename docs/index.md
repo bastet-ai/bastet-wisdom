@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Privileged PID-file symlink boundary validation](alerts/2026-08-01-privileged-pidfile-symlink-boundary-ghsa.md)
 - [HTTP client, identity, router, CI, and RDP boundary checks](alerts/2026-08-01-http-identity-router-rdp-boundaries-ghsa.md)
 - [AI dataset deserialization, scheduler fetch, and stale-session boundaries](alerts/2026-08-01-ai-scheduler-session-boundaries-ghsa.md)
 - [File-browser subtitle, agent file, and GraphQL recovery boundaries](alerts/2026-07-31-file-agent-graphql-boundaries-ghsa.md)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Kubernetes admission webhook outbound and token-mint authority checks](alerts/2026-07-31-kubernetes-admission-webhook-vault-authority-ghsa.md)
 - [SDK URL, SSRF, tenant-controller, payment binding, corpus, local-server, filesystem, and node-template boundaries](alerts/2026-07-31-library-tenant-commerce-file-boundaries-ghsa.md)
 - [Dynatrace MCP transport authentication, DQL contract, and persistent workflow-template boundaries](alerts/2026-07-31-dynatrace-mcp-observability-boundaries-ghsa.md)
-- [Zeppelin notebook paths, Kyuubi config aliases, 389 LDAP oracle, and RHACS policy identity](alerts/2026-07-31-notebook-directory-policy-boundaries-ghsa.md)
 
 
 
