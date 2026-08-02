@@ -10,6 +10,7 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Transformers named-chat-template file-write follow-up](2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-2-transformers-named-chat-template-file-write-follow-up)
 - [Vikunja principal-type collision and project/view authorization checks](2026-08-02-vikunja-principal-object-boundaries-ghsa.md)
 - [ArcadeDB MCP principal, cluster-token, and trigger-authority follow-up](2026-07-16-arcadedb-nuclio-pheditor-boundaries-ghsa.md#august-2-arcadedb-mcp-principal-and-server-authority-follow-up)
 - [Better Auth path-normalization and passkey-object follow-up](2026-07-07-better-auth-aider-netfoil-ckan-mcp-boundaries-ghsa.md#august-2-better-auth-path-and-passkey-object-follow-up)

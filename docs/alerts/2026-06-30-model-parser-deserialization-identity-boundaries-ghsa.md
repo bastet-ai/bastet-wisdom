@@ -70,8 +70,27 @@ The bounded positive is **untrusted model artifact -> external-link metadata -> 
 
 This pattern generalizes to model, archive, and scientific-data formats that support external references. Inventory nested files, URIs, link tables, sidecar tensors, schema includes, and resolver callbacks even when the primary artifact passed extension, signature, or `safe_mode` checks.
 
+## August 2 Transformers named-chat-template file-write follow-up
+
+[GHSA-xrqw-3rrv-vx5w / CVE-2026-9856](https://github.com/advisories/GHSA-xrqw-3rrv-vx5w) reports that `huggingface/transformers <= 5.8.0.dev0` used attacker-controlled `chat_template` dictionary keys as filenames when `PreTrainedTokenizerBase.save_pretrained()` or `ProcessorMixin.save_pretrained()` emitted named templates. A malicious Hub repository could supply the legacy list-of-dictionaries form in `tokenizer_config.json`; each `name` becomes a dictionary key and then `additional_chat_templates/<name>.jinja`. A traversal-bearing name could therefore move the write outside the requested save directory when a downstream workflow downloaded and re-saved the tokenizer or processor.
+
+The GitHub record was unreviewed at scan time and does not list a corrected release. The linked [Transformers commit](https://github.com/huggingface/transformers/commit/eaaaf8494dd5386634ae37d1d122212fdc315be5) adds resolved-parent checks to both save paths and regression tests. Confirm the exact package build and fixed-release provenance; do not infer that loading alone writes a file, because the vulnerable edge requires the later `save_pretrained()` operation.
+
+### Recorder-first save matrix
+
+1. Use an offline disposable environment containing affected and corrected Transformers builds, a toy tokenizer or processor, and a temporary root with `save/` plus one randomly named sibling canary path. Do not use a real model cache, home directory, notebook tree, startup file, credentials directory, or production inference worker.
+2. Construct local synthetic `chat_template` dictionaries rather than downloading an unknown repository. Include a normal name, nested separator, parent traversal, absolute-path-like name, mixed separator, dot segment, Unicode lookalike, symlinked `additional_chat_templates` directory, and a template name that merely contains two dots. Keep every template body to a random inert marker.
+3. Patch `open()` or the module's file-write helper to record the raw path, normalized path, canonical parent, open mode, and marker hash, then raise before creating a file outside the temporary `save/` tree. Exercise tokenizer and processor save paths separately; a helper-only call is not evidence that an application's import/export workflow reaches the sink.
+4. Establish positive and negative controls: a valid named template should resolve immediately under `save/additional_chat_templates/`; traversal-shaped names should be rejected before the write recorder; a normal single-template save should retain expected behavior.
+5. If a filesystem proof is explicitly required in an isolated affected build, permit only one write to the pre-created disposable sibling canary path and verify its random marker hash. Never overwrite an existing file, target shell or Python startup files, or combine the primitive with code execution.
+6. Repeat against the commit above or a release proven to contain it. Require rejection before file creation in both `PreTrainedTokenizerBase` and every reachable `ProcessorMixin` subclass; the advisory specifically notes Idefics, Florence, Gemma, Phi, and Qwen-VL families as examples.
+
+The bounded positive is **untrusted repository metadata -> named chat-template key -> canonical output path outside the requested tokenizer/processor save root -> write recorder**. Preserve the full application chain in evidence: repository authority, revision pin, `tokenizer_config.json` representation, class selected, call site that invokes `save_pretrained()`, requested save root, canonical destination, and fixed-build result. Report path acceptance, write reachability, overwrite semantics, and any later execution sink as separate claims.
+
+This generalizes beyond model deserialization: enumerate attacker-controlled names that become sidecar files during model, tokenizer, processor, adapter, dataset, or checkpoint export. Loading policy, `trust_remote_code`, artifact signatures, and revision pins do not replace canonical destination confinement when trusted software later materializes repository metadata as filenames.
+
 ## Reporting notes
 
-- Lead with the exact boundary crossed: **untrusted molecule input to native parser**, **deserialization policy to reduce/global lookup**, **model-name substring to remote code loader**, or **certificate subject string to authenticated username**.
+- Lead with the exact boundary crossed: **untrusted molecule input to native parser**, **deserialization policy to reduce/global lookup**, **model-name substring to remote code loader**, **model metadata name to sidecar-file destination**, or **certificate subject string to authenticated username**.
 - Include affected and fixed versions, the minimal canary input shape, expected denial or safe parse, observed result, and a fixed-version negative control.
 - Keep evidence scoped and inert: sanitizer traces, temp-file markers, owned model repos, fake users, lab CAs, and synthetic molecule files only.
