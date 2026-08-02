@@ -537,6 +537,73 @@ The bounded positive is **public attachment A authorizes -> caller-selected sibl
 
 The bounded positive is **anonymous widget yields ordinary nonce -> caller-selected local URL survives into `cubewp_get_svg_content()` -> patched reader receives the sibling canary outside the approved media root**. This proves file-selector authority drift, not disclosure of a real secret. Treat the remote-fetch fallback as a separate SSRF surface and claim it only when an owned callback records a request after final-destination policy checks.
 
+## August 2 follow-up: bind every proof, selector, and delegated capability to one object
+
+The next unreviewed WordPress wave adds eighteen reusable checks. They belong here because each composes an apparently valid proof or low-role capability with a second selector the server fails to bind:
+
+- appointment bulk scope and unauthenticated deletion: [GHSA-j5pv-734r-xv95 / CVE-2026-16540](https://github.com/advisories/GHSA-j5pv-734r-xv95);
+- file-metadata update to download selection: [GHSA-2rf9-6fhx-g6mg / CVE-2026-16292](https://github.com/advisories/GHSA-2rf9-6fhx-g6mg);
+- unauthenticated media-ID download: [GHSA-953r-r7wf-54g9 / CVE-2026-16285](https://github.com/advisories/GHSA-953r-r7wf-54g9);
+- foreign notification and attachment deletion: [GHSA-77fq-7qxg-43vp / CVE-2026-16291](https://github.com/advisories/GHSA-77fq-7qxg-43vp) and [GHSA-vpwf-36p2-3fwr / CVE-2026-15248](https://github.com/advisories/GHSA-vpwf-36p2-3fwr);
+- public account create/update with a caller role: [GHSA-vrg4-ffx9-cfhg / CVE-2026-16256](https://github.com/advisories/GHSA-vrg4-ffx9-cfhg);
+- reset and social-login identity binding: [GHSA-5hm3-fq9v-vwj3 / CVE-2026-16261](https://github.com/advisories/GHSA-5hm3-fq9v-vwj3) and [GHSA-rhj3-v77h-x35q / CVE-2026-12586](https://github.com/advisories/GHSA-rhj3-v77h-x35q);
+- event quick-edit object authorization and delayed object deserialization: [GHSA-5hqh-mj83-f2f6 / CVE-2026-16064](https://github.com/advisories/GHSA-5hqh-mj83-f2f6) and [GHSA-xh9j-gpmv-5c2v / CVE-2026-16062](https://github.com/advisories/GHSA-xh9j-gpmv-5c2v);
+- low-role navigation configuration crossing into public rendering: [GHSA-9jvp-fc5f-j7qr / CVE-2026-15385](https://github.com/advisories/GHSA-9jvp-fc5f-j7qr) and [GHSA-m349-rc55-q5w8 / CVE-2026-11872](https://github.com/advisories/GHSA-m349-rc55-q5w8);
+- frontend versus REST content-policy drift: [GHSA-4v4h-6mhp-rwxf / CVE-2026-15939](https://github.com/advisories/GHSA-4v4h-6mhp-rwxf);
+- public use or disclosure of stored API authority: [GHSA-xqfh-qj3w-mr75 / CVE-2026-15241](https://github.com/advisories/GHSA-xqfh-qj3w-mr75) and [GHSA-465m-pvh5-8rh9 / CVE-2026-15236](https://github.com/advisories/GHSA-465m-pvh5-8rh9);
+- OTP verification detached from the selected phone/account: [GHSA-63jw-46hv-gwp2 / CVE-2026-15206](https://github.com/advisories/GHSA-63jw-46hv-gwp2);
+- board import detached from source-board authorization: [GHSA-66hj-2rxc-44vr / CVE-2026-14938](https://github.com/advisories/GHSA-66hj-2rxc-44vr); and
+- unauthenticated REST mutation of consent, post, and license state: [GHSA-xw6w-vrqp-fhq4 / CVE-2026-13389](https://github.com/advisories/GHSA-xw6w-vrqp-fhq4).
+
+Confirm the exact plugin or theme slug, edition, feature configuration, affected version, route, and corrected behavior. Several descriptions combine multiple outcomes; prove each route-to-sink edge separately rather than inheriting the record's maximum impact.
+
+### Two-object authorization matrix
+
+Build synthetic objects A and B under different owners: appointments, uploads, notifications, media attachments, posts, events, menus, and boards. Give a low-role user legitimate access only to A. Replace read, delete, publish, import, and metadata-write sinks with recorders where possible.
+
+| Operation | Control selector | Crossover selector | Bounded evidence |
+| --- | --- | --- | --- |
+| bulk appointment read/delete | A-only filter or current requester | omitted filter, B ID, all-records flag | recorder lists B's canary ID or receives B delete, no personal data |
+| file metadata/update/download | A upload and its metadata | B upload ID/path with A or public proof | B canonical ID reaches a no-content read recorder |
+| notification/media delete | A object ID | B object ID | no-op delete recorder receives B after low-role authorization |
+| event quick edit | editable event A | post/page B plus title/status marker | B write recorder receives a reversible marker |
+| board import | authorized board A | stages/tasks from B | import recorder receives B's synthetic item IDs |
+| REST restriction | front-end-denied post B | alternate REST representation of B | response recorder selects B's marker content |
+
+Exercise anonymous, owner, low-role non-owner, expected manager, nonexistent object, wrong parent, duplicate parameter, stale nonce, and corrected-build controls. Record the canonical object used at the authorization guard and the canonical object reaching the sink. Stop at IDs, hashes, and marker fields; never return appointment personal data, private uploads, board descriptions, or attachment bytes, and never perform a destructive delete.
+
+The decisive positive is **proof valid for caller or object A -> caller-selected object B -> B reaches a read/write/delete/import recorder without a B-specific capability and ownership decision**. A successful HTTP status, enumerable numeric ID, or route visibility alone is insufficient.
+
+### Account creation, password reset, social login, and OTP subject matrix
+
+Use disposable non-administrator users A and B, fake phones, invalid-signature third-party identity fixtures, a local mail sink, and patched account/session/password/role sinks.
+
+1. For POUCO Import Users, test each public AJAX action independently. Record whether authentication, nonce, account-create/update capability, target-user binding, and a role allowlist execute before the sink. Send only a harmless custom role to the recorder; do not create an administrator.
+2. For login-social, separate password reset from third-party sign-in. Cross requester, target user, reset key, provider subject, verified-signature decision, claimed email, and final session subject one field at a time. Invalid-signature or absent-proof fixtures must fail before account lookup.
+3. For Lenxel WP, compare public CSRF nonce acceptance with reset-key and target-ownership decisions. A nonce can establish request provenance; it cannot authorize a caller-selected account.
+4. For SMS Alert, verify A's fake phone and OTP, then switch only the later login/signup phone selector to B. Intercept session creation. The server must bind the verified phone, verification attempt, browser session, target account, purpose, and expiry as one tuple.
+5. Repeat on corrected builds, expire every proof, and invalidate all canary sessions.
+
+Safe positives are **public account route -> caller-selected harmless role reaches a no-op role sink**, **unverified reset/provider proof -> foreign-user password or session recorder**, or **OTP for phone A -> phone B selects the session subject**. Do not change passwords, send messages, mint live sessions, or use real provider identities.
+
+### Delegated API and credential authority
+
+AI ChatBot for WooCommerce and Gallery for Google Photos illustrate two sides of stored third-party authority: a public route may **use** the operator's credential, or it may **return** persistent OAuth material. Use fake provider credentials and mocked transports only.
+
+1. For the chatbot, load a fake API token into a disposable site, disconnect outbound networking, and replace the provider client with a recorder. Compare anonymous, authenticated, nonce, feature-disabled, knowledge-base-disabled, and fixed-build cases. Send one inert prompt marker and return no indexed content.
+2. For the gallery, seed only fake access/refresh tokens. Inventory public route families and intercept response serialization. A positive is the unauthenticated serializer selecting synthetic credential fields; do not retain or replay any real token.
+3. Record separately: route authentication, nonce provenance, requested operation, canonical credential owner, provider scope, outbound argument, response fields, and billing/content sink.
+
+Report **unauthenticated delegated API dispatch** separately from **credential disclosure** and **knowledge-base selection**. Provider acceptance, cost, linked-account compromise, and private-content access remain unproven unless separately authorized—and are unnecessary for this workflow.
+
+### Delayed deserialization and menu rendering
+
+Event Booking Manager's object-injection record explicitly says the affected plugin does not supply its own POP chain. Prove only the storage-to-deserializer boundary: store an inert serialized marker through a contributor-reachable event field, patch `unserialize()` or object construction to record the class name and input hash, and trigger the normal later read. Do not load a gadget, invoke magic methods, delete files, read data, or claim code execution.
+
+For RT Mega Menu and Clever Mega Menu, distinguish configuration authorization from browser execution. Use a subscriber canary, synthetic menu item, and harmless CSS/attribute-shaped markers. Record nonce provenance, capability decision, menu-item ownership, persisted setting, render context, and detached DOM/AST result. Do not use event handlers or script payloads. A useful result is **subscriber -> menu configuration sink -> inert marker escapes its intended attribute/style node in a detached parser**; site takeover requires a separate, authorized executable-sink proof.
+
+The adjacent generic stored/reflected XSS records, cache-flush availability issue, low-impact settings reset, and empty advisory summary were processed without publication because they add no distinct workflow beyond the existing render, role, and business-action matrices.
+
 ## Reporting checklist
 
 Include:

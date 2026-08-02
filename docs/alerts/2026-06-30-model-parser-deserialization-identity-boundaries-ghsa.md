@@ -51,6 +51,25 @@ Adjacent Open Babel NULL-pointer and out-of-bounds-read advisories, duplicate Op
 - Do not use real client certificates, production CAs, customer usernames, or privileged admin routes.
 - Negative controls: `SubjectX500PrincipalExtractor`, fixed Spring Security versions, strict subject mapping, and explicit certificate-to-account binding tests.
 
+## August 2 Keras HDF5 external-link file-authority follow-up
+
+[GHSA-m8wh-29wm-52mv / CVE-2026-9335](https://github.com/advisories/GHSA-m8wh-29wm-52mv) reports that Keras through 3.14.0 can dereference HDF5 `ExternalLink` objects when untrusted `.h5`, `.weights.h5`, or `.keras` artifacts reach `KerasFileEditor` or `keras.saving.load_weights`. The record says those paths bypass the `safe_get_h5_group` and `safe_get_h5_dataset` helpers used to reject external and soft links. This is a **model artifact -> secondary local file authority** boundary, not generic pickle execution.
+
+The record was unreviewed at scan time. Confirm the exact Keras package, backend, container format, entry point, and corrected behavior. HDF5 external links reference HDF5 objects in another file; do not claim arbitrary byte-file disclosure unless the tested parser can actually expose that format and object.
+
+### Patched HDF5-open matrix
+
+1. Create a disposable directory containing a normal toy weights file, a second synthetic HDF5 file with one uniquely named dataset, and an empty sibling directory. No model cache, home directory, environment file, credentials, datasets, notebooks, or production weights should be present.
+2. Build inert container fixtures whose link target is: an internal hard link, internal soft link, relative external link to the synthetic sibling HDF5 file, absolute external link to the same file, nonexistent file, nonexistent object, nested external-link chain, and symlink alias. Keep every target inside the disposable fixture tree for the first pass.
+3. Patch `h5py.File` and relevant HDF5 file-open callbacks to record the canonical filename and object path, then return a sentinel before reading a secondary file. Invoke both `KerasFileEditor` and the exact application path to `keras.saving.load_weights`; helper-only reachability is insufficient when the assessed service never exposes that path.
+4. Record archive/container provenance, outer model path, link type, raw linked filename, normalized/canonical secondary path, selected object, helper used, open-recorder event, and whether any dataset would be copied into editor state or model weights.
+5. Compare direct helper calls that reject links with the two affected entry points. Repeat on the corrected commit/build and require rejection before any secondary open.
+6. Only if sink-level dereference is explicitly required, allow one read of the synthetic sibling dataset and verify only its random marker hash. Never point a link at `/etc`, home directories, cloud configuration, model caches, customer datasets, or another tenant's files.
+
+The bounded positive is **untrusted model artifact -> external-link metadata -> secondary synthetic HDF5 path reaches the file-open recorder outside the artifact's own logical object graph**. A stronger canary-only result is the sibling dataset marker appearing in `KerasFileEditor` state or loaded toy weights. Report editor extraction and weight loading separately; do not infer code execution, arbitrary non-HDF5 reads, or remote reachability without an independently demonstrated upload/import path.
+
+This pattern generalizes to model, archive, and scientific-data formats that support external references. Inventory nested files, URIs, link tables, sidecar tensors, schema includes, and resolver callbacks even when the primary artifact passed extension, signature, or `safe_mode` checks.
+
 ## Reporting notes
 
 - Lead with the exact boundary crossed: **untrusted molecule input to native parser**, **deserialization policy to reduce/global lookup**, **model-name substring to remote code loader**, or **certificate subject string to authenticated username**.

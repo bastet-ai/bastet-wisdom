@@ -12,6 +12,8 @@ July 15 Keycloak update: GitHub advisories [GHSA-22rm-wp4x-v5cx](https://github.
 
 July 31 Keycloak update: GitHub advisories [GHSA-6j79-4gfx-fm6f](https://github.com/advisories/GHSA-6j79-4gfx-fm6f) / CVE-2026-18211, [GHSA-jg59-c35g-76r8](https://github.com/advisories/GHSA-jg59-c35g-76r8) / CVE-2026-18208, [GHSA-v8h5-7wp9-qxxv](https://github.com/advisories/GHSA-v8h5-7wp9-qxxv) / CVE-2026-18215, [GHSA-wx5m-whr8-48h5](https://github.com/advisories/GHSA-wx5m-whr8-48h5) / CVE-2026-18203, [GHSA-vhxw-j6h3-48jm](https://github.com/advisories/GHSA-vhxw-j6h3-48jm) / CVE-2026-18218, [GHSA-2w88-g477-cxmj](https://github.com/advisories/GHSA-2w88-g477-cxmj) / CVE-2026-18206, [GHSA-82v3-6227-jc8x](https://github.com/advisories/GHSA-82v3-6227-jc8x) / CVE-2026-18217, [GHSA-w32v-46r7-99r7](https://github.com/advisories/GHSA-w32v-46r7-99r7) / CVE-2026-16105, [GHSA-c8xx-fr3x-6m5w](https://github.com/advisories/GHSA-c8xx-fr3x-6m5w) / CVE-2026-18209, and [GHSA-wmhp-w67v-6jm5](https://github.com/advisories/GHSA-wmhp-w67v-6jm5) / CVE-2026-18214.
 
+August 2 Keycloak update: GitHub advisories [GHSA-r6f5-hj4x-7mq7](https://github.com/advisories/GHSA-r6f5-hj4x-7mq7) / CVE-2026-18570, [GHSA-wm3j-jpqg-fwv2](https://github.com/advisories/GHSA-wm3j-jpqg-fwv2) / CVE-2026-18573, [GHSA-mcjq-c4g7-wcfh](https://github.com/advisories/GHSA-mcjq-c4g7-wcfh) / CVE-2026-18572, and [GHSA-5vmc-qhfj-qxc3](https://github.com/advisories/GHSA-5vmc-qhfj-qxc3) / CVE-2026-18571.
+
 This batch is durable because each advisory exposes a reusable operator pattern: server-side URL fetches that reflect remote responses, string-prefix filesystem confinement, identity-provider proof scoping, low-privilege AI-workflow object control, and accidentally public Go `pprof` debug surfaces.
 
 ## What changed
@@ -176,6 +178,37 @@ For SAML HTTP-Redirect and OIDC wildcard callback handling, use a recorder-only 
 - guard decision and separate marker-only sink event;
 - positive, negative, and fixed-build controls; and
 - narrow claims: URI-policy bypass, claim disclosure, broker restriction drift, group ancestry confusion, revocation failure, or parameter-precedence confusion—not generic account takeover.
+
+## August 2 Keycloak client-policy and delegated-admin follow-up
+
+Four unreviewed records add a reusable **create-versus-update-versus-request-state** differential. In each case, Keycloak evaluates policy against a caller-controlled representation or one lifecycle phase rather than canonical server state at the decision point.
+
+| Boundary | Attacker-controlled representation | Required server authority | Bounded positive |
+| --- | --- | --- | --- |
+| full-scope client policy | omitted `fullScopeAllowed` field | secure server default plus policy evaluation of resulting client | delegated client creator receives a synthetic role outside intended scope |
+| public-to-confidential transition | public client at create, confidential client at update | policy re-evaluation against final confidential client and authenticator | final client reaches token recorder without required authentication policy |
+| time-based authorization | caller-supplied time claim/value | server clock and configured policy timezone | canary resource decision changes when only request time changes |
+| FGAP V2 user creation | caller-selected group IDs | create-user permission plus manage/membership authority for each group | new canary user reaches a restricted synthetic group recorder |
+
+Use a disposable realm, a delegated administrator with only the minimum affected permissions, synthetic clients/groups/roles, a fixed server clock, and no-op token, membership, and protected-resource recorders. Never assign built-in administrative roles or groups.
+
+### Client create/update differential
+
+1. Configure a client policy that disables full scope and a separate policy that requires a strong authenticator for confidential clients. Preserve the policy and executor names.
+2. As the delegated client manager, create paired clients while supplying `fullScopeAllowed:false`, `true`, and omitted. Record the request field, server default, persisted canonical field, effective scope mappings, and policy result separately.
+3. Create a public canary client, then update only its access type/authentication state to confidential. Compare direct confidential creation with public-then-confidential transition, omitted authenticator fields, malformed authenticators, and corrected builds.
+4. Replace token issuance with a recorder that returns only effective synthetic role names and the selected client-authentication method. Do not retain token bytes.
+5. Require every update that changes client security class to rerun policy against the complete resulting client, not merely fields present in the patch request.
+
+The bounded positives are **omitted field -> resulting client retains full scope despite policy** and **policy-compliant public create -> update yields non-compliant confidential client -> no-op token recorder accepts weaker authentication**. A persisted client alone does not prove role issuance or authentication bypass; preserve those edges separately.
+
+### Server-time and group-membership authority
+
+For time policy, freeze the lab server clock inside and outside one synthetic access window. Send authorization requests with omitted, matching, earlier, later, malformed, duplicate, and timezone-offset time representations. The request must never override the clock used by policy. Stop at a no-data resource decision counter.
+
+For FGAP V2, create groups `/public`, `/restricted`, and `/restricted-child`. Give the delegated administrator user-creation authority and membership authority only for `/public`. Cross one new canary user with each group ID, mixed allowed/disallowed arrays, nonexistent IDs, duplicate IDs, and parent/child variants. Patch membership writes if possible. The positive is **create-user principal -> caller-selected restricted group -> membership recorder fires without group-manage authority**. Do not use a group mapped to real privilege.
+
+Report the exact lifecycle phase, omitted/present fields, canonical final client or group object, policy/FGAP decision, recorder event, and fixed-build denial. Do not collapse these into unauthenticated access; all four records require configured policies or delegated permissions.
 
 ## Reporting heuristics
 

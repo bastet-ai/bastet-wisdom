@@ -8,7 +8,9 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
-- [WordPress social-login token and plugin file-selector boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md)
+- [WordPress object, identity-proof, delegated-API, and render boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-2-follow-up-bind-every-proof-selector-and-delegated-capability-to-one-object)
+- [Keycloak client-policy and delegated-admin lifecycle differentials](alerts/2026-06-11-kolibri-hapi-keycloak-flowise-arc-boundary-batch-ghsa.md#august-2-keycloak-client-policy-and-delegated-admin-follow-up)
+- [Keras HDF5 external-link file-authority validation](alerts/2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-2-keras-hdf5-external-link-file-authority-follow-up)
 - [Privileged PID-file symlink boundary validation](alerts/2026-08-01-privileged-pidfile-symlink-boundary-ghsa.md)
 - [HTTP client, identity, router, CI, and RDP boundary checks](alerts/2026-08-01-http-identity-router-rdp-boundaries-ghsa.md)
 - [AI dataset deserialization, scheduler fetch, and stale-session boundaries](alerts/2026-08-01-ai-scheduler-session-boundaries-ghsa.md)
@@ -16,8 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Template, CMS, token, model, signature, and HTTP-proxy trust boundaries](alerts/2026-07-31-template-cms-token-model-proxy-boundaries-ghsa.md)
 - [Low-code SQL, CMS upload, SOAP code generation, and survey trust boundaries](alerts/2026-07-31-low-code-cms-soap-survey-boundaries-ghsa.md)
 - [Editor sanitizer, image proxy, pgAdmin, and automation event boundaries](alerts/2026-07-31-editor-image-database-automation-boundaries-ghsa.md)
-- [Kubernetes admission webhook outbound and token-mint authority checks](alerts/2026-07-31-kubernetes-admission-webhook-vault-authority-ghsa.md)
-- [SDK URL, SSRF, tenant-controller, payment binding, corpus, local-server, filesystem, and node-template boundaries](alerts/2026-07-31-library-tenant-commerce-file-boundaries-ghsa.md)
+
 
 
 

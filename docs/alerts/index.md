@@ -10,6 +10,9 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [WordPress object, identity-proof, delegated-API, and render follow-up](2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-2-follow-up-bind-every-proof-selector-and-delegated-capability-to-one-object)
+- [Keycloak client-policy and delegated-admin lifecycle follow-up](2026-06-11-kolibri-hapi-keycloak-flowise-arc-boundary-batch-ghsa.md#august-2-keycloak-client-policy-and-delegated-admin-follow-up)
+- [Keras HDF5 external-link file-authority follow-up](2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-2-keras-hdf5-external-link-file-authority-follow-up)
 - [HTTP client, identity, router, CI, and RDP boundary checks](2026-08-01-http-identity-router-rdp-boundaries-ghsa.md)
 - [Keycloak URI, introspection, broker, group, revocation, and parameter-precedence follow-up](2026-06-11-kolibri-hapi-keycloak-flowise-arc-boundary-batch-ghsa.md#july-31-keycloak-identity-policy-differential-follow-up)
 - [WordPress authentication-proof, payment, email-routing, backup, and deserialization follow-up](2026-07-28-wordpress-payment-device-boundaries-ghsa.md#july-31-follow-up-authentication-proofs-workflow-authority-and-artifact-exposure)
