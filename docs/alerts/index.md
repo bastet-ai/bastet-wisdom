@@ -10,6 +10,10 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Vikunja principal-type collision and project/view authorization checks](2026-08-02-vikunja-principal-object-boundaries-ghsa.md)
+- [ArcadeDB MCP principal, cluster-token, and trigger-authority follow-up](2026-07-16-arcadedb-nuclio-pheditor-boundaries-ghsa.md#august-2-arcadedb-mcp-principal-and-server-authority-follow-up)
+- [Better Auth path-normalization and passkey-object follow-up](2026-07-07-better-auth-aider-netfoil-ckan-mcp-boundaries-ghsa.md#august-2-better-auth-path-and-passkey-object-follow-up)
+- [FreeRDP media and clipboard memory-safety follow-up](2026-08-01-http-identity-router-rdp-boundaries-ghsa.md#august-2-freerdp-server-to-client-media-and-clipboard-follow-up)
 - [WordPress object, identity-proof, delegated-API, and render follow-up](2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-2-follow-up-bind-every-proof-selector-and-delegated-capability-to-one-object)
 - [Keycloak client-policy and delegated-admin lifecycle follow-up](2026-06-11-kolibri-hapi-keycloak-flowise-arc-boundary-batch-ghsa.md#august-2-keycloak-client-policy-and-delegated-admin-follow-up)
 - [Keras HDF5 external-link file-authority follow-up](2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-2-keras-hdf5-external-link-file-authority-follow-up)

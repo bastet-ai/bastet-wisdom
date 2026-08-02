@@ -76,6 +76,27 @@ Run the password case separately from terminal capability. The first boundary is
 - [ ] Are dangerous locations explicitly avoided: service-account tokens, cloud metadata, production config, web roots, cron paths, customer records, and live function artifacts?
 - [ ] Can the report distinguish source facts from lab observations without publishing weaponized strings?
 
+## August 2 ArcadeDB MCP principal and server-authority follow-up
+
+Three advisories for ArcadeDB before `26.7.3` extend the database-role fixture into its MCP transport and trigger runtime:
+
+| Advisory | Failed binding | Bounded operator proof |
+| --- | --- | --- |
+| [GHSA-hq22-48ph-vqch](https://github.com/advisories/GHSA-hq22-48ph-vqch) / CVE-2026-68578 | the authenticated MCP user is not bound into engine permission checks, so non-root MCP users can reach writes, DDL, schema changes, and JavaScript query behavior | non-root lab user, synthetic database, read/write/DDL decision matrix, and recorder-only script marker |
+| [GHSA-7qj8-rw8h-hhxv](https://github.com/advisories/GHSA-7qj8-rw8h-hhxv) / CVE-2026-67357 | `get_server_settings` returns the HA cluster token; cluster forwarding headers then treat that bearer value as authority to select a forwarded user | fake cluster token, mocked forwarding handler, and root-versus-non-root identity decision table |
+| [GHSA-p28w-g8xf-vm54](https://github.com/advisories/GHSA-p28w-g8xf-vm54) / CVE-2026-67356 | schema-admin trigger JavaScript receives the real `LocalDatabase` with unrestricted host access, exposing security-user creation outside schema authority | schema-admin lab role, recorder-wrapped security API, and inert create-user call marker without creating an account |
+
+### MCP and trigger role matrix
+
+1. Create a disposable database with root, read-only, read/write, and schema-admin users. Give each only the MCP access and database permissions needed for its row in the test matrix.
+2. Through MCP, compare a harmless read, one marker-row write, creation of a throwaway type, and a recorder-only JavaScript query. Capture the authenticated transport principal and the principal observed by the engine separately.
+3. Call `get_server_settings` only against a lab configured with a fake cluster-token sentinel. Record whether the complete sentinel is returned, but redact it from screenshots and reports.
+4. Prove the forwarding half independently: replace cluster-token verification with a local recorder or use the fake lab sentinel, supply a synthetic forwarded username, and record the identity selected by the handler. Do not replay any token from a real deployment.
+5. As schema admin, install a trigger whose host call is intercepted by a fake `Security.createUser` recorder. Positive evidence is the attempted method, arguments, and caller role; do not create an administrator, execute host commands, or leave the trigger installed.
+6. Repeat all rows on `26.7.3`. The patched negative control should preserve legitimate root behavior while denying lower-role operations at the engine, settings, forwarding, and trigger boundaries.
+
+Keep the three claims separate: **MCP-authenticated role -> missing engine principal -> unauthorized database operation**, **settings tool -> cluster bearer disclosure -> forwarded-user authority**, and **schema trigger -> unrestricted database host object -> server-security API call**. A settings response alone does not prove root impersonation, and schema-update permission alone does not prove that a real administrator was created.
+
 ## Reporting notes
 
 - Lead with the trust boundary and precondition, not exploit spectacle: database role, dashboard auth mode, web-editor credential state, or shell-wrapper design.

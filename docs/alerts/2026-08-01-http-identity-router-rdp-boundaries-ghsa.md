@@ -138,6 +138,26 @@ For each chain, record FreeRDP's decision, a reference `X509_check_host`/equival
 
 Report **server-controlled RDP redirection -> unvalidated target address -> proxy request-line/header boundary changes**. Do not target shared proxies, smuggle a second operational request, or use credential-bearing proxy sessions.
 
+## August 2 FreeRDP server-to-client media and clipboard follow-up
+
+Two additional FreeRDP advisories turn server-controlled channel metadata into client memory-safety fixtures:
+
+| Advisory | Affected boundary | Safe validation target |
+| --- | --- | --- |
+| [GHSA-mj63-24h6-p8wq](https://github.com/advisories/GHSA-mj63-24h6-p8wq) / CVE-2026-68580 | before `3.29.0`, audio-input `FramesPerPacket` arithmetic can wrap allocation sizing across ALSA, sndio, WinMM, and OpenSL ES backends | sanitizer finding or rejected-frame decision from a synthetic audio packet; never weaponized heap data |
+| [GHSA-m4j8-6wj9-56fg](https://github.com/advisories/GHSA-m4j8-6wj9-56fg) / CVE-2026-68579 | through `3.29.0`, Windows clipboard file-content responses can copy the server-supplied length into an OLE consumer buffer sized by the caller | recorder showing response length exceeds requested `cb`, or a sanitizer abort in an isolated Windows VM |
+
+### Sanitizer-first channel harness
+
+1. Build the affected FreeRDP revision with AddressSanitizer and integer/undefined-behavior checks where the platform supports them. Run it in a disposable VM with no shared clipboard contents, drives, credentials, or host integration.
+2. Use a lab RDP server that records channel state and emits only deterministic synthetic frames. For audio input, vary `FramesPerPacket` around ordinary values and arithmetic boundaries while keeping sample data inert and minimal.
+3. Capture negotiated format, frame count, bytes-per-frame, computed allocation size, backend, rejection decision, and sanitizer output. Stop after the first reproducible sanitizer finding; do not tune layout or pursue code execution.
+4. For clipboard testing, offer one synthetic file marker. Instrument `CliprdrStream_Read` or the file-content response handler to record caller `cb`, requested range, server response length, and proposed copy length before copying.
+5. If dynamic proof is required, use an isolated Windows VM and a throwaway OLE consumer under a memory debugger. Trigger only a paste of the synthetic marker and stop at the first controlled exception or sanitizer report.
+6. Compare audio handling on `3.29.0` and clipboard handling on `3.30.0`. Preserve backend/platform distinctions: the advisory describes heap overflow on ALSA and availability effects on other audio backends, while the clipboard issue is Windows-client specific.
+
+Report **server audio metadata -> unchecked size arithmetic -> undersized allocation/sanitizer finding** or **OLE caller buffer length -> oversized server clipboard response -> proposed copy exceeds `cb`**. A malformed channel packet, disconnect, or generic crash is not enough without the size relationship and affected call path.
+
 ## Evidence and reporting checklist
 
 - [ ] Is the application feature or deployment configuration that reaches the affected component proven?

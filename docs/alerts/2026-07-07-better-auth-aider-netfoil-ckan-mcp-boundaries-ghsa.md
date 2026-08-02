@@ -166,3 +166,25 @@ Treat these as three results, not one oversized claim: **provider namespace coll
 [GHSA-xvg2-cgv6-6h7v](https://github.com/advisories/GHSA-xvg2-cgv6-6h7v) adds a distinct DNS-policy edge to the multi-question check above. Before 0.4.0, netfoil answered blocked names with `0.0.0.0`; on its target Linux platform, clients can interpret that address as the local host. A request that policy intended to discard can therefore reach a listener in the client's own network namespace.
 
 Extend the local DNS harness with one blocked canary name and a harmless HTTP recorder bound only inside the disposable client namespace. Capture the DNS question, block decision, returned RCODE/address, client socket destination, Host header, and recorder hit. Compare NXDOMAIN, `0.0.0.0`, `127.0.0.1`, and a normal allowed answer, then repeat on netfoil 0.4.0. Positive evidence is **blocked name -> synthetic `0.0.0.0` answer -> client connects to the local canary service**. Do not probe real local admin services or infer cross-host access from this client-local routing behavior.
+
+## August 2 Better Auth path and passkey-object follow-up
+
+Two later advisories add route-normalization and object-ownership checks to the Better Auth harness:
+
+- [GHSA-9fq7-6g6p-g9rm](https://github.com/advisories/GHSA-9fq7-6g6p-g9rm) / CVE-2025-71399: before `1.4.5`, the bundled `rou3` router collapses empty path segments. A request such as `/path`, `//path`, or `///path` can reach the same handler while `disabledPaths` or path-keyed rate limits evaluate a different raw representation. This depends on the edge proxy preserving repeated slashes.
+- [GHSA-44ff-3cmc-mgqf](https://github.com/advisories/GHSA-44ff-3cmc-mgqf) / CVE-2025-71400: passkey deletion before `1.4.0` accepts a caller-selected passkey ID without binding it to the authenticated user.
+
+### Raw-path versus selected-route matrix
+
+1. Use a disposable Better Auth app behind both a direct listener and the same proxy family used by the target. Configure one harmless route in `disabledPaths` and one route with a low canary rate limit.
+2. Send the ordinary path plus repeated-slash forms. Capture the client request target, proxy-forwarded target, policy lookup key, router-normalized path, selected handler, and rate-limit bucket.
+3. A positive disabled-path result is **policy sees a non-disabled raw path -> router collapses empty segments -> disabled handler runs**. A positive rate-limit result is multiple raw spellings reaching one handler while consuming separate policy buckets.
+4. Repeat on `1.4.5` and with a proxy that deliberately collapses repeated slashes. Report the deployment precondition instead of claiming a universal bypass.
+
+### Passkey ownership matrix
+
+1. Create users A and B and register one synthetic passkey for each using a lab authenticator. Record opaque IDs only in the private test artifact.
+2. As A, issue delete requests for A's ID, B's ID, an unknown ID, and a malformed ID. Replace the deletion sink with a recorder first; if a real deletion is necessary, delete only B's disposable canary passkey.
+3. Record authenticated subject, selected passkey ID, resolved owner, authorization decision, and side effect. Repeat on `1.4.0`.
+
+Report **authenticated user A -> caller-selected passkey ID for B -> deletion sink without owner check**. Do not enumerate passkey IDs, remove a real authentication factor, or interpret route reachability as deletion without before/after canary evidence.
