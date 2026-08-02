@@ -41,6 +41,9 @@ Sources:
 - [GHSA-5cfw-whc5-jqgh / CVE-2026-14356: FleekDash registration-to-account-update chain](https://github.com/advisories/GHSA-5cfw-whc5-jqgh)
 - [GHSA-vm2x-vwh2-372v / CVE-2026-15255: RegistrationMagic OTP identity mismatch](https://github.com/advisories/GHSA-vm2x-vwh2-372v)
 - [GHSA-49jm-q6q7-76gc / CVE-2026-11870: WP Ghost untrusted client-IP headers](https://github.com/advisories/GHSA-49jm-q6q7-76gc)
+- [GHSA-qwc9-q2f8-q72q / CVE-2026-8457: WooCommerce Social Login Apple-token verification](https://github.com/advisories/GHSA-qwc9-q2f8-q72q)
+- [GHSA-mxw9-rxrv-85f3 / CVE-2026-18352: User Access Manager attachment/path selector mismatch](https://github.com/advisories/GHSA-mxw9-rxrv-85f3)
+- [GHSA-2cff-wc4f-2m48 / CVE-2026-13339: CubeWP SVG file-path handling](https://github.com/advisories/GHSA-2cff-wc4f-2m48)
 
 The GitHub records were unreviewed when this page was written. The primary pretix release uses **CVE-2026-57532** for the quick-setup issue, while the initial GitHub record used **CVE-2026-18028** for substantially the same description. Preserve that discrepancy in evidence rather than treating the identifiers as interchangeable. Confirm the exact product slug, version, route, configuration, and fixed behavior before reporting.
 
@@ -60,6 +63,9 @@ The GitHub records were unreviewed when this page was written. The primary preti
 | Duplicate-post metadata | author-controlled `meta_key` stored first and interpolated later | parameterized metadata copy preserving exact value | query recorder and inert delimiter-shaped marker |
 | Event quick setup | event ID and request timing | current user's organizer/event permissions | one reversible synthetic product marker |
 | Device virtual filesystem | remote path selector | authenticated session and approved virtual root | pre-seeded non-sensitive canary file |
+| Apple social login | public route proof plus decoded token email | verified Apple signature and claims bound to the configured client | invalid-signature synthetic token plus no-op session recorder |
+| Protected attachment download | public attachment ID plus caller-selected file path | one canonical attachment object authorizing the exact file opened | two synthetic attachments and a read-path recorder |
+| CubeWP SVG helper | public nonce and caller-selected icon URL/path | server-selected media object confined to an approved SVG root | sibling SVG-text canary and patched read recorder |
 
 For every surface, preserve anonymous, low-role, expected-role, malformed-proof, wrong-object, and fixed-build controls. Stop at the first harmless marker that proves the crossed boundary.
 
@@ -485,6 +491,52 @@ Nex Forms reportedly lets the same authenticated principal first store a caller-
 
 The bounded positives are **authorized first-stage record write -> stored synthetic path -> later delete recorder receives sibling canary** and **download route -> extension-approved but outside-root sibling path reaches read recorder**. Do not delete a file, return canary content, inspect another user's ticket, or use configuration, credential, log, backup, plugin, or operating-system paths.
 
+## August 2 follow-up: verify token cryptography before identity lookup
+
+[WooCommerce Social Login GHSA-qwc9-q2f8-q72q](https://github.com/advisories/GHSA-qwc9-q2f8-q72q) reports that versions through 2.8.7 decode an Apple `id_token` payload but do not verify its signature against Apple's keys or validate issuer, audience, or expiry before using the email claim to select a WordPress user. The same record says the route nonce is localized into the public login page. The durable chain is therefore **public request proof -> unverified token claims -> email-to-account lookup -> session sink**. A public nonce is expected CSRF/request-provenance material; it cannot replace cryptographic token verification or account binding.
+
+The record was unreviewed and did not link public plugin source at scan time. Treat the route and affected-version details as a lead until reproduced against the exact commercial package. Do not infer behavior from a similarly named plugin.
+
+### Synthetic Apple-token decision matrix
+
+1. Use a disposable WordPress site, the exact affected package, users A and B with no administrative capabilities, fake Apple client settings, blocked outbound networking, and an intercepted `wp_set_auth_cookie()` or equivalent session sink.
+2. Fetch the normal logged-out login page and record whether it publishes the route nonce. Hash the nonce in retained evidence; do not call its public availability a disclosure by itself.
+3. Build only synthetic JWT-shaped fixtures. Keep B's fake lab email in the payload and vary valid structure, invalid signature, unknown key ID, wrong issuer, wrong audience, expired `exp`, future `iat`, missing email, duplicate claim keys, and malformed base64 one property at a time. Do not use a real Apple identity or signing key.
+4. Patch the session sink to record the resolved canary user ID and return without setting a cookie. Record token parsing, key selection, signature decision, claim validation, email normalization, account lookup, and sink reachability independently.
+5. Include random/missing nonce, expected public nonce, unknown email, A/B email crossover, existing linked account, and fixed-build controls. A corrected flow must reject before identity lookup when signature or required claims fail and must bind the token's audience to the configured Apple client.
+
+The bounded positive is **logged-out visitor obtains ordinary route nonce -> invalid-signature synthetic token naming B -> B reaches the no-op session recorder without signature/issuer/audience/expiry acceptance evidence**. Do not mint an administrator token, set a live cookie, reuse a real Apple token, or retain a login proof.
+
+## August 2 follow-up: bind authorization and file selection to one attachment
+
+[User Access Manager GHSA-mxw9-rxrv-85f3](https://github.com/advisories/GHSA-mxw9-rxrv-85f3) reports a selector mismatch through 2.3.15: a caller supplies the file representation through `uamgetfile`, while a valid public `attachment_id` can leave a global post available for the access decision when URL-to-attachment resolution returns zero. The [2.3.14 redirect controller](https://plugins.svn.wordpress.org/user-access-manager/tags/2.3.14/src/Controller/Frontend/RedirectController.php) confirms the relevant shape: it converts the supplied URL into a filesystem path, resolves an attachment ID through `attachment_url_to_postid()`, checks access on the resulting `FileObject`, and then sends that object's path to the file handler. The [file handler](https://plugins.svn.wordpress.org/user-access-manager/tags/2.3.14/src/File/FileHandler.php) eventually opens an existing path for delivery.
+
+The reusable question is whether **the object that passed authorization is the same canonical object whose bytes reach the read sink**. Never test this by requesting `wp-config.php`, credentials, backups, logs, another tenant's media, or operating-system files.
+
+### Two-selector read-recorder workflow
+
+1. Build a disposable site with public attachment A, restricted attachment B, and a sibling plain-text canary outside the approved upload root. Patch `fopen()`, range delivery, and accelerator-header helpers to record the proposed canonical path and return no content.
+2. Capture a normal protected-download request. Vary `attachment_id`, `uamfiletype`, and `uamgetfile` independently: A/A, B/B, A/B, B/A, nonexistent object, traversal-shaped sibling canary, absolute canary path, encoded separators, duplicate parameters, and symlink aliases.
+3. For every case record the raw selectors, `attachment_url_to_postid()` result, global/current post ID, `FileObject` ID and type, access decision, constructed path, canonical path, and final recorder call. Reset global query state between requests so fixture leakage is visible rather than accidental.
+4. Repeat without `attachment_id`, with an invalid ID, with a private current post, and after a clean WordPress bootstrap. This determines whether the claimed fallback genuinely depends on request-populated global state.
+5. Repeat on the corrected changeset/build. Require a failed URL lookup to reject, one server-resolved attachment ID to drive both access and path selection, canonical upload-root confinement, and symlink-safe open behavior.
+
+The bounded positive is **public attachment A authorizes -> caller-selected sibling canary remains the read target -> recorder receives the outside-root path while the authorized object ID is still A**. A mismatched response, path-construction observation, or source-only fallback is insufficient without sink reachability. Stop before opening or returning the canary.
+
+## August 2 follow-up: distinguish a public nonce from SVG file authority
+
+[CubeWP Framework GHSA-2cff-wc4f-2m48](https://github.com/advisories/GHSA-2cff-wc4f-2m48) reports unauthenticated path traversal through 1.1.30 when a posts shortcode or widget with AJAX loading publishes the required nonce. The [1.1.30 `cubewp_get_svg_content()` source](https://plugins.svn.wordpress.org/cubewp-framework/tags/1.1.30/cube/functions/admin-functions.php) confirms a file-authority sink: it accepts an icon structure, can translate a URL beginning with the site/home URL into an `ABSPATH` path, and calls `file_get_contents()` when that path exists. The advisory establishes the claimed public route; source confirms the helper sink. Reproduce the request-to-helper edge before reporting the full chain.
+
+### Patched SVG-read harness
+
+1. Use a fresh CubeWP 1.1.30 lab with one public AJAX-loaded posts widget, an in-root inert SVG marker, and a sibling text canary containing SVG-like plain text. Block outbound networking and patch `file_get_contents()` plus `wp_safe_remote_get()` to argument recorders.
+2. Fetch the widget anonymously and record nonce provenance, action name, icon structure, and route registration. Compare missing, random, expired, public-page, subscriber, and administrator nonce values; nonce acceptance is not file authorization.
+3. Submit only canary selectors: registered attachment ID, expected local SVG URL, dot-segment sibling URL, encoded separators, URL with userinfo/port, duplicate URL fields, symlinked in-root path, symlink to the sibling canary, nonexistent path, and an owned remote callback URL handled only by the recorder.
+4. Record raw URL, prefix check, URL-to-path replacement, normalized/canonical path, selected branch, and recorder argument. Do not let the helper read or render the sibling file and do not contact an internal service.
+5. Repeat on the corrected changeset/build. Require a server-resolved media attachment, verified SVG type/content policy, canonical containment beneath the approved media root, symlink rejection, and an explicit outbound-fetch policy before either sink.
+
+The bounded positive is **anonymous widget yields ordinary nonce -> caller-selected local URL survives into `cubewp_get_svg_content()` -> patched reader receives the sibling canary outside the approved media root**. This proves file-selector authority drift, not disclosure of a real secret. Treat the remote-fetch fallback as a separate SSRF surface and claim it only when an owned callback records a request after final-destination policy checks.
+
 ## Reporting checklist
 
 Include:
@@ -495,6 +547,8 @@ Include:
 - nonce provenance, capability result, selected option or role, request-post owner, target user, global-setting scope, payment/order binding, and resolved virtual path;
 - proof subject, initiating browser/session, attempt-bucket key, reset-link authority, immediate network peer, and chosen client identity;
 - canonical order/ticket/event owner, parent object, delegated provider authority, recorder action, and idempotency state;
+- token signature/key decision, issuer/audience/time claims, resolved login subject, and no-op session result;
+- authorized attachment ID, path-selected attachment/file, canonical root result, and patched read-sink argument;
 - browser, normalized, stored, and gateway-recorder amount representations for payment-integrity checks;
 - first-stage metadata write authority, exact inert key hash, later duplicate trigger identity, and recorded SQL token-boundary diff for second-order checks;
 - affected and fixed controls, including feature-disabled and unconfigured states;
