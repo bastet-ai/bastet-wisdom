@@ -104,6 +104,22 @@ The luci-app-dockerman record describes a `docker.container.ttyd_start` method e
 
 Report **read-only principal -> mutating RPC -> request field changes root shell grammar in a recorder**. Never execute a marker as root or test an Internet-reachable router.
 
+## August 3 follow-up: reject verification when every signature is skipped
+
+[GHSA-r3hj-rg3j-262c / CVE-2026-18568](https://github.com/advisories/GHSA-r3hj-rg3j-262c) adds a distinct XML::Sig control-flow failure. Affected versions 0.29 through 0.71 could skip a signature before digest or key verification when its reference did not resolve, or when `id_attr` selected a different ID, and still return true if every candidate was skipped. A configured certificate does not compensate when no cryptographic check runs. Version 0.72 is listed as corrected.
+
+Extend the generated-assertion harness with a verification-outcome ledger:
+
+1. Give each `ds:Signature` a random fixture ID and record one terminal outcome: `verified`, `digest-failed`, `signature-failed`, `reference-rejected`, or `skipped`.
+2. Test one valid signature, one unresolved reference, two unresolved references, one unresolved reference plus `id_attr`, and a mixed valid/invalid pair.
+3. Patch the login/session consumer and record whether it receives claims; never create a session.
+4. Require the API's success result to imply at least one verified signature and to bind the consumed assertion to that verified signature. Treat zero verified signatures as failure regardless of how many elements were enumerated.
+5. Repeat on 0.72 and capture both the public return value and the per-signature ledger.
+
+The bounded positive is **signature elements are present -> every candidate exits through a skip path -> verifier returns success -> no-op identity consumer is reached**. Do not report malformed XML acceptance alone, and do not use real SAML assertions, certificates, identities, or sessions.
+
+This differs from duplicate-ID wrapping: here the central question is whether *any* cryptographic verification occurred. Keep signature enumeration count, attempted count, verified count, selected reference, and consumed node as separate evidence fields.
+
 ## Reporting checklist
 
 - [ ] Advisory review status, exact package/revision, role, route, and configuration are recorded.

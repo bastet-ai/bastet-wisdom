@@ -8,6 +8,9 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Control-plane identity, analyst-project, and connection-state boundaries](alerts/2026-08-03-control-plane-identity-project-connection-boundaries-ghsa-kev.md)
+- [GNU tar hardlink and incremental-restore race validation](best-practices/archive-extraction-symlink-traversal.md#gnu-tar-hardlink-and-restore-race-operator-matrix)
+- [XML::Sig all-signatures-skipped verification checks](alerts/2026-08-03-saml-repository-channel-content-boundaries-ghsa.md#august-3-follow-up-reject-verification-when-every-signature-is-skipped)
 - [Agentic DAST behavioral-audit and proof-provenance workflow](methodology/agentic-dast-benchmark-validation.md#audit-behavior-not-only-solves)
 - [PostCSS missing-base-path source-map confinement checks](alerts/2026-07-23-postcss-phpspreadsheet-authjs-boundaries-ghsa.md#august-3-follow-up-missing-from-residual-after-path-confinement)
 - [Angular i18n event-handler attribute boundary checks](alerts/2026-06-15-angular-hydration-transferstate-cache-boundary-ghsa.md#august-3-follow-up-translation-metadata-reaches-event-handler-attributes)
@@ -15,9 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Angular SSR raw-content and transfer-cache collision checks](alerts/2026-06-15-angular-hydration-transferstate-cache-boundary-ghsa.md#august-3-follow-up-raw-content-serialization-and-transfer-cache-key-ambiguity)
 - [Report-renderer fetch and desktop-updater trust boundaries](alerts/2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md)
 - [FlowIntel Vue interpolation and MFP document-object boundaries](alerts/2026-08-03-vue-mfp-render-object-boundaries-ghsa.md)
-- [NLTK verify-before-write package integrity](alerts/2026-06-06-nltk-nicegui-picklescan-ml-archive-boundaries-ghsa.md#august-3-follow-up-verify-nltk-package-bytes-before-writing-or-extracting)
-- [WordPress object, identity, upload, and role-selector checks](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-3-follow-up-cross-check-object-identity-upload-and-role-selectors)
-- [Bouncy Castle certificate, signature, AEAD, and authenticated-content boundaries](alerts/2026-08-03-bouncy-castle-crypto-policy-boundaries-ghsa.md#august-3-follow-up-bind-every-authenticated-result-to-all-of-its-inputs)
 
 
 

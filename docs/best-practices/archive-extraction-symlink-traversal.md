@@ -58,6 +58,31 @@ Include archives that attempt:
 
 Your extractor should either reject them or extract safely without writing outside root.
 
+## GNU tar hardlink and restore-race operator matrix
+
+Two August 2026 GNU tar records show why a `../`-only archive test is incomplete:
+
+- [GHSA-4f5j-wqjr-hx49 / CVE-2026-18508](https://github.com/advisories/GHSA-4f5j-wqjr-hx49) describes a `--one-top-level` hardlink target resolving relative to the extraction working directory and composing with a pre-existing symlink; and
+- [GHSA-v7fx-gjvh-347c / CVE-2026-18477](https://github.com/advisories/GHSA-v7fx-gjvh-347c) describes a TOCTOU condition in incremental `dumpdir` rename restoration where an actor able to modify the restored directory can influence later creates, renames, or overwrites outside the intended root.
+
+Use a disposable mount namespace or temporary filesystem containing only random marker files. Record syscalls and canonical paths; never target an operational backup, restore host, home directory, or privileged path.
+
+| Case | Controlled change | Evidence to capture |
+| --- | --- | --- |
+| ordinary file | regular member below a new `--one-top-level` root | expected `openat`/write remains below root |
+| hardlink baseline | hardlink to an earlier in-root regular member | link source and destination remain below root |
+| hardlink authority | hardlink target interpreted relative to extraction CWD | lexical target, effective CWD, canonical source/destination |
+| pre-existing symlink composition | one disposable CWD component points to a sibling canary directory | `lstat`, `readlink`, and attempted link/write path; abort before replacing the canary |
+| incremental rename baseline | fixed dumpdir metadata with no concurrent mutation | rename sequence stays below root |
+| rename race | helper swaps only a random disposable directory component at a synchronization barrier | inode/dev before check and use, rename/open destination, escaped-path decision |
+| corrected build | replay the identical archive and schedule | outside-root operations are rejected |
+
+For the race case, use a deterministic interposer or debugger barrier rather than an unbounded timing loop. Patch or deny the final outside-root `renameat`, `linkat`, or open syscall while still recording its arguments. A safe positive is **approved extraction root -> hardlink/rename state resolves through a changed or CWD-relative component -> syscall recorder observes a canonical destination at the sibling canary**. Do not require an actual overwrite.
+
+Keep the preconditions distinct. CVE-2026-18508 requires archive-controlled hardlink metadata plus relevant pre-existing filesystem state. CVE-2026-18477 concerns incremental restore state and an actor able to modify the restore tree at the required time; it does not require a crafted archive. Report exactly which primitive and environmental authority were proven.
+
 ## References
 
 - GitHub Advisory example: `malcontent` symlink path traversal due to argument confusion + missing symlink validation (CVE-2026-24846)
+- GNU tar `--one-top-level` hardlink boundary: https://github.com/advisories/GHSA-4f5j-wqjr-hx49
+- GNU tar incremental restore TOCTOU boundary: https://github.com/advisories/GHSA-v7fx-gjvh-347c
