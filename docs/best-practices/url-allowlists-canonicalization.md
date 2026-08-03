@@ -51,3 +51,23 @@ Test with an allowed local origin and an owned foreign-origin recorder. Patch th
 Run the exact string through the validation parser, resolver, serializer, redirect handler if present, and final transport parser. Capture structured authority at every stage. Do not infer an SSRF from parser disagreement alone: prove **policy accepts the input as the allowed authority -> actual transport recorder selects the owned foreign authority**. Repeat on a corrected fast-uri release and require both parsers to agree or the policy layer to reject the ambiguous form.
 
 This same matrix is useful for redirect validation, webhook allowlists, proxy routing, and agent fetch tools. Keep DNS and network rebinding out of this test; authority parsing is the only changed variable.
+
+## IP-literal classification differential matrix
+
+Three reviewed `ip-address` advisories published on August 3, 2026 add reusable SSRF-policy checks:
+
+- [GHSA-mwp4-54f8-5fhr](https://github.com/advisories/GHSA-mwp4-54f8-5fhr): `Address4` through 10.3.0 parses leading-zero octets as decimal while common network resolvers can interpret them as octal; fixed in 10.3.1.
+- [GHSA-4xrf-jv44-h6hh](https://github.com/advisories/GHSA-4xrf-jv44-h6hh): `ip-address` 10.1.1 through 10.2.1 lets a caller-supplied CIDR suffix suppress special-use classification; fixed in 10.2.2.
+- [GHSA-22jq-vg5j-6vgg / CVE-2026-54272](https://github.com/advisories/GHSA-22jq-vg5j-6vgg): versions 10.1.1 through 10.2.0 classify IPv4-mapped and NAT64 IPv6 wrappers without consistently classifying the embedded IPv4 destination; fixed in 10.2.1.
+
+Use two owned listeners representing a permitted and a synthetic denied destination. Patch or instrument the final transport so it records the destination selected by the operating-system resolver without contacting metadata or another internal service.
+
+| Family | Inputs to compare | Evidence |
+| --- | --- | --- |
+| IPv4 radix | ordinary decimal, one leading-zero octet, all leading-zero octets | library numeric form, special-use flags, `getaddrinfo` bytes, transport destination |
+| caller CIDR | no suffix, host-width suffix, `/0`, shorter prefixes | parsed address, retained prefix, every special-use predicate, transport destination |
+| embedded IPv4 | IPv4-mapped IPv6 and NAT64 forms carrying public, RFC1918, loopback, link-local, and unspecified canaries | wrapper class, embedded IPv4 class, final destination |
+
+Run the exact application path rather than testing the library in isolation. Capture raw input, parser version, normalized address, prefix length, `isPrivate`/`isLoopback`/`isLinkLocal` result, resolver output, redirect revalidation, and final owned listener. Require the application to prove **policy classifies a literal as permitted -> transport resolves the same raw value to the denied owned canary**. A wrong label without a reachable outbound fetch is only a library observation.
+
+Keep DNS rebinding, redirects, and URL-authority ambiguity as separate test axes. Correct behavior should reject ambiguous legacy IPv4 syntax and caller-supplied prefixes before policy, recursively classify embedded IPv4 addresses, and reapply the same canonical destination policy after every redirect and DNS resolution.

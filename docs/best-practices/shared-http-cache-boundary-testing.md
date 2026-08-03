@@ -65,3 +65,20 @@ exception:
 ```
 
 A strong report includes affected-versus-corrected replay and distinguishes four stages: raw header parsing, typed directive normalization, shared-storage policy, and later cache-hit delivery.
+
+## Whitespace-around-equals follow-up
+
+[undici GHSA-jr45-8vmc-qm54 / CVE-2026-14643](https://github.com/advisories/GHSA-jr45-8vmc-qm54) adds an adjacent parser differential: optional whitespace around the `=` in qualified `private` or `no-cache` directives can make the parser drop the directive or retain quote characters in the field name. Affected 7.x releases before 7.29.0 and 8.x releases before 8.9.0 can then store an authenticated response in shared mode and return it to another caller.
+
+Extend the directive matrix with the following raw forms, changing only whitespace placement:
+
+| Raw form | Parser evidence to retain |
+| --- | --- |
+| `private="authorization"` | canonical qualified baseline |
+| `private ="authorization"` | whitespace before `=` |
+| `private= "authorization"` | whitespace after `=` |
+| `private = "authorization"` | whitespace on both sides |
+| `no-cache ="authorization"` | equivalent `no-cache` path |
+| mixed case and horizontal tabs | grammar-equivalent controls |
+
+For each form, record the raw bytes, normalized directive name, normalized field-name list, shared-store decision, excluded stored headers, and the later A-to-B hit result. The positive remains end to end: **qualified directive with legal optional whitespace -> parser representation loses or corrupts the qualification -> caller A's synthetic authenticated canary enters shared storage -> caller B receives it without an upstream request**. A parse mismatch without a cross-caller hit is not enough.

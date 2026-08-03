@@ -268,6 +268,24 @@ Affected lines are Wagtail before 6.3.8; 6.4rc1 and later before 7.0.6; 7.1rc1 a
 
 Report **page-author-controlled TableBlock class metadata -> trusted Wagtail page rendering -> harmless script marker executes in a separate viewer origin**. Do not claim visitor-to-admin XSS, account takeover, or arbitrary site-wide impact unless the target's actual authoring roles, publication workflow, and viewer path prove those transitions. Never exfiltrate a real session or induce a production administrator to open the canary.
 
+## August 3 GitPython option-to-filesystem follow-up
+
+Two reviewed advisories show that option filtering must cover every wrapper call site and every filesystem-capable option, rather than relying on a partial denylist:
+
+- [GHSA-539m-9xh6-q6rr](https://github.com/advisories/GHSA-539m-9xh6-q6rr): `Repo.archive()` blocks some unsafe options but, through 3.1.56, omits `--add-file` and `--add-virtual-file`; fixed in 3.1.57.
+- [GHSA-3f7w-8rr8-f37f](https://github.com/advisories/GHSA-3f7w-8rr8-f37f): `IndexFile.checkout()` forwards `--prefix` to `checkout-index`, and `TagReference.create()` forwards `-F`/`--file` to `git tag`, without the expected unsafe-option guard through 3.1.56; fixed in 3.1.57.
+
+### Wrapper call-site and option-contract matrix
+
+1. Trace the application-controlled field to the exact GitPython API and keyword argument. Package presence is not reachability.
+2. Use a disposable repository containing one random source marker, an empty temporary home, no remotes, no hooks/helpers, and one sibling canary path. Patch GitPython's process runner to record argv and abort before Git executes for the first pass.
+3. For `Repo.archive()`, compare an ordinary pathspec, blocked `--output`, `--add-file` selecting only a synthetic sibling file, and an inert `--add-virtual-file` entry. If the argv recorder proves reachability, allow a second isolated run only to inspect the generated archive listing and synthetic canary hash.
+4. For `IndexFile.checkout()`, compare the default destination, an in-root prefix, and a sibling disposable prefix. Interpose filesystem writes or use a mount namespace so the proof records attempted canonical paths before any existing file is replaced.
+5. For `TagReference.create()`, compare an ordinary message with `-F`/`--file` selecting a synthetic text canary. Patch file-open or Git output handling so evidence records only the selected path and random marker, never host file contents.
+6. Replay every case on 3.1.57. Require rejection before process start unless the caller explicitly enters a separately authorized unsafe-options mode.
+
+Bounded positives are **caller-controlled archive kwargs -> outside-repository synthetic file appears in an archive recorder**, **checkout kwargs -> write recorder selects a sibling canary destination**, or **tag kwargs -> file-read recorder selects the sibling canary**. Keep read and write primitives separate, do not target dotfiles or credentials, and do not escalate these primitives into hooks or command execution.
+
 ## Reporting checklist
 
 - [ ] Did the report prove the caller can reach the exact PKI, MCP, proxy, updater, daemon, cryptographic, or provisioning path?
@@ -282,3 +300,4 @@ Report **page-author-controlled TableBlock class metadata -> trusted Wagtail pag
 - [ ] For the late Git/pipeline/render wave, are wrapper argv, credential-host selection, provider-command file effects, sanitizer hook/plugin decisions, and Jackson field/view binding shown separately with fixed controls?
 - [ ] For the final URL/schema/sanitizer/policy wave, are raw and normalized hosts, expanded fake variables, generated source, browser DOM properties, active views, and translated xDS matchers captured independently?
 - [ ] For Wagtail, is `TableBlock` actually present, is authoring permission proven, and does the evidence stop at a harmless marker in a separate disposable viewer session?
+- [ ] For GitPython, is each API call site, final argv, canonical synthetic path, read/write direction, and 3.1.57 rejection captured independently?
