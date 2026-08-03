@@ -108,6 +108,30 @@ The same feed also lists lazy ASN.1 depth-guard reset ([GHSA-qp49-qgx5-5m26](htt
 
 Report **attacker-supplied PKCS#7 envelope -> recipient private-key decryption -> distinguishable synthetic failure class or timing distribution -> fixed 50.0.0 converges on one failure path**. Keep the advisory's RSA encrypted-key oracle separate from unauthenticated CBC `encryptedContent` behavior, which the upstream record identifies as a format property rather than a fix in this release. Never test mail gateways with real keys/messages, generate high-volume adaptive queries, or recover a key or plaintext.
 
+## Python `cryptography` name-constraint and path-cost follow-up
+
+[GHSA-m2h6-j472-rp4c / CVE-2026-69248](https://github.com/advisories/GHSA-m2h6-j472-rp4c) adds a certificate-policy mismatch in Python `cryptography` through 48.0.0, fixed in 49.0.0. A constrained intermediate permitted only for a specific DNS name such as `foo.example.test` can issue a leaf containing the broader wildcard `*.example.test`; the affected verifier can accept that leaf for a sibling such as `bar.example.test`. The durable operator lesson is to bind a wildcard's complete match set—not merely its suffix—to every permitted subtree.
+
+### Generated-chain differential
+
+1. Create a local root and constrained intermediate with generated EC keys. Give the intermediate one `permittedSubtrees` DNS constraint for a synthetic exact host. Do not use a public hostname or production CA material.
+2. Issue four leaves while keeping issuer, key usage, validity, and all unrelated extensions fixed: the exact permitted host, an in-scope narrower name if the chosen constraint permits one, a wildcard whose expansion includes names outside the constraint, and an unrelated name.
+3. For each leaf, ask the server verifier about the exact host, one wildcard-matched sibling, and an unrelated control. Record the textual SAN, normalized reference identity, constraint, chain result, and selected chain.
+4. Run the same corpus against 48.0.0 and 49.0.0 in separate disposable virtual environments. Keep the validation clock and extension policy fixed.
+5. Add an application recorder after verification that logs only `accepted fixture <id>` and aborts before any network connection, token use, or privileged action.
+
+The bounded positive is **intermediate constrained to exact host A -> leaf wildcard spans A and sibling B -> affected verifier accepts leaf for B -> 49.0.0 rejects before the application recorder**. A wildcard SAN or name constraint by itself is not a finding; show the accepted chain and the out-of-constraint reference identity. Do not present an upstream proof script as evidence unless it reproduces in the target application's actual verifier configuration.
+
+[GHSA-jwv3-5hgf-82ww / CVE-2026-69249](https://github.com/advisories/GHSA-jwv3-5hgf-82ww) is an adjacent availability-only path-building issue through 48.0.0. Duplicate copies of a self-signed intermediate can cause exponential candidate exploration even though the invalid chain is eventually rejected. Keep it as a bounded parser-cost fixture rather than a standalone exploit path:
+
+- use only generated, invalid chains and an unrelated generated trust anchor;
+- run each affected and 49.0.0 case in a subprocess with strict CPU, memory, and wall-clock limits;
+- start with one duplicate and a shallow maximum depth, increasing one dimension at a time only while the prior case remains within budget;
+- record duplicate count, maximum depth, candidate visits if instrumented, result, elapsed time, and forced termination separately; and
+- stop at a small reproducible affected-versus-fixed growth curve—never send certificate-amplification probes to a shared TLS or artifact-validation service.
+
+Report the resource issue only when an authorized application accepts attacker-controlled chain material and performs the expensive path build. Certificate parsing in an isolated library benchmark proves the algorithmic differential, not remote availability impact.
+
 ## Evidence and reporting checklist
 
 - [ ] Exact Bouncy Castle artifact coordinates, provider order, and affected/patched versions are recorded.
@@ -117,6 +141,8 @@ Report **attacker-supplied PKCS#7 envelope -> recipient private-key decryption -
 - [ ] Signer count, signer identity, authenticated content bytes, certificate ID, hostname, and validation clock are recorded where relevant.
 - [ ] Authenticated-decryption evidence states whether pre-verification plaintext was actually consumed.
 - [ ] Oracle evidence includes stable externally visible classes; local exception differences alone are not reported as remote plaintext recovery.
+- [ ] Wildcard SAN evidence records the full permitted-subtree match set and the exact out-of-constraint reference identity accepted by the affected verifier.
+- [ ] Duplicate-chain path-cost cases run in bounded subprocesses and are not presented as integrity or authentication bypasses.
 - [ ] AEAD/MAC tests bind nonce, AAD, ciphertext, message length, full tag, and finalization state independently.
 - [ ] RSA verification evidence identifies the exact encoded form and altered digest byte; no private-key or collision claim is inferred.
 - [ ] Parser-cost fixtures run under explicit resource limits and are reported separately from integrity failures.

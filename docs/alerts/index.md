@@ -10,6 +10,8 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Data workflow, AI corpus, command-wrapper, and device-adoption boundaries](2026-08-03-data-workflow-device-trust-boundaries-ghsa.md)
+- [Python `cryptography` wildcard name-constraint and bounded path-cost follow-up](2026-08-03-bouncy-castle-crypto-policy-boundaries-ghsa.md#python-cryptography-name-constraint-and-path-cost-follow-up)
 - [Python `cryptography` PKCS#7 oracle follow-up](2026-08-03-bouncy-castle-crypto-policy-boundaries-ghsa.md#python-cryptography-pkcs7-oracle-follow-up)
 - [HTTP authority, WebSocket framing, Oracle SQL, and formatter-cache boundaries](2026-08-03-http-authority-websocket-sql-file-boundaries-ghsa.md)
 - [GitPython `Commit.count()` unguarded `rev-list --output` follow-up](2026-07-21-developer-agent-proxy-control-boundaries-ghsa.md#commit-count-unguarded-output-sink)
