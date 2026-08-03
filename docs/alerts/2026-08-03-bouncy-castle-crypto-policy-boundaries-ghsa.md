@@ -70,6 +70,30 @@ LDAP metacharacters in a filter string, an unusual DH value, or an old keystore 
 
 The BKS legacy-integrity issue is similarly a format downgrade, not proof of key recovery. A report should separate **weak format accepted** from **application imports and trusts attacker-controlled key material**.
 
+## August 3 follow-up: bind every authenticated result to all of its inputs
+
+A later advisory-feed wave adds five integrity failures that fit the same operator rule. Use generated keys and short local messages, change one field per fixture, and instrument the application boundary after the high-level API returns. Do not reuse production ciphertext, signatures, or key material.
+
+| Boundary | Primary source | Differential fixture | Positive evidence |
+| --- | --- | --- | --- |
+| IES stream-mode MAC -> exact KDF split and message length | [GHSA-834p-whmm-rg5r](https://github.com/advisories/GHSA-834p-whmm-rg5r) / CVE-2026-12816 | Generate one test-only IES key pair and short plaintexts on both sides of the relevant length boundary. Preserve a valid control, then alter only the stream length/ciphertext arrangement presented for verification. | The affected artifact accepts a modified message under a MAC derived from the wrong length-dependent KDF split; the patched artifact rejects it. |
+| OpenPGP AEAD success -> final chunk tag | [GHSA-9q38-7pr7-8j6w](https://github.com/advisories/GHSA-9q38-7pr7-8j6w) / CVE-2026-12817 | Produce local AEAD messages whose plaintext is exactly chunk-aligned and one byte off the boundary. Corrupt only the final tag and consume the stream to EOF. | The affected chunk-aligned path reports successful completion or releases a trusted result without validating the final tag; the off-boundary and patched controls reject. |
+| KCCM authentication -> nonce as well as ciphertext | [GHSA-4r33-j73q-cw77](https://github.com/advisories/GHSA-4r33-j73q-cw77) / CVE-2026-12803 | Encrypt a tiny canary with no AAD, then replay the ciphertext/tag under a second generated nonce. Repeat with non-empty AAD as a control. | The affected no-AAD path accepts the cross-nonce pair; the patched path binds the nonce and rejects it. |
+| CMS `AuthEnvelopedData` success -> required authentication-tag length | [GHSA-833g-4xxm-r9cx](https://github.com/advisories/GHSA-833g-4xxm-r9cx) / CVE-2026-12802 | Create a local authenticated envelope and compare its full tag with carefully truncated tag lengths while keeping recipients, algorithm, AAD, and content fixed. | A shortened tag reaches authenticated success or trusted plaintext on the affected path; the patched path enforces the algorithm's required tag length. |
+| RSA PKCS#1 verification -> complete expected digest | [GHSA-cggx-vw4r-j93f](https://github.com/advisories/GHSA-cggx-vw4r-j93f) / CVE-2026-12860 | In a disposable harness, exercise only the NULL-omitted `DigestInfo` representation and mutate each of the final digest bytes independently. Keep a standards-conforming encoding as the positive control. | The affected verifier accepts a signature representation despite a mismatch in either of the final two expected hash bytes; the patched verifier compares the complete digest. |
+
+For each result, show the application consequence with a harmless recorder such as `accepted fixture A`, `selected canary config`, or `released synthetic plaintext`. Library-level acceptance is important evidence, but it is not automatically proof that a remote product accepts attacker-controlled content.
+
+### Parser-cost items from the same wave
+
+The same feed also lists lazy ASN.1 depth-guard reset ([GHSA-qp49-qgx5-5m26](https://github.com/advisories/GHSA-qp49-qgx5-5m26)), MLS declared-length allocation ([GHSA-p2mp-577q-8vh2](https://github.com/advisories/GHSA-p2mp-577q-8vh2)), PKCS#12 iteration-cost handling ([GHSA-pxw2-f34f-xjvr](https://github.com/advisories/GHSA-pxw2-f34f-xjvr)), and definite-length up-front allocation ([GHSA-4hc3-69f9-4wfx](https://github.com/advisories/GHSA-4hc3-69f9-4wfx)). Treat these as bounded parser-cost checks, not exploit chains:
+
+1. Run only in a subprocess or container with strict heap, CPU, and wall-clock limits.
+2. Start with tiny synthetic depth, length, and iteration values and increase gradually; never begin with maximum-width fields.
+3. Record whether rejection happens before recursive forcing, allocation, or KDF work.
+4. Compare affected and patched artifacts with the same corpus and limits.
+5. Do not send resource-exhaustion probes to shared or production services, and do not promote a local crash unless a specific authorized ingestion path makes the input attacker-controlled.
+
 ## Evidence and reporting checklist
 
 - [ ] Exact Bouncy Castle artifact coordinates, provider order, and affected/patched versions are recorded.
@@ -79,4 +103,7 @@ The BKS legacy-integrity issue is similarly a format downgrade, not proof of key
 - [ ] Signer count, signer identity, authenticated content bytes, certificate ID, hostname, and validation clock are recorded where relevant.
 - [ ] Authenticated-decryption evidence states whether pre-verification plaintext was actually consumed.
 - [ ] Oracle evidence includes stable externally visible classes; local exception differences alone are not reported as remote plaintext recovery.
+- [ ] AEAD/MAC tests bind nonce, AAD, ciphertext, message length, full tag, and finalization state independently.
+- [ ] RSA verification evidence identifies the exact encoded form and altered digest byte; no private-key or collision claim is inferred.
+- [ ] Parser-cost fixtures run under explicit resource limits and are reported separately from integrity failures.
 - [ ] No private keys, production mail, directory data, keystores, ciphertext, or decrypted content appears in evidence.
