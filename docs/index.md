@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Bouncy Castle certificate, signature, and authenticated-content boundaries](alerts/2026-08-03-bouncy-castle-crypto-policy-boundaries-ghsa.md)
 - [Transformers named-chat-template file-write validation](alerts/2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-2-transformers-named-chat-template-file-write-follow-up)
 - [Vikunja principal-type and project/view authorization boundaries](alerts/2026-08-02-vikunja-principal-object-boundaries-ghsa.md)
 - [ArcadeDB MCP principal, cluster-token, and trigger-authority checks](alerts/2026-07-16-arcadedb-nuclio-pheditor-boundaries-ghsa.md#august-2-arcadedb-mcp-principal-and-server-authority-follow-up)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Keycloak client-policy and delegated-admin lifecycle differentials](alerts/2026-06-11-kolibri-hapi-keycloak-flowise-arc-boundary-batch-ghsa.md#august-2-keycloak-client-policy-and-delegated-admin-follow-up)
 - [Keras HDF5 external-link file-authority validation](alerts/2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-2-keras-hdf5-external-link-file-authority-follow-up)
 - [Privileged PID-file symlink boundary validation](alerts/2026-08-01-privileged-pidfile-symlink-boundary-ghsa.md)
-- [HTTP client, identity, router, CI, and RDP boundary checks](alerts/2026-08-01-http-identity-router-rdp-boundaries-ghsa.md)
 
 
 
