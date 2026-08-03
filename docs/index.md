@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Report-renderer fetch and desktop-updater trust boundaries](alerts/2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md)
 - [FlowIntel Vue interpolation and MFP document-object boundaries](alerts/2026-08-03-vue-mfp-render-object-boundaries-ghsa.md)
 - [NLTK verify-before-write package integrity](alerts/2026-06-06-nltk-nicegui-picklescan-ml-archive-boundaries-ghsa.md#august-3-follow-up-verify-nltk-package-bytes-before-writing-or-extracting)
 - [WordPress object, identity, upload, and role-selector checks](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-3-follow-up-cross-check-object-identity-upload-and-role-selectors)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [ArcadeDB MCP principal, cluster-token, and trigger-authority checks](alerts/2026-07-16-arcadedb-nuclio-pheditor-boundaries-ghsa.md#august-2-arcadedb-mcp-principal-and-server-authority-follow-up)
 - [Better Auth path-normalization and passkey-object checks](alerts/2026-07-07-better-auth-aider-netfoil-ckan-mcp-boundaries-ghsa.md#august-2-better-auth-path-and-passkey-object-follow-up)
 - [FreeRDP media and clipboard memory-safety fixtures](alerts/2026-08-01-http-identity-router-rdp-boundaries-ghsa.md#august-2-freerdp-server-to-client-media-and-clipboard-follow-up)
-- [Privileged PID-file symlink boundary validation](alerts/2026-08-01-privileged-pidfile-symlink-boundary-ghsa.md)
+
 
 
 
