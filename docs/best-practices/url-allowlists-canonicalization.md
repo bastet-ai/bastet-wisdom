@@ -31,3 +31,23 @@ This shows up in SSRF defenses, “trusted domain” checks, webhook allowlists,
 
 ## Related examples
 - webpack build-time fetch allowlist bypass via userinfo: https://github.com/advisories/GHSA-8fgc-7cc6-rx7x
+
+## Backslash authority parser-differential matrix
+
+[fast-uri GHSA-7p8r-x3mc-p8w7 / CVE-2026-18446](https://github.com/advisories/GHSA-7p8r-x3mc-p8w7) demonstrates a policy-parser versus network-parser differential. Affected fast-uri releases required literal `//` for an authority, while Node's WHATWG URL parser treats backslashes as separators for special schemes. A value that the policy layer resolves beneath an allowed host can therefore reach `fetch`, undici, or an HTTP client as a different authority. Fixed releases are listed as 2.4.4, 3.1.5, and 4.1.2.
+
+Test with an allowed local origin and an owned foreign-origin recorder. Patch the final transport so it records destination scheme, hostname, port, and path without sending a request.
+
+| Reference form | Policy parser output | Transport parser output |
+| --- | --- | --- |
+| `//owned.invalid/canary` | record | record |
+| `\\\\owned.invalid/canary` | record | record |
+| `/\\owned.invalid/canary` | record | record |
+| `\\/owned.invalid/canary` | record | record |
+| `https:\\\\owned.invalid/canary` | record | record |
+| percent-encoded separators | record | record |
+| same-origin relative path | allowed-origin control | allowed-origin control |
+
+Run the exact string through the validation parser, resolver, serializer, redirect handler if present, and final transport parser. Capture structured authority at every stage. Do not infer an SSRF from parser disagreement alone: prove **policy accepts the input as the allowed authority -> actual transport recorder selects the owned foreign authority**. Repeat on a corrected fast-uri release and require both parsers to agree or the policy layer to reject the ambiguous form.
+
+This same matrix is useful for redirect validation, webhook allowlists, proxy routing, and agent fetch tools. Keep DNS and network rebinding out of this test; authority parsing is the only changed variable.

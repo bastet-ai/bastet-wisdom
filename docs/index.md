@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Shared HTTP cache private-directive boundary testing](best-practices/shared-http-cache-boundary-testing.md)
+- [Backslash authority parser-differential checks](best-practices/url-allowlists-canonicalization.md#backslash-authority-parser-differential-matrix)
 - [Control-plane identity, analyst-project, and connection-state boundaries](alerts/2026-08-03-control-plane-identity-project-connection-boundaries-ghsa-kev.md)
 - [GNU tar hardlink and incremental-restore race validation](best-practices/archive-extraction-symlink-traversal.md#gnu-tar-hardlink-and-restore-race-operator-matrix)
 - [XML::Sig all-signatures-skipped verification checks](alerts/2026-08-03-saml-repository-channel-content-boundaries-ghsa.md#august-3-follow-up-reject-verification-when-every-signature-is-skipped)
@@ -16,8 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Angular i18n event-handler attribute boundary checks](alerts/2026-06-15-angular-hydration-transferstate-cache-boundary-ghsa.md#august-3-follow-up-translation-metadata-reaches-event-handler-attributes)
 - [SAML, repository, SSH-channel, CMS, and publish-mode trust boundaries](alerts/2026-08-03-saml-repository-channel-content-boundaries-ghsa.md)
 - [Angular SSR raw-content and transfer-cache collision checks](alerts/2026-06-15-angular-hydration-transferstate-cache-boundary-ghsa.md#august-3-follow-up-raw-content-serialization-and-transfer-cache-key-ambiguity)
-- [Report-renderer fetch and desktop-updater trust boundaries](alerts/2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md)
-- [FlowIntel Vue interpolation and MFP document-object boundaries](alerts/2026-08-03-vue-mfp-render-object-boundaries-ghsa.md)
 
 
 

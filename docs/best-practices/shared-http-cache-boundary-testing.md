@@ -1,0 +1,67 @@
+---
+title: Shared HTTP cache boundary testing
+---
+
+# Shared HTTP cache boundary testing
+
+Use this workflow when an HTTP client, proxy, SDK, or application cache can reuse one upstream response across callers. The key question is not merely whether two requests have the same cache key: it is whether response directives, request identity, and excluded headers remain bound to the stored object and every later cache hit.
+
+Source: [undici GHSA-4cwx-7wf7-3272 / CVE-2026-13697](https://github.com/advisories/GHSA-4cwx-7wf7-3272), published August 3, 2026. The advisory describes malformed qualified `Cache-Control: private` values being represented differently from the boolean `private` state expected by the shared-cache guard. A response could then enter the default shared cache and be served to another caller. Undici 7.29.0 and 8.9.0 are listed as corrected.
+
+!!! warning "Synthetic two-user fixtures only"
+    Use a local upstream, in-memory cache, and random caller canaries. Never place real cookies, authorization headers, account data, or tenant responses in the harness.
+
+## Prerequisites
+
+- affected and corrected client-library versions;
+- a local upstream whose response headers and body are fully controlled;
+- two synthetic callers, A and B, with distinct random response markers;
+- cache-store instrumentation that records key, cache mode, parsed directives, stored headers, and hit/miss state.
+
+## Directive-state matrix
+
+Return the same canary resource under each header while holding request method, URL, and ordinary cache fields constant:
+
+| Case | `Cache-Control` shape | Question |
+| --- | --- | --- |
+| public baseline | `public, max-age=300` | Can an intentionally shared response be reused? |
+| private baseline | `private, max-age=300` | Is shared storage rejected? |
+| named private field | `private="set-cookie", max-age=300` | Is the qualified form treated as private and is the named field excluded? |
+| empty qualified value | `private="", max-age=300` | Does an empty parsed array become private or bypass a boolean-only guard? |
+| delimiter-only value | `private=",", max-age=300` | Does trimming/canonicalization collapse to the secure state? |
+| repeated equivalent | mixed case, spacing, and repeated qualified values | Are equivalent forms normalized before policy? |
+| mixed boolean/qualified | `private, private="set-cookie", max-age=300` | Does type confusion throw before a safe cache decision? |
+| corrected build | replay every case | Are private forms rejected from shared storage without a crash? |
+
+## Two-caller proof
+
+1. Caller A requests a random URL. The upstream returns `A-CANARY`, a fake `Set-Cookie: skillz=A`, and exactly one matrix header.
+2. Record the parser's typed representation and whether the response enters shared storage.
+3. Change the upstream body/header to `B-CANARY` and `skillz=B` without changing the cache key.
+4. Caller B requests the same URL with a distinct synthetic authorization-context marker.
+5. Record hit/miss state, returned body/header canaries, upstream request count, and caller identity. Never log bearer values; the context marker is not a credential.
+6. Repeat with cache type explicitly private, a distinguishing `Vary` field, no cache interceptor, and corrected releases.
+
+The reportable disclosure signal is **private-form response for caller A -> shared cache store -> caller B receives A's random body or header canary without a second upstream request**. A parser oddity or store event alone is insufficient.
+
+For the mixed-directive crash path, catch the request promise and process exit independently. Report the exact parser exception and consumer behavior, but do not run an availability test against a shared service. The disclosure and crash are separate impacts even though one normalization fix addresses both.
+
+## Evidence schema
+
+```text
+library_version:
+cache_mode:
+request_key:
+caller_context: A | B
+raw_cache_control:
+parsed_directives:
+stored: true | false
+stored_header_names:
+hit: true | false
+upstream_request_count:
+returned_body_canary:
+returned_cookie_canary:
+exception:
+```
+
+A strong report includes affected-versus-corrected replay and distinguishes four stages: raw header parsing, typed directive normalization, shared-storage policy, and later cache-hit delivery.
