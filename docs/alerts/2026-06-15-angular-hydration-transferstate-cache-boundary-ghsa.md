@@ -92,6 +92,25 @@ The useful proof is a semantic collision, not merely two equal debug strings.
 
 Use only canary responses. Never place sessions, authorization headers, customer records, or role/payment data in the fixture. Report **structured request A and B -> identical transfer-cache key -> B consumes A's synthetic response**; do not infer cross-user leakage unless the application independently shares the cache across users or renders and that scope is safely proven.
 
-## Notes on skipped adjacent items
+## August 3 follow-up: translation metadata reaches event-handler attributes
 
-The same scan rechecked Disclosed, PortSwigger research, Trail of Bits, ProjectDiscovery, GitHub advisory published/updated feeds, and CISA KEV. No CISA, PortSwigger, Trail of Bits, ProjectDiscovery, or Disclosed update added a new higher-signal operator workflow in this run. This page promotes the newly published Angular advisory because it turns a framework-specific hydration bug into a reusable SSR cache-poisoning and DOM-clobbering validation pattern.
+[GHSA-jj27-h5hq-8x99 / CVE-2026-69151](https://github.com/advisories/GHSA-jj27-h5hq-8x99) adds a separate Angular compiler boundary. Standard template validation rejects bindings to event-handler attributes such as `onclick` and `onerror`, but affected i18n metadata collection accepted `i18n-on*`. A lower-trust translation artifact could then replace a benign static handler during localized compilation. The advisory lists corrected releases `@angular/compiler` / `@angular/core` 20.3.27, 21.2.19, and 22.0.1; older branches may have no patched release listed.
+
+### Translation-to-template validation harness
+
+Use a disposable localized application and inspect compiler output without executing browser JavaScript.
+
+1. Inventory templates for static `on*` attributes and corresponding `i18n-on*` metadata. Also search generated translation catalogs for event-handler attribute units.
+2. Build a baseline locale whose translation preserves a harmless non-executable marker such as `void 0`.
+3. In a synthetic translation file, replace only that unit with a distinct inert string. Do not use script, navigation, cookie, network, or DOM-mutation payloads.
+4. Capture the source template, extracted translation-unit identity, translated template/compiler intermediate form, and final generated attribute value.
+5. Run controls with an ordinary translated attribute such as `title`, a static `on*` attribute without i18n metadata, a rejected standard binding to the same event property, and a corrected Angular release.
+6. If browser parsing must be confirmed, use a patched DOM/event recorder that records attribute installation while suppressing handler evaluation. Stop before dispatching the event.
+
+The bounded positive signal is **lower-trust translation unit -> `i18n-on*` metadata path -> generated event-handler attribute differs from the trusted template**. Do not call a suspicious catalog entry exploitable unless the application imports that catalog into an affected localized build, and do not execute a handler merely to prove a compiler data-flow that output inspection already establishes.
+
+Report translation provenance explicitly: who can submit or modify catalogs, whether review/signing exists, which locales are built, and whether the resulting bundle is deployed under the application's origin. This is a build-time content-supply-chain boundary, not ordinary reflected input.
+
+## Historical source disposition
+
+The original June 15 scan rechecked Disclosed, PortSwigger research, Trail of Bits, ProjectDiscovery, GitHub advisory published/updated feeds, and CISA KEV. At that time, no non-GitHub source added a higher-signal workflow. The August 3 sections above record later Angular follow-ups separately.

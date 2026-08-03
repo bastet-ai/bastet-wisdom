@@ -209,3 +209,27 @@ Capture the annotation, `from`, resolved path, filesystem-open trace, whether `r
 | >= 8.5.18 | blocked | confined/rejected |
 
 Revise the earlier negative-control guidance accordingly: `8.5.12+` is not a valid fixed control for an outside file ending in `.map`; use 8.5.18 or later. A strong finding proves **untrusted CSS annotation -> out-of-source-directory synthetic `.map` read -> `sourcesContent` copied into an attacker-visible result map**. Do not read real build maps, bundled proprietary source, or other tenants' artifacts.
+
+## August 3 follow-up: missing-`from` residual after path confinement
+
+[GHSA-fxqj-rqcc-2cmp / CVE-2026-69153](https://github.com/advisories/GHSA-fxqj-rqcc-2cmp) shows that the previous-map boundary must be tested by option state, not only package version. The guard added after the earlier traversal reports was conditional on a truthy CSS filename. PostCSS 8.5.22 could therefore reject an outside `.map` when `from` was supplied yet read the same absolute or parent-traversing annotation when the caller processed a CSS string without `from`. The first fixed release listed for this residual is 8.5.23.
+
+This makes **omitted**, **empty**, and **valid** base-path states separate security cases. A successful control with `from` set does not prove that a string-input minifier, linter, playground, or build API is confined.
+
+### Revised option-state matrix
+
+Use only valid synthetic source maps beneath a disposable root. Give the inside and sibling maps different `sources` and `sourcesContent` canaries.
+
+| Case | `from` state | Annotation | Affected-build question |
+| --- | --- | --- | --- |
+| same-directory baseline | fixture CSS path | `inside.js.map` | Does ordinary previous-map loading work? |
+| parent-path control | fixture CSS path | `../../sibling/outside.js.map` | Is the path rejected relative to the CSS file? |
+| missing-base residual | omitted | absolute sibling `.map` path | Is the path read because the confinement branch lacks a base file? |
+| traversal residual | omitted | a `..` path resolved from the fixture working directory | Does working-directory resolution escape the intended input root? |
+| extension control | omitted | sibling file not ending in `.map` | Is the extension restriction distinct from confinement? |
+| parser control | omitted | malformed synthetic `.map` | Does the file-open path occur even when parsing later fails? |
+| corrected build | repeat all cases on 8.5.23+ | same values | Are all untrusted outside paths rejected? |
+
+Instrument `fs.readFileSync` or an equivalent file-open boundary and capture the effective working directory, exact options object, resolved path, and whether the canary appears in `result.map`. Keep `map: false` as an independent reachability control. Do not infer disclosure from a package version or a file-open alone: prove that the caller exposes the generated map or a deterministic marker derived from it.
+
+The narrow report chain is **attacker-influenced CSS -> external `sourceMappingURL` -> missing `from` skips path confinement -> synthetic outside `.map` is opened -> canary `sourcesContent` reaches an observable generated map**. Never target real source maps, source trees, credentials, or another tenant's build artifacts.

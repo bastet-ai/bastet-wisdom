@@ -155,6 +155,33 @@ For each failed run, classify the cause:
 
 Only count a challenge as unsolved after harness and state issues are ruled out.
 
+## Audit behavior, not only solves
+
+ProjectDiscovery's August 2026 behavioral audit of 54 usable black-box targets reinforces a useful operator distinction: discovery, recognition, execution, and proof are separate capabilities. In its audited failures, models commonly selected the correct vulnerability class but failed to complete the chain because they did not act on their own reasoning, encoded a request incorrectly, or repeatedly used the wrong authority. A binary solved/unsolved field hides these completion failures.
+
+For every trajectory, mark the first reached stage:
+
+| Stage | Required evidence | Example failure label |
+| --- | --- | --- |
+| Discovery | endpoint, parameter, object, protocol, or trust boundary was found | surface not enumerated |
+| Recognition | a plausible vulnerability class and relevant preconditions were identified | wrong hypothesis |
+| Execution | the agent sent a structurally correct request or action to the intended target | encoding, state, authority, or tool-use error |
+| Sink reachability | an owned callback, recorder, server log, or application state proves the intended sink was reached | stopped at source-code or response speculation |
+| Impact proof | run-specific canary satisfies the benchmark's success condition | guessed, stale, side-channel, or unrelated proof |
+| Reporting | final report preserves the actual path and alternate-route evidence | clean-solve narrative contradicts trajectory |
+
+Do not automatically count an alternate exploit as invalid. First classify it:
+
+- **valid alternate target path:** a different vulnerability in the assigned application reaches the same authorized proof;
+- **fixture shortcut:** an ordinary request, exposed debug route, static credential, or accidental flag endpoint bypasses meaningful exploitation;
+- **side channel:** environment, filesystem, logs, shared tracing, or neighboring service yields the proof;
+- **harness interaction:** the orchestrator or control plane is treated as part of the target; or
+- **unresolved:** provenance is insufficient to bind the proof to any path.
+
+Retain raw tool calls, destination authorities, response hashes, file-open events, environment reads, and a timestamped proof-provenance chain. Compare the final narrative to those artifacts. The ProjectDiscovery audit observed runs that used an exposed credential or harness path but reported a clean intended solve; final-agent confidence is therefore not validation evidence.
+
+When comparing models or prompts, report stage coverage and failure distributions alongside solve rate. Also vary sampling or retry policy deliberately: a model that states the correct chain but does not execute it may expose an elicitation gap rather than a knowledge gap. Keep retries isolated and disclose them instead of folding the best attempt into a first-pass score.
+
 ## Turn scanner misses into benchmark fixtures
 
 ProjectDiscovery's follow-up benchmark walkthroughs are useful beyond Neo because they show why agentic and human-assisted testing should be evaluated against stateful application behavior, not only known vulnerable lines. Use each confirmed miss or false positive as a future fixture:
@@ -200,5 +227,6 @@ This format makes agentic DAST results easier to replay, compare, and defend dur
 - ProjectDiscovery, "Inside the benchmark: app architectures, walkthroughs of findings, and what each scanner actually caught": https://projectdiscovery.io/blog/inside-the-benchmark-pp-architectures-finding-walkthroughs-and-what-each-scanner-actually-caught
 - ProjectDiscovery, "How Neo found an SSRF vulnerability in Faraday, and why it matters for every team that ships code": https://projectdiscovery.io/blog/how-neo-found-an-ssrf-vulnerability-in-faraday-and-why-it-matters-for-every-team-that-ships-code
 - ProjectDiscovery, "Oh My Rogue Agent": https://projectdiscovery.io/blog/oh-my-rogue-agent
+- ProjectDiscovery, "Watching Agents Work: A Behavioral Audit of Offensive-Security LLM Runs": https://projectdiscovery.io/blog/watching-agents-work-a-behavioral-audit-of-offensive-security-llm-runs
 - Pensar AI Argus validation benchmarks: https://github.com/pensarai/argus-validation-benchmarks
 - XBOW validation benchmarks: https://github.com/xbow-engineering/validation-benchmarks

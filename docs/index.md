@@ -8,6 +8,9 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Agentic DAST behavioral-audit and proof-provenance workflow](methodology/agentic-dast-benchmark-validation.md#audit-behavior-not-only-solves)
+- [PostCSS missing-base-path source-map confinement checks](alerts/2026-07-23-postcss-phpspreadsheet-authjs-boundaries-ghsa.md#august-3-follow-up-missing-from-residual-after-path-confinement)
+- [Angular i18n event-handler attribute boundary checks](alerts/2026-06-15-angular-hydration-transferstate-cache-boundary-ghsa.md#august-3-follow-up-translation-metadata-reaches-event-handler-attributes)
 - [SAML, repository, SSH-channel, CMS, and publish-mode trust boundaries](alerts/2026-08-03-saml-repository-channel-content-boundaries-ghsa.md)
 - [Angular SSR raw-content and transfer-cache collision checks](alerts/2026-06-15-angular-hydration-transferstate-cache-boundary-ghsa.md#august-3-follow-up-raw-content-serialization-and-transfer-cache-key-ambiguity)
 - [Report-renderer fetch and desktop-updater trust boundaries](alerts/2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md)
@@ -15,9 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [NLTK verify-before-write package integrity](alerts/2026-06-06-nltk-nicegui-picklescan-ml-archive-boundaries-ghsa.md#august-3-follow-up-verify-nltk-package-bytes-before-writing-or-extracting)
 - [WordPress object, identity, upload, and role-selector checks](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-3-follow-up-cross-check-object-identity-upload-and-role-selectors)
 - [Bouncy Castle certificate, signature, AEAD, and authenticated-content boundaries](alerts/2026-08-03-bouncy-castle-crypto-policy-boundaries-ghsa.md#august-3-follow-up-bind-every-authenticated-result-to-all-of-its-inputs)
-- [Transformers named-chat-template file-write validation](alerts/2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-2-transformers-named-chat-template-file-write-follow-up)
-- [Vikunja principal-type and project/view authorization boundaries](alerts/2026-08-02-vikunja-principal-object-boundaries-ghsa.md)
-- [ArcadeDB MCP principal, cluster-token, and trigger-authority checks](alerts/2026-07-16-arcadedb-nuclio-pheditor-boundaries-ghsa.md#august-2-arcadedb-mcp-principal-and-server-authority-follow-up)
 
 
 
