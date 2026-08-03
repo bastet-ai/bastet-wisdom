@@ -59,6 +59,39 @@ Prove whether attacker-controlled DOM can replace Angular's hydration state cont
 - Include ordering details. The exploit depends on the attacker-controlled element being reachable by `getElementById()` when Angular reads the state.
 - Use canary endpoints, canary roles, or synthetic config values. Never forge real privileges, production session details, or payment/account data.
 
+## August 3 follow-up: raw-content serialization and transfer-cache key ambiguity
+
+Two later Angular advisories extend this page from DOM-id clobbering to two adjacent SSR representation boundaries:
+
+- [GHSA-vpx6-8pjr-4g3v / CVE-2026-69149](https://github.com/advisories/GHSA-vpx6-8pjr-4g3v) describes fallback raw-content elements such as `iframe`, `noembed`, `noframes`, and `noscript` whose dynamically bound text was not escaped when Angular's server-side DOM was serialized. A closing-tag sequence can therefore leave the intended text node and be reparsed as HTML by the browser.
+- [GHSA-jhpw-976m-542j / CVE-2026-68945](https://github.com/advisories/GHSA-jhpw-976m-542j) describes ambiguous `HttpTransferCache` key material. A scalar parameter containing a comma and a repeated parameter whose values are joined with commas can serialize identically even though the backend treats them differently.
+
+The listed corrected releases are `@angular/platform-server` 20.3.27, 21.2.19, and 22.0.7 for the raw-content issue, and `@angular/common` 20.3.27, 21.2.19, and 22.0.2 for the cache-key issue. Confirm the exact affected range in the advisory before testing another release line.
+
+### Fallback raw-content serialization matrix
+
+Use a disposable SSR application whose bound value is a synthetic marker. Block browser networking and do not use executable event handlers or scripts.
+
+1. Render the same dynamic text inside an ordinary text element and each applicable fallback raw-content element.
+2. Test plain text, a harmless closing-tag-shaped marker, encoded delimiters, mixed case, and a missing-closing-delimiter control. Change one representation at a time.
+3. Capture the template value, server-side DOM text node, serialized response bytes, and browser-parsed DOM as four separate artifacts.
+4. Use an inert sibling element such as `<span data-skillz-canary>` after the closing-tag marker. The bounded positive is that the sibling becomes a real DOM node only in the affected SSR serialization path.
+5. Repeat on the fixed package and in a client-only render. The fixed SSR output should preserve the entire value as text, and the client-only control establishes that the issue is the server serializer rather than the template binding itself.
+
+Do not report a literal marker in response source as XSS. Show the parser transition: **bound text -> unescaped SSR serialization -> browser reparses a harmless sibling marker outside the raw-content element**. Stop before script execution, navigation, cookie access, or privileged UI action.
+
+### `HttpTransferCache` collision harness
+
+The useful proof is a semantic collision, not merely two equal debug strings.
+
+1. In a local Angular SSR fixture, create a synthetic endpoint that distinguishes a scalar comma value from repeated values and returns different non-sensitive markers.
+2. Issue request A with one parameter value containing a comma and request B with two repeated values. Keep method, URL, headers, credentials mode, and every unrelated option identical.
+3. Instrument the cache-key builder and backend transport. Record the structured parameter multimap, generated key, insertion order, backend request count, and response marker consumed by each caller.
+4. Reverse A/B order, vary empty values and comma placement, and repeat equivalent checks for every header or option collection included in the key. Include unambiguous ordinary-value controls.
+5. Require the affected build to show equal key material plus response reuse across semantically distinct requests in one SSR render. Repeat on the fixed build and require distinct keys and two backend calls.
+
+Use only canary responses. Never place sessions, authorization headers, customer records, or role/payment data in the fixture. Report **structured request A and B -> identical transfer-cache key -> B consumes A's synthetic response**; do not infer cross-user leakage unless the application independently shares the cache across users or renders and that scope is safely proven.
+
 ## Notes on skipped adjacent items
 
 The same scan rechecked Disclosed, PortSwigger research, Trail of Bits, ProjectDiscovery, GitHub advisory published/updated feeds, and CISA KEV. No CISA, PortSwigger, Trail of Bits, ProjectDiscovery, or Disclosed update added a new higher-signal operator workflow in this run. This page promotes the newly published Angular advisory because it turns a framework-specific hydration bug into a reusable SSR cache-poisoning and DOM-clobbering validation pattern.

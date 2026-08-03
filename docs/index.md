@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [SAML, repository, SSH-channel, CMS, and publish-mode trust boundaries](alerts/2026-08-03-saml-repository-channel-content-boundaries-ghsa.md)
+- [Angular SSR raw-content and transfer-cache collision checks](alerts/2026-06-15-angular-hydration-transferstate-cache-boundary-ghsa.md#august-3-follow-up-raw-content-serialization-and-transfer-cache-key-ambiguity)
 - [Report-renderer fetch and desktop-updater trust boundaries](alerts/2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md)
 - [FlowIntel Vue interpolation and MFP document-object boundaries](alerts/2026-08-03-vue-mfp-render-object-boundaries-ghsa.md)
 - [NLTK verify-before-write package integrity](alerts/2026-06-06-nltk-nicegui-picklescan-ml-archive-boundaries-ghsa.md#august-3-follow-up-verify-nltk-package-bytes-before-writing-or-extracting)
@@ -16,8 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Transformers named-chat-template file-write validation](alerts/2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-2-transformers-named-chat-template-file-write-follow-up)
 - [Vikunja principal-type and project/view authorization boundaries](alerts/2026-08-02-vikunja-principal-object-boundaries-ghsa.md)
 - [ArcadeDB MCP principal, cluster-token, and trigger-authority checks](alerts/2026-07-16-arcadedb-nuclio-pheditor-boundaries-ghsa.md#august-2-arcadedb-mcp-principal-and-server-authority-follow-up)
-- [Better Auth path-normalization and passkey-object checks](alerts/2026-07-07-better-auth-aider-netfoil-ckan-mcp-boundaries-ghsa.md#august-2-better-auth-path-and-passkey-object-follow-up)
-- [FreeRDP media and clipboard memory-safety fixtures](alerts/2026-08-01-http-identity-router-rdp-boundaries-ghsa.md#august-2-freerdp-server-to-client-media-and-clipboard-follow-up)
 
 
 
