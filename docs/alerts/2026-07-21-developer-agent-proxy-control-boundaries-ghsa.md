@@ -286,6 +286,18 @@ Two reviewed advisories show that option filtering must cover every wrapper call
 
 Bounded positives are **caller-controlled archive kwargs -> outside-repository synthetic file appears in an archive recorder**, **checkout kwargs -> write recorder selects a sibling canary destination**, or **tag kwargs -> file-read recorder selects the sibling canary**. Keep read and write primitives separate, do not target dotfiles or credentials, and do not escalate these primitives into hooks or command execution.
 
+### Commit count unguarded output sink
+
+[GHSA-p538-c434-8v24](https://github.com/advisories/GHSA-p538-c434-8v24) adds a distinct call-site regression: `Commit.count()` forwards keyword arguments to `git rev-list` without the unsafe-option guard used by sibling iteration paths. Through 3.1.55, caller-controlled `output` can become `--output=<path>` and make Git truncate that path before revision processing; 3.1.56 adds the guard. This primitive controls truncation, not file contents, and `Commit.count()` uses the commit object's own hash rather than an attacker-selected revision.
+
+1. Use a disposable repository and create a random nonempty canary file in a sibling temporary directory. Never select an existing application, lock, credential, shell, or configuration file.
+2. Patch the GitPython process runner first. Compare `commit.count()` with an ordinary keyword, `output=<canary>`, and unknown option-like keyword data; record the exact `git rev-list` argv and whether an unsafe-option check runs.
+3. Use `Commit.iter_items()` or the target application's sibling guarded path with the same `output` value as a guard-coverage control.
+4. Only after argv reachability is proven, permit Git to run in the disposable mount namespace and verify that the random canary becomes zero length. Record metadata or a pre-run hash rather than preserving sensitive content.
+5. Replay on 3.1.56 and require rejection before process start. Keep the 3.1.57 controls above for the separate archive/checkout/tag advisories.
+
+Report **untrusted option dictionary -> `Commit.count()` omits sibling unsafe-option guard -> `git rev-list --output` selects and truncates a disposable canary**. Do not describe it as arbitrary-content write, attacker-controlled revision execution, or command execution.
+
 ## Reporting checklist
 
 - [ ] Did the report prove the caller can reach the exact PKI, MCP, proxy, updater, daemon, cryptographic, or provisioning path?

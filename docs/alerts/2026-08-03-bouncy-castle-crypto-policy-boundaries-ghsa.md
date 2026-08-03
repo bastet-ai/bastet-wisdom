@@ -94,6 +94,20 @@ The same feed also lists lazy ASN.1 depth-guard reset ([GHSA-qp49-qgx5-5m26](htt
 4. Compare affected and patched artifacts with the same corpus and limits.
 5. Do not send resource-exhaustion probes to shared or production services, and do not promote a local crash unless a specific authorized ingestion path makes the input attacker-controlled.
 
+## Python `cryptography` PKCS#7 oracle follow-up
+
+[GHSA-g6cj-pr64-35w5 / CVE-2026-69247](https://github.com/advisories/GHSA-g6cj-pr64-35w5) extends the authenticated-result rule to Python `cryptography` 44.0.0 through 49.x. The `pkcs7_decrypt_der`, `pkcs7_decrypt_pem`, and `pkcs7_decrypt_smime` paths can distinguish RSA PKCS#1 v1.5 encrypted-key failures by exception text and timing when the linked backend lacks implicit rejection. The documented preconditions are narrow: an application must repeatedly decrypt attacker-supplied `EnvelopedData` for the target certificate and reflect an adaptively observable outcome. OpenSSL 3.2+ implicit rejection changes one error path, so record the actual backend rather than inferring exposure from the Python package version.
+
+### Bounded oracle decision harness
+
+1. Generate one disposable RSA recipient certificate and short PKCS#7 envelopes locally. Run affected and 50.0.0 fixtures with the same backend build and record `cryptography`, OpenSSL/LibreSSL/BoringSSL, and wheel provenance.
+2. Wrap the application's decryption endpoint with a recorder that returns one constant synthetic failure externally. Internally capture only outcome class, normalized exception category, response length, and coarse duration; never log recovered key bytes or plaintext.
+3. Compare a valid envelope, invalid RSA padding, a conforming RSA block that yields the wrong AES-key length, a correct-length wrong key, and altered encrypted content. Use the upstream regression fixtures or locally generated equivalents—do not develop adaptive ciphertext mutations against a service.
+4. Repeat each fixed fixture a bounded number of times in an isolated process. Use distributions to establish whether outcome classes are separable; do not run key-recovery or plaintext-recovery automation.
+5. Separately verify application reachability: untrusted envelope accepted, recipient selected, private-key operation attempted, and response observable. A library exception difference without an attacker-reachable repeated endpoint is not a remote oracle finding.
+
+Report **attacker-supplied PKCS#7 envelope -> recipient private-key decryption -> distinguishable synthetic failure class or timing distribution -> fixed 50.0.0 converges on one failure path**. Keep the advisory's RSA encrypted-key oracle separate from unauthenticated CBC `encryptedContent` behavior, which the upstream record identifies as a format property rather than a fix in this release. Never test mail gateways with real keys/messages, generate high-volume adaptive queries, or recover a key or plaintext.
+
 ## Evidence and reporting checklist
 
 - [ ] Exact Bouncy Castle artifact coordinates, provider order, and affected/patched versions are recorded.

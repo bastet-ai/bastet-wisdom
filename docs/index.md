@@ -8,6 +8,9 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Python `cryptography` PKCS#7 oracle follow-up](alerts/2026-08-03-bouncy-castle-crypto-policy-boundaries-ghsa.md#python-cryptography-pkcs7-oracle-follow-up)
+- [HTTP authority, WebSocket framing, Oracle SQL, and formatter-cache checks](alerts/2026-08-03-http-authority-websocket-sql-file-boundaries-ghsa.md)
+- [GitPython `Commit.count()` truncation follow-up](alerts/2026-07-21-developer-agent-proxy-control-boundaries-ghsa.md#commit-count-unguarded-output-sink)
 - [undici request serialization, retry framing, and cookie-attribute checks](alerts/2026-08-03-undici-serialization-retry-cookie-boundaries-ghsa.md)
 - [IP-literal SSRF classification differential matrix](best-practices/url-allowlists-canonicalization.md#ip-literal-classification-differential-matrix)
 - [GitPython option-to-filesystem follow-up](alerts/2026-07-21-developer-agent-proxy-control-boundaries-ghsa.md#august-3-gitpython-option-to-filesystem-follow-up)
@@ -15,9 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Shared HTTP cache private-directive boundary testing](best-practices/shared-http-cache-boundary-testing.md)
 - [Backslash authority parser-differential checks](best-practices/url-allowlists-canonicalization.md#backslash-authority-parser-differential-matrix)
 - [Control-plane identity, analyst-project, and connection-state boundaries](alerts/2026-08-03-control-plane-identity-project-connection-boundaries-ghsa-kev.md)
-- [GNU tar hardlink and incremental-restore race validation](best-practices/archive-extraction-symlink-traversal.md#gnu-tar-hardlink-and-restore-race-operator-matrix)
-- [XML::Sig all-signatures-skipped verification checks](alerts/2026-08-03-saml-repository-channel-content-boundaries-ghsa.md#august-3-follow-up-reject-verification-when-every-signature-is-skipped)
-- [Agentic DAST behavioral-audit and proof-provenance workflow](methodology/agentic-dast-benchmark-validation.md#audit-behavior-not-only-solves)
 
 
 

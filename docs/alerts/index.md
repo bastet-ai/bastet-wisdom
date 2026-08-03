@@ -10,6 +10,9 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Python `cryptography` PKCS#7 oracle follow-up](2026-08-03-bouncy-castle-crypto-policy-boundaries-ghsa.md#python-cryptography-pkcs7-oracle-follow-up)
+- [HTTP authority, WebSocket framing, Oracle SQL, and formatter-cache boundaries](2026-08-03-http-authority-websocket-sql-file-boundaries-ghsa.md)
+- [GitPython `Commit.count()` unguarded `rev-list --output` follow-up](2026-07-21-developer-agent-proxy-control-boundaries-ghsa.md#commit-count-unguarded-output-sink)
 - [undici request serialization, retry framing, and cookie-attribute boundaries](2026-08-03-undici-serialization-retry-cookie-boundaries-ghsa.md)
 - [GitPython option-to-filesystem follow-up](2026-07-21-developer-agent-proxy-control-boundaries-ghsa.md#august-3-gitpython-option-to-filesystem-follow-up)
 - [Transformers named-chat-template file-write follow-up](2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-2-transformers-named-chat-template-file-write-follow-up)
