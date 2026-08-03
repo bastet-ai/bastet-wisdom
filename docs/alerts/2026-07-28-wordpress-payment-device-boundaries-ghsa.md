@@ -604,6 +604,46 @@ For RT Mega Menu and Clever Mega Menu, distinguish configuration authorization f
 
 The adjacent generic stored/reflected XSS records, cache-flush availability issue, low-impact settings reset, and empty advisory summary were processed without publication because they add no distinct workflow beyond the existing render, role, and business-action matrices.
 
+## August 3 follow-up: cross-check object, identity, upload, and role selectors
+
+The next WordPress wave adds four reusable boundary families. The GitHub records were unreviewed when processed; confirm plugin slug, affected version, route registration, prerequisite role, and corrected behavior before reporting.
+
+### Parent, owner, and publication-state authorization
+
+- Dokan vendor product-attribute writes and bulk order-status changes: [GHSA-cjjh-8xvm-fchv / CVE-2026-16565](https://github.com/advisories/GHSA-cjjh-8xvm-fchv) and [GHSA-rgp2-2vg6-97f5 / CVE-2026-16564](https://github.com/advisories/GHSA-rgp2-2vg6-97f5);
+- Academy LMS lesson enrollment and publication state: [GHSA-9988-37r6-j7j6 / CVE-2026-16563](https://github.com/advisories/GHSA-9988-37r6-j7j6);
+- Classified Listing cross-owner post content and revenue totals: [GHSA-xw94-m5qr-wj9w / CVE-2026-16274](https://github.com/advisories/GHSA-xw94-m5qr-wj9w) and [GHSA-jxrw-x44m-c9mq / CVE-2026-16276](https://github.com/advisories/GHSA-jxrw-x44m-c9mq);
+- Contest Gallery foreign-post deletion: [GHSA-pwq7-3xxm-qxqg / CVE-2026-16057](https://github.com/advisories/GHSA-pwq7-3xxm-qxqg);
+- Tag, Category, and Taxonomy Manager private/draft post derivation: [GHSA-2fw4-4h2j-gcmv / CVE-2026-15231](https://github.com/advisories/GHSA-2fw4-4h2j-gcmv); and
+- GEO my WP foreign geolocation modification/deletion: [GHSA-qgxr-8r3m-cw55 / CVE-2026-15260](https://github.com/advisories/GHSA-qgxr-8r3m-cw55).
+
+Use two vendors/authors/students, parent objects A and B, and synthetic child objects. Give the low-role principal legitimate access only to A. Cross only one selector per request: product, order, lesson, course enrollment, publication state, post, report scope, or geolocation record. Replace update, status-change, and delete sinks with no-op recorders; return only marker text for read tests. The positive is **A-authorized principal or parent -> B selector -> B's marker reaches the read/write/delete recorder without B ownership, enrollment, publication, or capability authorization**. Never return paid lesson content, revenue, private posts, customer orders, or location data.
+
+### Account subject and canonical role enforcement
+
+- ChamaWP arbitrary-user reset and unauthenticated object input: [GHSA-6m7v-g5wq-gghp / CVE-2026-16300](https://github.com/advisories/GHSA-6m7v-g5wq-gghp) and [GHSA-w2rh-rmh8-jmwq / CVE-2025-15672](https://github.com/advisories/GHSA-w2rh-rmh8-jmwq);
+- Import and export users and customers role/edit-policy bypass: [GHSA-xw98-5fp3-v7vg / CVE-2026-16534](https://github.com/advisories/GHSA-xw98-5fp3-v7vg);
+- Simple Membership failed-user-creation identity confusion: [GHSA-7g75-5pmj-3v8p / CVE-2026-15930](https://github.com/advisories/GHSA-7g75-5pmj-3v8p); and
+- SoftMarket email-verification session binding: [GHSA-6gxj-34hr-jj8j / CVE-2026-14557](https://github.com/advisories/GHSA-6gxj-34hr-jj8j).
+
+Build users A and B with harmless custom roles and intercept password, email, role, and session sinks. Cross requester, reset/verification proof, claimed user ID, returned user-creation result, CSV row, canonical editable user, submitted role, and final session subject one field at a time. Force user creation to return each relevant `WP_Error`, falsey, zero-like, and valid canary representation. For ChamaWP deserialization, use a patched `unserialize()` recorder with an inert class-name marker only—no gadget or magic method.
+
+Safe positives are **proof for A -> B reaches a password/session recorder**, **failed create result -> existing canary user reaches the update recorder**, or **`create_users`-only principal -> disallowed canary role/foreign-user edit reaches the role or account recorder**. Do not reset a password, change an email, assign `administrator`, set a cookie, or instantiate an object.
+
+### Upload container, extension, and public-handler drift
+
+- Articulate Content archive validation to a server-executable public file: [GHSA-v4q5-7cp7-m46j / CVE-2026-16060](https://github.com/advisories/GHSA-v4q5-7cp7-m46j);
+- Personal QR Message and Webinfos unauthenticated file handlers: [GHSA-r4mq-7p9v-x8fv / CVE-2026-16250](https://github.com/advisories/GHSA-r4mq-7p9v-x8fv) and [GHSA-jm79-ggg6-34q9 / CVE-2026-12872](https://github.com/advisories/GHSA-jm79-ggg6-34q9); and
+- SVG Support `.svgz` sanitizer drift: [GHSA-2v5f-qf73-676h / CVE-2026-13340](https://github.com/advisories/GHSA-2v5f-qf73-676h).
+
+Use a patched write recorder and inert files only. For archive tests, include one allowed media marker plus one dangerous-looking filename containing plain text; never include PHP or executable syntax. For direct handlers, vary authentication, nonce, capability, extension, MIME, case, duplicate suffix, and destination independently. For `.svgz`, gzip the same harmless SVG marker used by the `.svg` control and compare decompression, sanitizer invocation, stored bytes, response type, and detached DOM. A positive requires the disallowed representation to reach the public-path write recorder or to bypass the sanitizer that the equivalent `.svg` invokes. File placement is not execution, and a served SVG-like file is not XSS without an independently proven browser sink.
+
+### Query grammar items from the same wave
+
+LogMyTrip cookie-to-query ([GHSA-q8gv-w79g-jw6j / CVE-2026-16572](https://github.com/advisories/GHSA-q8gv-w79g-jw6j)), Link Library unauthenticated query input ([GHSA-pm7r-7m99-28qp / CVE-2026-16532](https://github.com/advisories/GHSA-pm7r-7m99-28qp)), and Super Store Finder unauthenticated AJAX input ([GHSA-hr2r-68v6-qv47 / CVE-2026-12965](https://github.com/advisories/GHSA-hr2r-68v6-qv47)) fit the existing query-recorder method: send delimiter-shaped inert values, intercept the final SQL, and compare parser tokens with bound-parameter controls. Do not execute extraction, timing, stacked-statement, or destructive payloads.
+
+The adjacent generic stored-XSS, low-impact group-membership metadata, administrator-only object injection, and brute-force/timing records were processed without separate publication because they do not add a distinct operator workflow beyond the existing render, object, deserialization, and authentication matrices.
+
 ## Reporting checklist
 
 Include:
@@ -614,6 +654,8 @@ Include:
 - nonce provenance, capability result, selected option or role, request-post owner, target user, global-setting scope, payment/order binding, and resolved virtual path;
 - proof subject, initiating browser/session, attempt-bucket key, reset-link authority, immediate network peer, and chosen client identity;
 - canonical order/ticket/event owner, parent object, delegated provider authority, recorder action, and idempotency state;
+- canonical vendor/course/post/location owner, enrollment/publication state, account-create result, role-policy decision, and final no-op sink subject;
+- upload container/member, raw extension and MIME, sanitizer invocation, canonical destination, and public-path write-recorder decision;
 - token signature/key decision, issuer/audience/time claims, resolved login subject, and no-op session result;
 - authorized attachment ID, path-selected attachment/file, canonical root result, and patched read-sink argument;
 - browser, normalized, stored, and gateway-recorder amount representations for payment-integrity checks;
