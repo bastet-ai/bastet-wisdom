@@ -4,9 +4,9 @@ title: Flowise workspace, runtime, and credential-authority boundaries
 
 # Flowise workspace, runtime, and credential-authority boundaries
 
-Five Flowise advisories published on August 4 expose a useful low-code/agent-platform review pattern: a flow-builder permission is not authority over every workspace file, runtime loader, OAuth credential, or billing object that a later component can select. Validate each edge independently with disposable objects and recorder-only sinks.
+Eleven Flowise advisories published on August 4 expose a useful low-code/agent-platform review pattern: a flow-builder permission or public prediction route is not authority over every workspace file, runtime loader, execution-context property, outbound destination, OAuth credential, or billing object that a later component can select. Validate each edge independently with disposable objects and recorder-only sinks.
 
-All five records list `flowise <= 3.1.2` as affected and `3.1.3` as the first patched release. The two runtime-code records also list `flowise-components <= 3.1.2` as affected and `3.1.3` as fixed.
+The first five records list `flowise <= 3.1.2` as affected and `3.1.3` as the first patched release. The two original runtime-code records also list `flowise-components <= 3.1.2` as affected and `3.1.3` as fixed. Confirm the package-specific ranges in each later advisory rather than assuming one range covers every server and component path.
 
 Primary sources:
 
@@ -14,10 +14,16 @@ Primary sources:
 - cross-workspace file authorization [GHSA-wp74-f5hh-5f3r / CVE-2026-69252](https://github.com/advisories/GHSA-wp74-f5hh-5f3r), [upstream advisory](https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-wp74-f5hh-5f3r), and [fix commit](https://github.com/FlowiseAI/Flowise/commit/bc22bf8baec95b6a3d6e1b3563b4f03491cd6fbb);
 - TypeORM `DataSource` option injection [GHSA-g32j-mmxr-gfq5 / CVE-2026-69251](https://github.com/advisories/GHSA-g32j-mmxr-gfq5) and the [upstream advisory](https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-g32j-mmxr-gfq5);
 - public OAuth2 refresh and credential-bound outbound request [GHSA-r745-8hwv-h473 / CVE-2026-69250](https://github.com/advisories/GHSA-r745-8hwv-h473), [upstream advisory](https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-r745-8hwv-h473), and [fix commit](https://github.com/FlowiseAI/Flowise/commit/da8b251a9a4c59484ceaf6f71df7406aede7bef2); and
-- customer-source object authorization [GHSA-2364-jh4q-m9vm](https://github.com/advisories/GHSA-2364-jh4q-m9vm), [upstream advisory](https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-2364-jh4q-m9vm), and [fix commit](https://github.com/FlowiseAI/Flowise/commit/4d7899d02ca370a5510406be5c91483085a412f9).
+- customer-source object authorization [GHSA-2364-jh4q-m9vm](https://github.com/advisories/GHSA-2364-jh4q-m9vm), [upstream advisory](https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-2364-jh4q-m9vm), and [fix commit](https://github.com/FlowiseAI/Flowise/commit/4d7899d02ca370a5510406be5c91483085a412f9);
+- SQLite Record Manager path override [GHSA-x3hf-7cj6-3r4m / CVE-2026-69259](https://github.com/advisories/GHSA-x3hf-7cj6-3r4m);
+- unauthenticated prediction-context property injection [GHSA-6vh2-wg4h-4vwj / CVE-2026-69258](https://github.com/advisories/GHSA-6vh2-wg4h-4vwj);
+- IPv4-mapped IPv6 SSRF-policy bypass [GHSA-c6xh-wv4j-ppv5 / CVE-2026-69257](https://github.com/advisories/GHSA-c6xh-wv4j-ppv5);
+- CSV Agent `pandas.read_pickle()` sink selection [GHSA-x6vm-w76m-8j7g / CVE-2026-69256](https://github.com/advisories/GHSA-x6vm-w76m-8j7g);
+- CSV Agent generated-Python string breakout [GHSA-vmv7-4m6c-3cg5 / CVE-2026-69255](https://github.com/advisories/GHSA-vmv7-4m6c-3cg5); and
+- caller-controlled `NodeVM` security options [GHSA-3769-jgqc-cxm7 / CVE-2026-69254](https://github.com/advisories/GHSA-3769-jgqc-cxm7).
 
 !!! warning "Disposable Flowise labs and inert recorders only"
-    Use affected and corrected local instances, two synthetic workspaces, fake API keys and OAuth credentials, owned HTTP listeners, mocked payment-provider objects, and patched file/module/process loaders. Never enumerate customer IDs, retrieve billing records, capture real OAuth secrets, delete user files, target metadata or internal services, load unknown JavaScript, or execute a command.
+    Use affected and corrected local instances, two synthetic workspaces, fake API keys and OAuth credentials, owned HTTP listeners, synthetic CSV/SQLite fixtures, mocked payment-provider objects, and patched file/module/process loaders. Never enumerate customer IDs, retrieve billing records, capture real OAuth secrets, delete user files, target metadata or internal services, deserialize unknown data, load unknown JavaScript, or execute a command.
 
 ## Boundary map
 
@@ -28,6 +34,11 @@ Primary sources:
 | Agent/tool base URL | builder may configure a URL | URL text is interpolated into generated JavaScript and reaches an in-process sandbox | inert grammar marker reaches evaluator recorder outside the intended string slot |
 | OAuth refresh | credential creator stores provider configuration | public route selects credential ID, URL, and stored client authority | unauthenticated request triggers owned listener with fake markers and reflects its canary response |
 | Customer default source | user has a valid Flowise session | query `customerId` selects a different provider object | mocked customer B reaches response recorder under user A |
+| SQLite Record Manager | builder may configure one record manager | trailing object spread replaces the fixed database path | disposable sibling path reaches SQLite open recorder |
+| Public prediction API | caller may submit input to one public flow | ungated `overrideConfig` replaces `chatId`, `sessionId`, history, or `$flow.*` values | synthetic foreign-session marker reaches context recorder |
+| HTTP security policy | hostname passes URL checks | IPv4-mapped IPv6 survives as a different address kind | owned dual-stack canary produces a policy/transport mismatch |
+| CSV Agent | builder may select CSV parsing behavior | generated Python string or preloaded `pandas` API reaches a code/deserialization sink | inert grammar or pickle-open marker reaches a denied sink |
+| Custom-function sandbox | authenticated caller may supply code and data | caller `nodeVMOptions` replaces security-critical defaults | forbidden synthetic module name reaches require-policy recorder |
 
 ## 1. Diff feature gates, permissions, and storage scope
 
@@ -177,3 +188,47 @@ Prefer boundary-specific report titles such as:
 - **“Flowise customer-source route resolves a provider object not owned by the active organization.”**
 
 Do not lead with remote code execution, secret exfiltration, or cross-customer disclosure unless the corresponding final edge is independently demonstrated under the safe boundaries above.
+
+## 6. Test option precedence at the SQLite file boundary
+
+The SQLite Record Manager record is narrower than the TypeORM module-selector issue: `additionalConfig` was spread after the intended `database` value, so a builder-controlled option could replace the database path itself. Treat this as an option-precedence and file-open test, not as an invitation to write an executable database.
+
+Wrap the SQLite/TypeORM open call and record the configured database root, raw option object, final path, canonical path, open flags, and whether the target existed. Use an empty disposable directory with marker paths inside the intended root and a sibling temporary directory. Compare omitted, in-root, sibling, absolute, and symlink-shaped values. Abort before opening or creating the database.
+
+A bounded positive is **builder-supplied `additionalConfig.database` -> final canonical path leaves the configured database root -> patched open recorder receives the sibling marker**. Separately record whether the container runs with elevated filesystem authority; do not infer host impact from a root UID inside a container.
+
+## 7. Bind public prediction overrides to the authorized context schema
+
+The prediction record identifies two ungated object spreads that could overwrite trusted flow-context fields even when node-input overrides were disabled. Build a public synthetic flow whose context consumer returns only random canaries and whose memory adapter is replaced by a read/write recorder.
+
+Exercise an explicit property matrix:
+
+| Property class | Examples | Secure result |
+| --- | --- | --- |
+| documented public input | ordinary prediction text | accepted |
+| identity/session | `chatId`, `sessionId`, `chatflowId` | ignored or rejected |
+| history/state | `chatHistory`, nested state marker | ignored unless explicitly enabled and schema-validated |
+| template namespace | random `$flow.*` canary property | unavailable to downstream templates |
+| structural keys | nested objects, arrays, prototype-shaped names | rejected before merge |
+
+Use two disposable sessions and never place real prompts in either. Record the raw request, override feature flag, allowlisted keys, resolved context, memory selector, and template substitutions. The positive is **unauthenticated caller supplies session B's random ID or history marker -> session/context recorder for B is selected while API overrides are disabled**. Do not retrieve or alter a real conversation.
+
+## 8. Compare address policy with the final transport destination
+
+Flowise's SSRF check compared address kinds before CIDR matching. An IPv4-mapped IPv6 result could therefore skip IPv4 ranges without being covered by the IPv6 deny entries. Test this only with owned loopback-equivalent canary listeners in an isolated network namespace.
+
+Record every DNS answer, parsed address kind, normalized address, matched policy range, socket family, and final peer address. Include ordinary IPv4, ordinary IPv6, IPv4-mapped IPv6, unspecified forms, redirects between owned authorities, and a rebinding-style second answer served by an owned resolver. The secure invariant is that every accepted destination is normalized to a canonical address class and rechecked at each connection.
+
+A useful report shows **policy parser accepts the mapped form -> transport recorder resolves it to the denied canary destination -> corrected build rejects both spellings**. Never substitute cloud metadata, a local admin service, or an internal production address.
+
+## 9. Separate generated-code, deserialization, and sandbox-option edges
+
+The CSV Agent records expose two independent edges: untrusted data embedded into generated Python source, and a caller-selected `pandas` operation reaching a pickle deserializer despite keyword denylisting. The `NodeVM` record adds a third: caller options spread after secure defaults can replace the module policy.
+
+Use three denied-sink harnesses rather than a shell payload:
+
+1. **Generated Python:** replace Pyodide execution with a parser and AST recorder. Feed CSV data containing inert quote, newline, and comment markers. Report only if the marker leaves the intended string literal or changes the AST.
+2. **Deserializer selection:** wrap `pandas` parser dispatch and pickle loading. Supply a locally generated pickle containing only a random scalar marker; abort at the pickle-open boundary. Report the selected API and bytes provenance, not code execution.
+3. **Sandbox options:** wrap `NodeVM` construction and module resolution. Supply a random nonexistent built-in name through `nodeVMOptions`; deny resolution and compare the final effective options with secure defaults.
+
+Keep the conclusions precise: generated-source injection, unsafe deserializer reachability, and security-option replacement are separately reportable. Claim sandbox escape or host execution only when an authorized isolated lab independently proves the final boundary without reusable payloads or sensitive output.
