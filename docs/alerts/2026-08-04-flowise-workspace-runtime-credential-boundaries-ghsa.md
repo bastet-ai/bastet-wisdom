@@ -4,9 +4,9 @@ title: Flowise workspace, runtime, and credential-authority boundaries
 
 # Flowise workspace, runtime, and credential-authority boundaries
 
-Eleven Flowise advisories published on August 4 expose a useful low-code/agent-platform review pattern: a flow-builder permission or public prediction route is not authority over every workspace file, runtime loader, execution-context property, outbound destination, OAuth credential, or billing object that a later component can select. Validate each edge independently with disposable objects and recorder-only sinks.
+Thirteen Flowise advisories published on August 4 expose a useful low-code/agent-platform review pattern: a flow-builder permission or public prediction route is not authority over every workspace file, flow type, runtime loader, child-process environment, execution-context property, outbound destination, OAuth credential, or billing object that a later component can select. Validate each edge independently with disposable objects and recorder-only sinks.
 
-The first five records list `flowise <= 3.1.2` as affected and `3.1.3` as the first patched release. The two original runtime-code records also list `flowise-components <= 3.1.2` as affected and `3.1.3` as fixed. Confirm the package-specific ranges in each later advisory rather than assuming one range covers every server and component path.
+The records list `flowise <= 3.1.2` as affected and `3.1.3` as the first patched release. The JavaScript sandbox and MCP environment-bypass records also list `flowise-components <= 3.1.2` as affected and `3.1.3` as fixed. Confirm the package-specific ranges in each advisory rather than assuming one range covers every server and component path.
 
 Primary sources:
 
@@ -19,11 +19,13 @@ Primary sources:
 - unauthenticated prediction-context property injection [GHSA-6vh2-wg4h-4vwj / CVE-2026-69258](https://github.com/advisories/GHSA-6vh2-wg4h-4vwj);
 - IPv4-mapped IPv6 SSRF-policy bypass [GHSA-c6xh-wv4j-ppv5 / CVE-2026-69257](https://github.com/advisories/GHSA-c6xh-wv4j-ppv5);
 - CSV Agent `pandas.read_pickle()` sink selection [GHSA-x6vm-w76m-8j7g / CVE-2026-69256](https://github.com/advisories/GHSA-x6vm-w76m-8j7g);
-- CSV Agent generated-Python string breakout [GHSA-vmv7-4m6c-3cg5 / CVE-2026-69255](https://github.com/advisories/GHSA-vmv7-4m6c-3cg5); and
-- caller-controlled `NodeVM` security options [GHSA-3769-jgqc-cxm7 / CVE-2026-69254](https://github.com/advisories/GHSA-3769-jgqc-cxm7).
+- CSV Agent generated-Python string breakout [GHSA-vmv7-4m6c-3cg5 / CVE-2026-69255](https://github.com/advisories/GHSA-vmv7-4m6c-3cg5);
+- caller-controlled `NodeVM` security options [GHSA-3769-jgqc-cxm7 / CVE-2026-69254](https://github.com/advisories/GHSA-3769-jgqc-cxm7);
+- cross-type flow deletion [GHSA-p5w8-m249-4r4v / CVE-2026-69262](https://github.com/advisories/GHSA-p5w8-m249-4r4v), the [upstream advisory](https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-p5w8-m249-4r4v), [fix PR 6445](https://github.com/FlowiseAI/Flowise/pull/6445), and [fix commit](https://github.com/FlowiseAI/Flowise/commit/2f528ceced74afaa95fc7a282965e7788796448b); and
+- MCP child-process environment bypass [GHSA-xc48-889x-5qmw / CVE-2026-69263](https://github.com/advisories/GHSA-xc48-889x-5qmw), the [upstream advisory](https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-xc48-889x-5qmw), [fix PR 6471](https://github.com/FlowiseAI/Flowise/pull/6471), and [fix commit](https://github.com/FlowiseAI/Flowise/commit/a4c4e4988cded15edf725e762560575b889ae351).
 
 !!! warning "Disposable Flowise labs and inert recorders only"
-    Use affected and corrected local instances, two synthetic workspaces, fake API keys and OAuth credentials, owned HTTP listeners, synthetic CSV/SQLite fixtures, mocked payment-provider objects, and patched file/module/process loaders. Never enumerate customer IDs, retrieve billing records, capture real OAuth secrets, delete user files, target metadata or internal services, deserialize unknown data, load unknown JavaScript, or execute a command.
+    Use affected and corrected local instances, two synthetic workspaces, fake API keys and OAuth credentials, owned HTTP listeners and package indexes, synthetic flows/CSV/SQLite fixtures, mocked payment-provider objects, and patched file/module/process/delete loaders. Never enumerate customer IDs, retrieve billing records, capture real OAuth secrets, delete flows or files, target metadata or internal services, deserialize unknown data, install an unknown package, load unknown JavaScript, or execute a command.
 
 ## Boundary map
 
@@ -39,6 +41,8 @@ Primary sources:
 | HTTP security policy | hostname passes URL checks | IPv4-mapped IPv6 survives as a different address kind | owned dual-stack canary produces a policy/transport mismatch |
 | CSV Agent | builder may select CSV parsing behavior | generated Python string or preloaded `pandas` API reaches a code/deserialization sink | inert grammar or pickle-open marker reaches a denied sink |
 | Custom-function sandbox | authenticated caller may supply code and data | caller `nodeVMOptions` replaces security-critical defaults | forbidden synthetic module name reaches require-policy recorder |
+| `DELETE /api/v1/chatflows/:id` | API key may delete one flow type | shared route accepts either permission, then resolves by ID without binding target type | opposite-type ID reaches a no-op delete recorder |
+| MCP server launch | caller may choose a permitted interpreter and arguments | inherited/caller environment recreates blocked CLI behavior | safe package selector reaches a denied package/process recorder without a blocked flag |
 
 ## 1. Diff feature gates, permissions, and storage scope
 
@@ -177,6 +181,8 @@ Do not claim predictable-ID enumeration without measuring the actual identifier 
 - [ ] Code-construction and sandbox-capability edges are proved separately with inert grammar/module markers.
 - [ ] OAuth evidence uses fake secrets and distinguishes route auth, credential ownership, final outbound authority, secret-field relay, and response reflection.
 - [ ] Customer-source evidence uses mocked provider objects and no identifier enumeration.
+- [ ] Shared-delete evidence records the granted permission, resolved flow type, and a no-op sink; no flow is deleted.
+- [ ] MCP launch evidence records effective arguments and environment and aborts before package resolution, install, or process start.
 - [ ] Affected-versus-3.1.3 behavior is captured with the same fixture.
 
 Prefer boundary-specific report titles such as:
@@ -232,3 +238,48 @@ Use three denied-sink harnesses rather than a shell payload:
 3. **Sandbox options:** wrap `NodeVM` construction and module resolution. Supply a random nonexistent built-in name through `nodeVMOptions`; deny resolution and compare the final effective options with secure defaults.
 
 Keep the conclusions precise: generated-source injection, unsafe deserializer reachability, and security-option replacement are separately reportable. Claim sandbox escape or host execution only when an authorized isolated lab independently proves the final boundary without reusable payloads or sensitive output.
+
+## 10. Bind a shared delete route to the selected flow type
+
+The cross-type deletion record is a reusable warning about `checkAnyPermission(...)`: passing one member of a permission union does not authorize every object family handled by the route. The affected `/api/v1/chatflows/:id` path accepted either `chatflows:delete` or `agentflows:delete`, resolved the target by `id` and workspace, and deleted without comparing the target's type with the permission that admitted the request.
+
+### No-op object-type matrix
+
+Use one disposable workspace, one synthetic `CHATFLOW`, one synthetic `AGENTFLOW`, and API keys that carry exactly one delete permission each. Replace the repository delete call with a recorder that returns a sentinel without changing either object.
+
+| Key permission | Selected object | Secure result |
+| --- | --- | --- |
+| `chatflows:delete` | synthetic `CHATFLOW` | reaches no-op recorder as an allowed control |
+| `chatflows:delete` | synthetic `AGENTFLOW` | denied before delete lookup/sink |
+| `agentflows:delete` | synthetic `AGENTFLOW` | reaches no-op recorder as an allowed control |
+| `agentflows:delete` | synthetic `CHATFLOW` | denied before delete lookup/sink |
+| either permission | foreign-workspace flow | denied by workspace scope |
+| neither permission | either local flow | denied by route middleware |
+
+Capture the authenticated principal, exact permission set, active workspace, route family, requested ID, resolved object's stored type, authorization branch, and whether the no-op sink ran. Compare the same fixture on 3.1.2 and 3.1.3. A bounded positive is **single-type delete permission -> opposite-type synthetic object resolves -> recorder receives its ID without a type-specific authorization decision**.
+
+Never send a real `DELETE` to a retained flow. Do not infer cross-workspace impact from the type mismatch; prove workspace scope separately. Search adjacent shared CRUD routes for the same pattern whenever middleware grants `typeA:operation OR typeB:operation` but the repository query selects only by ID.
+
+## 11. Diff CLI flags and child-process environment as one policy surface
+
+The MCP follow-up shows why blocking `npx -y` is incomplete when caller-controlled environment reaches the same process. `npm_config_*` variables can configure npm behavior without a corresponding command-line flag, while permitted interpreters have other environment-controlled loaders. Treat executable, arguments, environment, working directory, package source, and inherited process state as one launch decision.
+
+### Denied-launch harness
+
+Prerequisites are an affected local Flowise instance with `CUSTOM_MCP_SECURITY_CHECK=true`, an owned empty package index, a random nonexistent package name, and wrappers around package resolution and child-process creation. The wrappers must record normalized launch inputs and abort before network download, package installation, module loading, or process start.
+
+Run this differential:
+
+| Executable and input | Expected secure result |
+| --- | --- |
+| permitted interpreter with ordinary inert arguments and minimal allowlisted environment | allowed control reaches only the no-op process recorder |
+| `npx` plus blocked confirmation flag | rejected before package resolution |
+| `npx` without that flag plus an environment value that enables equivalent non-interactive behavior | rejected before package resolution |
+| `node`/`python3` plus environment-controlled synthetic module-path selector | rejected before module lookup |
+| mixed-case, duplicate, empty, inherited, and nested environment representations | canonicalized, then rejected or reduced to an explicit allowlist |
+
+Record the raw MCP configuration, executable identity, argument vector, raw and effective environment, inherited variables, working directory, package-index authority, package selector, and first reached recorder. Never use a public package name: dependency confusion or a changed package owner can turn an inert test into code execution.
+
+The reportable positive is **blocked CLI behavior absent from `args` -> equivalent environment configuration survives validation -> owned package/process recorder shows the same launch decision on 3.1.2 -> 3.1.3 rejects before resolution**. This proves a policy bypass without installing or executing a package. Keep unauthenticated route reachability, environment-policy bypass, package resolution, installation, and runtime execution as separate edges; claim the strongest edge actually captured.
+
+Generalize the review beyond npm. For every allowed launcher, enumerate configuration channels from vendor documentation, then compare policy coverage across CLI flags, environment variables, config files, shebangs, working-directory files, and inherited state. A denylist that covers only one representation is a variant-analysis seed, not a complete execution boundary.
