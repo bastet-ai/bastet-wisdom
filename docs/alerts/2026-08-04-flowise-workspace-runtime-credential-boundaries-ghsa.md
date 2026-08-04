@@ -4,7 +4,7 @@ title: Flowise workspace, runtime, and credential-authority boundaries
 
 # Flowise workspace, runtime, and credential-authority boundaries
 
-Thirteen Flowise advisories published on August 4 expose a useful low-code/agent-platform review pattern: a flow-builder permission or public prediction route is not authority over every workspace file, flow type, runtime loader, child-process environment, execution-context property, outbound destination, OAuth credential, or billing object that a later component can select. Validate each edge independently with disposable objects and recorder-only sinks.
+Twenty-one Flowise advisories published on August 4 expose a useful low-code/agent-platform review pattern: a flow-builder permission or public prediction route is not authority over every workspace file, flow type, runtime loader, child-process environment, execution-context property, outbound destination, OAuth credential, integration history, or billing object that a later component can select. Validate each edge independently with disposable objects and recorder-only sinks.
 
 The records list `flowise <= 3.1.2` as affected and `3.1.3` as the first patched release. The JavaScript sandbox and MCP environment-bypass records also list `flowise-components <= 3.1.2` as affected and `3.1.3` as fixed. Confirm the package-specific ranges in each advisory rather than assuming one range covers every server and component path.
 
@@ -21,11 +21,19 @@ Primary sources:
 - CSV Agent `pandas.read_pickle()` sink selection [GHSA-x6vm-w76m-8j7g / CVE-2026-69256](https://github.com/advisories/GHSA-x6vm-w76m-8j7g);
 - CSV Agent generated-Python string breakout [GHSA-vmv7-4m6c-3cg5 / CVE-2026-69255](https://github.com/advisories/GHSA-vmv7-4m6c-3cg5);
 - caller-controlled `NodeVM` security options [GHSA-3769-jgqc-cxm7 / CVE-2026-69254](https://github.com/advisories/GHSA-3769-jgqc-cxm7);
-- cross-type flow deletion [GHSA-p5w8-m249-4r4v / CVE-2026-69262](https://github.com/advisories/GHSA-p5w8-m249-4r4v), the [upstream advisory](https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-p5w8-m249-4r4v), [fix PR 6445](https://github.com/FlowiseAI/Flowise/pull/6445), and [fix commit](https://github.com/FlowiseAI/Flowise/commit/2f528ceced74afaa95fc7a282965e7788796448b); and
-- MCP child-process environment bypass [GHSA-xc48-889x-5qmw / CVE-2026-69263](https://github.com/advisories/GHSA-xc48-889x-5qmw), the [upstream advisory](https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-xc48-889x-5qmw), [fix PR 6471](https://github.com/FlowiseAI/Flowise/pull/6471), and [fix commit](https://github.com/FlowiseAI/Flowise/commit/a4c4e4988cded15edf725e762560575b889ae351).
+- cross-type flow deletion [GHSA-p5w8-m249-4r4v / CVE-2026-69262](https://github.com/advisories/GHSA-p5w8-m249-4r4v), the [upstream advisory](https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-p5w8-m249-4r4v), [fix PR 6445](https://github.com/FlowiseAI/Flowise/pull/6445), and [fix commit](https://github.com/FlowiseAI/Flowise/commit/2f528ceced74afaa95fc7a282965e7788796448b);
+- MCP child-process environment bypass [GHSA-xc48-889x-5qmw / CVE-2026-69263](https://github.com/advisories/GHSA-xc48-889x-5qmw), the [upstream advisory](https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-xc48-889x-5qmw), [fix PR 6471](https://github.com/FlowiseAI/Flowise/pull/6471), and [fix commit](https://github.com/FlowiseAI/Flowise/commit/a4c4e4988cded15edf725e762560575b889ae351);
+- OAuth2 credential lookup and callback/refresh scope [GHSA-wch5-xp77-fxg4 / CVE-2026-70474](https://github.com/advisories/GHSA-wch5-xp77-fxg4);
+- schema-dependent credential redaction [GHSA-rwrp-9823-p2xq](https://github.com/advisories/GHSA-rwrp-9823-p2xq);
+- server-wide upsert-history disclosure [GHSA-fr6g-7cq8-fg82 / CVE-2026-70473](https://github.com/advisories/GHSA-fr6g-7cq8-fg82);
+- OpenAI Assistants vector-store credential IDOR [GHSA-chm3-vqcf-52rx / CVE-2026-70472](https://github.com/advisories/GHSA-chm3-vqcf-52rx);
+- CSV Agent data-URI source interpolation [GHSA-4j8x-x6v7-w9rq / CVE-2026-69264](https://github.com/advisories/GHSA-4j8x-x6v7-w9rq);
+- S3 document-loader object-key traversal [GHSA-88pr-878c-24wf](https://github.com/advisories/GHSA-88pr-878c-24wf);
+- runtime-variable permission bypass [GHSA-8r8h-6vcc-xhrv / CVE-2026-70471](https://github.com/advisories/GHSA-8r8h-6vcc-xhrv); and
+- Pyodide validator Unicode-normalization bypass [GHSA-52fh-8v99-63c2 / CVE-2026-70470](https://github.com/advisories/GHSA-52fh-8v99-63c2).
 
 !!! warning "Disposable Flowise labs and inert recorders only"
-    Use affected and corrected local instances, two synthetic workspaces, fake API keys and OAuth credentials, owned HTTP listeners and package indexes, synthetic flows/CSV/SQLite fixtures, mocked payment-provider objects, and patched file/module/process/delete loaders. Never enumerate customer IDs, retrieve billing records, capture real OAuth secrets, delete flows or files, target metadata or internal services, deserialize unknown data, install an unknown package, load unknown JavaScript, or execute a command.
+    Use affected and corrected local instances, two synthetic workspaces, fake API keys and OAuth credentials, owned HTTP listeners, package indexes, and S3-compatible buckets, synthetic flows/CSV/SQLite/history fixtures, mocked payment-provider objects, and patched file/module/process/delete/provider loaders. Never enumerate customer or credential IDs, retrieve billing records or real integration histories, capture real OAuth secrets, delete flows or files, target metadata or internal services, deserialize unknown data, install an unknown package, load unknown JavaScript, or execute a command.
 
 ## Boundary map
 
@@ -43,6 +51,13 @@ Primary sources:
 | Custom-function sandbox | authenticated caller may supply code and data | caller `nodeVMOptions` replaces security-critical defaults | forbidden synthetic module name reaches require-policy recorder |
 | `DELETE /api/v1/chatflows/:id` | API key may delete one flow type | shared route accepts either permission, then resolves by ID without binding target type | opposite-type ID reaches a no-op delete recorder |
 | MCP server launch | caller may choose a permitted interpreter and arguments | inherited/caller environment recreates blocked CLI behavior | safe package selector reaches a denied package/process recorder without a blocked flag |
+| OAuth authorize/callback/refresh | caller can enter one OAuth phase | credential ID or callback `state` resolves without workspace/auth binding | workspace B fake credential reaches provider/update recorder under A or no session |
+| Credential read API | role may view credential metadata | redaction follows UI field type instead of secret semantics | fake secret in a string-shaped field survives response projection |
+| Upsert history | user may inspect one workspace's ingestion jobs | unscoped query returns server-wide integration records | workspace B history marker appears under A without downloading bulk data |
+| Assistants vector-store API | role may use the assistants feature | query credential ID selects another workspace's provider authority | B's fake provider token selects mocked B objects under A |
+| CSV/Pyodide validator | builder may provide CSV/node data | raw data-URI segment or Unicode-normalized identifier changes generated Python | inert marker changes AST or affected/fixed validator decision |
+| S3 document loader | builder may read one owned bucket prefix | object key is joined to a local temporary directory | escaped marker reaches denied write-path recorder |
+| Custom-function variables | role may run a function without `variables:view` | runtime injects all workspace/static environment-backed variables | random synthetic variable appears in sandbox-input recorder |
 
 ## 1. Diff feature gates, permissions, and storage scope
 
@@ -183,6 +198,10 @@ Do not claim predictable-ID enumeration without measuring the actual identifier 
 - [ ] Customer-source evidence uses mocked provider objects and no identifier enumeration.
 - [ ] Shared-delete evidence records the granted permission, resolved flow type, and a no-op sink; no flow is deleted.
 - [ ] MCP launch evidence records effective arguments and environment and aborts before package resolution, install, or process start.
+- [ ] OAuth and provider-tool evidence binds route phase, callback transaction, workspace, credential owner, operation, and mocked provider sink.
+- [ ] Credential, variable, and history tests record only canary presence and stop after the first foreign marker.
+- [ ] Generated-code evidence compares raw, normalized, validated, and parsed representations without evaluator or host-bridge execution.
+- [ ] S3 loader evidence records canonical write and cleanup targets while denying every filesystem mutation.
 - [ ] Affected-versus-3.1.3 behavior is captured with the same fixture.
 
 Prefer boundary-specific report titles such as:
@@ -283,3 +302,76 @@ Record the raw MCP configuration, executable identity, argument vector, raw and 
 The reportable positive is **blocked CLI behavior absent from `args` -> equivalent environment configuration survives validation -> owned package/process recorder shows the same launch decision on 3.1.2 -> 3.1.3 rejects before resolution**. This proves a policy bypass without installing or executing a package. Keep unauthenticated route reachability, environment-policy bypass, package resolution, installation, and runtime execution as separate edges; claim the strongest edge actually captured.
 
 Generalize the review beyond npm. For every allowed launcher, enumerate configuration channels from vendor documentation, then compare policy coverage across CLI flags, environment variables, config files, shebangs, working-directory files, and inherited state. A denylist that covers only one representation is a variant-analysis seed, not a complete execution boundary.
+
+## 12. Bind every OAuth phase and provider tool call to one credential owner
+
+The later OAuth and Assistants records widen the earlier refresh-route finding. Authorization, callback, refresh, and provider-tool routes can all resolve the same credential through different selectors, yet each route may apply a different authentication and workspace decision. Callback `state` is correlation data, not proof that the caller may update the credential it names. Likewise, permission to use an Assistants feature is not permission to spend any credential ID supplied in a query.
+
+Create workspaces A and B with one fake OAuth credential and one mocked OpenAI-style credential each. Use distinct random IDs and canary fields. Replace provider exchange, credential update, vector-store list/create/delete, and file operations with recorders that never contact a real provider or persist a token. Exercise this matrix:
+
+| Caller and phase | Selected credential | Secure result |
+| --- | --- | --- |
+| A owner, authorize | A | owned provider recorder reached |
+| A owner, authorize | B | denied before provider URL construction |
+| no session, callback with synthetic `state` | B | callback correlation may parse, but no B update without a bound transaction |
+| no session, refresh | B | denied before decrypt/provider call |
+| A with Assistants permission | B | denied before credential decrypt or mocked vector-store call |
+| B owner, provider tool | B | allowed control |
+
+Record the route, authentication state, active workspace, raw selector, callback transaction/nonce, credential owner, decrypt decision, outbound authority, mocked provider operation, and update sink. A bounded positive is **A or no session names B's synthetic credential -> B reaches a provider or update recorder without an owner-bound authorization decision**. Do not return or log fake token values beyond a one-way marker match, and never repeat this with a real OAuth or OpenAI credential.
+
+Review all credential-consuming routes, not just credential CRUD. Search controllers and services for `credentialId`, callback `state`, `findOneBy({ id`, decrypt helpers, refresh/test-connection actions, and provider constructors. The invariant is one tuple carried end to end: **authenticated principal + active workspace + credential ID + permitted operation + callback transaction**, with no phase silently dropping a member.
+
+## 13. Test response projection, variable injection, and history scope with canaries
+
+The credential-redaction, runtime-variable, and upsert-history records share one mistake: a principal is allowed to receive *some* object fields, sandbox inputs, or history rows, then the response is built from a broader internal representation.
+
+### Field-semantics redaction matrix
+
+Build synthetic credential definitions where identical random secret markers appear in `password`, ordinary `string`, multiline JSON, URL userinfo, nested object, and array fields. Call only the credential-read API with a lab role carrying the minimum view permission. Capture field names and whether each marker survives; do not print the marker values. A secure response uses an explicit public projection and secret semantics, not a UI widget type, to decide what leaves the server.
+
+### Variable injection matrix
+
+Create one public marker, one static secret-shaped marker, and one runtime variable mapped to a fake environment variable. Use separate roles with and without `variables:view`, and replace custom-function evaluation with a sandbox-input recorder. Compare the official Variables API with every custom-function, template, and prediction path that injects `$vars`. A positive is **role denied by the Variables API -> forbidden marker is still present in the evaluator input**. Stop before evaluating code.
+
+### Two-workspace history matrix
+
+Seed one minimal upsert-history row per workspace with only random collection and endpoint markers. Patch serialization to stop after the first foreign row so the test cannot become a bulk download. Compare A querying its own document/store context, A supplying B-shaped selectors, missing selectors, and an admin control. Record SQL/repository predicates, pagination, row workspace IDs, and response projection. The reportable positive is **A request -> query lacks workspace predicate -> B marker reaches the bounded serializer**.
+
+Keep these as distinct findings when appropriate: missing row scope, overbroad response projection, missing operation permission, and excessive unbounded output are different boundaries. Never collect a production history, connection URL, private key, cloud key, prompt, or environment value as evidence.
+
+## 14. Compare pre-validation text with post-normalization code
+
+Two CSV Agent paths now provide complementary source-construction tests:
+
+1. a raw segment extracted from a data URI reaches a generated Python string before base64/content validation; and
+2. JavaScript regex deny rules inspect one spelling while Python normalizes Unicode identifiers before parsing.
+
+Use a parser-only differential. Replace `runPythonAsync` and the JavaScript bridge with a recorder that stores a hash of the generated source, parses it in a constrained subprocess, records the AST node classes, and rejects execution. Generate inert inputs across these classes:
+
+- valid base64 and malformed alphabet characters;
+- comma-count and filename-segment variants in the data URI;
+- quotes, line breaks, and comment-shaped markers with no statement or callable;
+- ASCII identifiers and compatibility characters whose NFKC form is ASCII;
+- precomposed/decomposed forms, mixed scripts, bidi controls, and zero-width characters; and
+- the same corpus before and after NFKC normalization.
+
+For each input, record the raw bytes, decoded components, validator decision, normalized form, generated-source hash, parser decision, and AST delta. A bounded positive is **validator accepts text -> downstream parser sees a different security-relevant token or the inert marker leaves its intended literal**. Do not include an import, host bridge, file operation, or command in the fixture.
+
+This is a reusable variant-analysis rule: when validation and execution use different languages or normalization rules, validate the same canonical representation the final interpreter consumes. Prefer positive grammar/AST allowlists and structured argument passing over token blacklists.
+
+## 15. Treat remote object keys as archive-member paths
+
+The S3 Directory record is structurally equivalent to archive extraction: a remote object key becomes a relative local filename beneath a temporary root. Prefix authorization in the bucket does not confine the later filesystem write.
+
+Use an owned S3-compatible test bucket and patch `mkdir`, write, rename, and cleanup calls to record canonical targets and return sentinels. Seed zero-content object keys for a normal child, nested child, `..` segment, absolute-looking form, repeated separators, Windows separator, Unicode separator lookalike, prefix sibling, and symlink-parent fixture. Run both directory and single-file loader modes because write and cleanup behavior can differ.
+
+The secure decision must occur on the final filesystem path immediately before every create/write/rename/delete operation:
+
+```text
+candidate = canonical(temp_root + remote_key)
+require candidate is a descendant of canonical(temp_root)
+require no followed parent component escapes through a symlink
+```
+
+A strong bounded positive is **owned object key -> canonical target leaves the temporary root -> denied write recorder receives the outside marker**. Record cleanup targets separately; never allow the loader to create, overwrite, or delete the canary. Generalize this check to cloud prefixes, ZIP/TAR members, uploaded filenames, Git trees, and model artifacts that are materialized locally.
