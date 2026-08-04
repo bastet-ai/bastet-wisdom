@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Node.js proxy/SQLite, WildFly domain, Rocket.Chat file, and Zyxel WLAN boundaries](alerts/2026-08-04-node-wildfly-rocketchat-zyxel-boundaries-ghsa.md)
 - [Sensor-proxy controller trust and CMS draft/render boundaries](alerts/2026-08-04-sensor-cms-trust-boundaries-ghsa.md)
 - [Data workflow, AI corpus, command-wrapper, and device-adoption boundaries](alerts/2026-08-03-data-workflow-device-trust-boundaries-ghsa.md)
 - [Python `cryptography` wildcard name-constraint differential](alerts/2026-08-03-bouncy-castle-crypto-policy-boundaries-ghsa.md#python-cryptography-name-constraint-and-path-cost-follow-up)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [undici request serialization, retry framing, and cookie-attribute checks](alerts/2026-08-03-undici-serialization-retry-cookie-boundaries-ghsa.md)
 - [IP-literal SSRF classification differential matrix](best-practices/url-allowlists-canonicalization.md#ip-literal-classification-differential-matrix)
 - [GitPython option-to-filesystem follow-up](alerts/2026-07-21-developer-agent-proxy-control-boundaries-ghsa.md#august-3-gitpython-option-to-filesystem-follow-up)
-- [Shared-cache whitespace-around-equals follow-up](best-practices/shared-http-cache-boundary-testing.md#whitespace-around-equals-follow-up)
 
 
 
