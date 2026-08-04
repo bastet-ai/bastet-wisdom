@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [ASUSTOR privileged IPC and WordPress object-authority boundaries](alerts/2026-08-04-asustor-wordpress-authority-boundaries-ghsa.md)
+- [Static firmware TLS-key fingerprint workflow](methodology/weak-public-key-recon.md#static-firmware-key-follow-up)
 - [Zyxel ZLD configuration-file traversal validation](alerts/2026-08-04-node-wildfly-rocketchat-zyxel-boundaries-ghsa.md#6-bind-appliance-configuration-execution-to-the-approved-file-root)
 - [LINE Android profile-template render boundary](alerts/2026-08-04-sensor-cms-trust-boundaries-ghsa.md#4-trace-mobile-profile-templates-to-the-final-script-authority)
 - [Node.js proxy/SQLite, WildFly, Rocket.Chat, and Zyxel appliance boundaries](alerts/2026-08-04-node-wildfly-rocketchat-zyxel-boundaries-ghsa.md)
@@ -16,8 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Python `cryptography` wildcard name-constraint differential](alerts/2026-08-03-bouncy-castle-crypto-policy-boundaries-ghsa.md#python-cryptography-name-constraint-and-path-cost-follow-up)
 - [Python `cryptography` PKCS#7 oracle follow-up](alerts/2026-08-03-bouncy-castle-crypto-policy-boundaries-ghsa.md#python-cryptography-pkcs7-oracle-follow-up)
 - [HTTP authority, WebSocket framing, Oracle SQL, and formatter-cache checks](alerts/2026-08-03-http-authority-websocket-sql-file-boundaries-ghsa.md)
-- [GitPython `Commit.count()` truncation follow-up](alerts/2026-07-21-developer-agent-proxy-control-boundaries-ghsa.md#commit-count-unguarded-output-sink)
-- [undici request serialization, retry framing, and cookie-attribute checks](alerts/2026-08-03-undici-serialization-retry-cookie-boundaries-ghsa.md)
 
 
 

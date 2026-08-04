@@ -1,6 +1,6 @@
 # Weak public-key recon
 
-Source: [Trail of Bits — Factoring "short-sleeve" RSA keys with polynomials](https://blog.trailofbits.com/2026/06/12/factoring-short-sleeve-rsa-keys-with-polynomials/), published 2026-06-12. Tool reference: [badkeys README](https://github.com/badkeys/badkeys/blob/main/README.md) and [badkeys.info](https://badkeys.info/).
+Sources: [Trail of Bits — Factoring "short-sleeve" RSA keys with polynomials](https://blog.trailofbits.com/2026/06/12/factoring-short-sleeve-rsa-keys-with-polynomials/), published 2026-06-12; GeoVision Lighttpd static-key records [GHSA-7p93-2qwj-4g34 / CVE-2026-18753](https://github.com/advisories/GHSA-7p93-2qwj-4g34) and [GHSA-qfjw-8qqh-5c6x / CVE-2026-18754](https://github.com/advisories/GHSA-qfjw-8qqh-5c6x). Tool reference: [badkeys README](https://github.com/badkeys/badkeys/blob/main/README.md) and [badkeys.info](https://badkeys.info/).
 
 Public keys are recon artifacts. A scoped TLS certificate, SSH host key, SAML signing key, PGP key, or appliance-generated key can expose product lineage and sometimes a practical private-key recovery path without touching application data. The durable operator lesson from Trail of Bits' short-sleeve RSA research is to collect public keys at corpus scale, normalize them, and run known-weak-key checks before spending time on harder exploit paths.
 
@@ -128,6 +128,19 @@ Weak-key findings become stronger when tied to a repeatable product boundary:
 - **Historical scans:** CT logs or approved historical SSH/TLS datasets showing when a weak key first appeared and whether regeneration happened after upgrades.
 
 Do not infer a product vulnerability from one weak key alone. Tie the key to product behavior only when independent evidence shows the product generated or shipped it.
+
+## Static firmware-key follow-up
+
+The two GeoVision records add a complementary corpus check: firmware may ship the same RSA **private** key for Lighttpd TLS termination across devices. An endpoint certificate is public and safe to fingerprint; obtaining or using the embedded private key is not required to prove that deployed identities share one vendor-shipped key.
+
+1. Confirm the exact owned product, model, firmware, and HTTPS service from inventory or vendor documentation. The initial GitHub records are sparse, so do not infer an affected model from a GeoVision banner alone.
+2. Collect only the public leaf certificate from each approved endpoint and from a freshly reset lab device. Record SNI, port, observation time, certificate fingerprint, Subject Public Key Info fingerprint, and non-sensitive product evidence.
+3. Compare SPKI fingerprints across devices, firmware releases, resets, and regenerated-certificate controls. Certificate fingerprints may differ while the underlying RSA public key remains the same.
+4. If firmware review is explicitly in scope, use a vendor-provided image in an offline disposable workspace. Patch the extraction scanner to report only **private-key present, path class, public-key fingerprint, and file mode**; do not print, archive, or commit PEM bytes.
+5. Derive the public half inside the isolated workspace and compare its fingerprint to the lab endpoint. Destroy the extracted image workspace afterward under the engagement's evidence policy.
+6. Stop before loading the key into a TLS server, decrypting captures, impersonating a device, signing content, or testing third-party endpoints. Repeat collection after the vendor-fixed firmware or device-specific key regeneration.
+
+The bounded positive is **owned firmware scanner detects embedded private-key material -> derived public fingerprint matches the owned device's live TLS SPKI -> a second reset/device or documented build repeats the fingerprint -> corrected firmware produces a device-specific key**. A repeated self-signed certificate is useful recon evidence but does not by itself prove the corresponding private key was shipped or exposed.
 
 ## Reporting checklist
 
