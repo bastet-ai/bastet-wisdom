@@ -8,16 +8,16 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
-- [Node.js proxy/SQLite, WildFly domain, Rocket.Chat file, and Zyxel WLAN boundaries](alerts/2026-08-04-node-wildfly-rocketchat-zyxel-boundaries-ghsa.md)
-- [Sensor-proxy controller trust and CMS draft/render boundaries](alerts/2026-08-04-sensor-cms-trust-boundaries-ghsa.md)
+- [Zyxel ZLD configuration-file traversal validation](alerts/2026-08-04-node-wildfly-rocketchat-zyxel-boundaries-ghsa.md#6-bind-appliance-configuration-execution-to-the-approved-file-root)
+- [LINE Android profile-template render boundary](alerts/2026-08-04-sensor-cms-trust-boundaries-ghsa.md#4-trace-mobile-profile-templates-to-the-final-script-authority)
+- [Node.js proxy/SQLite, WildFly, Rocket.Chat, and Zyxel appliance boundaries](alerts/2026-08-04-node-wildfly-rocketchat-zyxel-boundaries-ghsa.md)
+- [Sensor-proxy controller, CMS, and mobile profile-render boundaries](alerts/2026-08-04-sensor-cms-trust-boundaries-ghsa.md)
 - [Data workflow, AI corpus, command-wrapper, and device-adoption boundaries](alerts/2026-08-03-data-workflow-device-trust-boundaries-ghsa.md)
 - [Python `cryptography` wildcard name-constraint differential](alerts/2026-08-03-bouncy-castle-crypto-policy-boundaries-ghsa.md#python-cryptography-name-constraint-and-path-cost-follow-up)
 - [Python `cryptography` PKCS#7 oracle follow-up](alerts/2026-08-03-bouncy-castle-crypto-policy-boundaries-ghsa.md#python-cryptography-pkcs7-oracle-follow-up)
 - [HTTP authority, WebSocket framing, Oracle SQL, and formatter-cache checks](alerts/2026-08-03-http-authority-websocket-sql-file-boundaries-ghsa.md)
 - [GitPython `Commit.count()` truncation follow-up](alerts/2026-07-21-developer-agent-proxy-control-boundaries-ghsa.md#commit-count-unguarded-output-sink)
 - [undici request serialization, retry framing, and cookie-attribute checks](alerts/2026-08-03-undici-serialization-retry-cookie-boundaries-ghsa.md)
-- [IP-literal SSRF classification differential matrix](best-practices/url-allowlists-canonicalization.md#ip-literal-classification-differential-matrix)
-- [GitPython option-to-filesystem follow-up](alerts/2026-07-21-developer-agent-proxy-control-boundaries-ghsa.md#august-3-gitpython-option-to-filesystem-follow-up)
 
 
 

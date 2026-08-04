@@ -1,28 +1,30 @@
 ---
-title: Node.js proxy/SQLite, WildFly domain, Rocket.Chat file, and Zyxel WLAN boundaries
+title: Node.js proxy/SQLite, WildFly, Rocket.Chat, and Zyxel appliance boundaries
 ---
 
-# Node.js proxy/SQLite, WildFly domain, Rocket.Chat file, and Zyxel WLAN boundaries
+# Node.js proxy/SQLite, WildFly, Rocket.Chat, and Zyxel appliance boundaries
 
 Source: hourly offensive-security scan of GitHub Security Advisories on 2026-08-04. These records were unreviewed database entries at scan time; confirm affected releases, deployment mode, caller position, feature configuration, and corrected behavior from upstream before reporting.
 
-This wave yields five durable operator patterns:
+This wave yields six durable operator patterns:
 
 1. an HTTP runtime may use a header omitted from every userland header view to frame a body that a forwarding proxy still pipes downstream;
 2. a cached database statement can be reset and rebound while an older iterator remains able to execute it;
 3. a trusted application-server subordinate can turn a relative repository selector into a read from its controller's filesystem;
 4. a feature-specific public file route can bypass the storage root only when a particular backend is selected; and
-5. WLAN portal authentication and administrator-only diagnostic/export command handling are distinct appliance boundaries that must be validated independently.
+5. WLAN portal authentication and administrator-only diagnostic/export command handling are distinct appliance boundaries that must be validated independently; and
+6. an administrator-approved configuration-file command can still let a path selector detach the parsed file from the intended configuration root.
 
 Primary sources:
 
 - Node.js forwarding-proxy request desynchronization [GHSA-6hff-9f4h-85xm / CVE-2026-58044](https://github.com/advisories/GHSA-6hff-9f4h-85xm) and stale SQLite iterator [GHSA-qgrj-5wc5-7xvc / CVE-2026-58041](https://github.com/advisories/GHSA-qgrj-5wc5-7xvc), with the [Node.js July 2026 security release](https://nodejs.org/en/blog/vulnerability/july-2026-security-releases);
 - WildFly domain-controller repository traversal [GHSA-62xj-w627-m337 / CVE-2026-17614](https://github.com/advisories/GHSA-62xj-w627-m337) and [Red Hat CVE record](https://access.redhat.com/security/cve/CVE-2026-17614);
-- Rocket.Chat filesystem-backed custom-sound traversal [GHSA-6c37-9jgq-mgm8 / CVE-2026-56845](https://github.com/advisories/GHSA-6c37-9jgq-mgm8) and [HackerOne report 3514640](https://hackerone.com/reports/3514640); and
-- Zyxel WAX650S captive-portal authentication bypass [GHSA-hq2r-whw2-gr82 / CVE-2026-8508](https://github.com/advisories/GHSA-hq2r-whw2-gr82), administrator command injection [GHSA-fq66-x242-gfpv / CVE-2026-6837](https://github.com/advisories/GHSA-fq66-x242-gfpv), and the [Zyxel advisory](https://www.zyxel.com/global/en/support/security-advisories/zyxel-security-advisory-for-command-injection-and-improper-authentication-vulnerabilities-in-certain-aps-fwa7-and-security-routers-08-04-2026).
+- Rocket.Chat filesystem-backed custom-sound traversal [GHSA-6c37-9jgq-mgm8 / CVE-2026-56845](https://github.com/advisories/GHSA-6c37-9jgq-mgm8) and [HackerOne report 3514640](https://hackerone.com/reports/3514640);
+- Zyxel WAX650S captive-portal authentication bypass [GHSA-hq2r-whw2-gr82 / CVE-2026-8508](https://github.com/advisories/GHSA-hq2r-whw2-gr82), administrator command injection [GHSA-fq66-x242-gfpv / CVE-2026-6837](https://github.com/advisories/GHSA-fq66-x242-gfpv), and the [wireless-device advisory](https://www.zyxel.com/global/en/support/security-advisories/zyxel-security-advisory-for-command-injection-and-improper-authentication-vulnerabilities-in-certain-aps-fwa7-and-security-routers-08-04-2026); and
+- Zyxel ZLD firewall configuration-file traversal [GHSA-75p7-jv3w-pjpc / CVE-2026-14818](https://github.com/advisories/GHSA-75p7-jv3w-pjpc) and the [ZLD firewall advisory](https://www.zyxel.com/global/en/support/security-advisories/zyxel-security-advisory-for-path-traversal-vulnerability-in-the-configuration-file-execution-cli-command-of-zld-firewalls-08-04-2026).
 
 !!! warning "Isolated connections, synthetic files, and inert sinks only"
-    Use a one-client proxy lab, disposable databases and controller domains, random canary files, owned WLAN appliances, fake accounts, and patched file/process recorders. Never desynchronize shared traffic, read host or tenant files, request credentials or keystores, bypass a production captive portal, execute shell text, or assume that WLAN access grants appliance administration.
+    Use a one-client proxy lab, disposable databases and controller domains, random canary files, owned WLAN/firewall appliances, fake accounts, and patched file/process/configuration recorders. Never desynchronize shared traffic, read host or tenant files, request credentials or keystores, bypass a production captive portal, execute shell text or configuration actions, or assume that WLAN access grants appliance administration.
 
 ## Boundary map
 
@@ -34,6 +36,7 @@ Primary sources:
 | Rocket.Chat custom sounds | public route may serve a configured sound | path normalization differs when storage is `FileSystem` | route selects a random sibling canary in a disposable storage fixture |
 | Zyxel captive portal | WLAN client completes `social_login.cgi` flow | alternate state/parameter path grants network admission without valid portal proof | owned client reaches only an isolated canary VLAN in affected firmware |
 | Zyxel export CGI | administrator may request an export | caller-controlled field crosses into a command wrapper | inert marker reaches a patched process recorder without process creation |
+| Zyxel ZLD configuration CLI | administrator may execute an approved configuration file | traversal selects a crafted file outside the intended configuration root | recorder resolves a random temp canary and aborts before parsing or applying it |
 
 ## 1. Reconcile Node.js framing with every userland header view
 
@@ -128,6 +131,20 @@ Only in a disposable administrator session, patch the process-launch boundary be
 
 Report **administrator-controlled export field -> application constructs a command boundary -> recorder shows the marker becoming a new argument or shell token -> fixed firmware rejects or passes it as one literal value**. Administrator access is a material prerequisite, and a changed filename or validation error is not command execution.
 
+## 6. Bind appliance configuration execution to the approved file root
+
+CVE-2026-14818 affects the CLI command used to execute configuration files in Zyxel ZLD firewall firmware. It requires an authenticated administrator and could select a crafted malicious configuration file through path traversal. The affected ranges are ATP V4.32 through V5.42 Patch 1, USG FLEX V4.50 through V5.42 Patch 1, and USG FLEX 50(W)/USG20(W)-VPN V4.16 through V5.42 Patch 1; Zyxel lists V5.43 as the corrected release. This is a post-authentication path-to-configuration-execution boundary, not an unauthenticated firewall takeover.
+
+Use only an owned, resettable firewall in a disconnected lab. Create a temporary approved configuration root, a sibling-prefix directory, and a deeper outside directory, each containing random text markers rather than valid operational configuration. Patch or interpose the CLI file resolver, configuration parser entry, and action dispatcher so each records its input and aborts before opening the outside file, parsing directives, changing running/startup configuration, restarting services, or writing persistent state.
+
+1. Record a normal in-root configuration selector as the control, including raw CLI tokens, lexical join, canonical target, configured root, file ownership/mode, and parser/action identity.
+2. Test dot segments, repeated and mixed separators, absolute syntax, sibling-prefix names, symlinked parent components, nonexistent targets, and encoded forms only if a proven CLI decoding layer transforms them.
+3. Keep final-component symlinks and replaceable parent-directory components as separate cases; a lexical prefix check does not prove canonical containment.
+4. Repeat with a non-administrator, a deliberately invalid administrator session, affected firmware, and V5.43. Record rejection stage and whether any file open or configuration parser was reached.
+5. If the recorder proves an outside selection, substitute a parser recorder that returns a fixed no-op result for the random marker. Do not create a syntactically active firewall directive merely to demonstrate impact.
+
+The bounded positive is **disposable administrator invokes configuration-file CLI -> traversal selector canonicalizes to a random canary outside the approved root -> affected firmware reaches the patched file/parser recorder -> V5.43 rejects before file access**. A CLI error, path echo, or existence oracle alone is not configuration execution. State the administrator prerequisite, exact product/firmware, configuration root, resolved target, and first reached sink.
+
 ## Reporting checklist
 
 - [ ] Every finding records exact release, deployment mode, caller position/role, and feature or storage configuration.
@@ -136,4 +153,5 @@ Report **administrator-controlled export field -> application constructs a comma
 - [ ] WildFly evidence states the slave-secret prerequisite and stops at a patched domain-controller file reader.
 - [ ] Rocket.Chat evidence proves the `FileSystem` backend and `/custom-sounds/` route before claiming reachability.
 - [ ] Zyxel portal admission and administrator export are reported as separate trust boundaries unless a distinct administrative-session transition is proven.
-- [ ] No shared traffic, host/tenant file, real portal identity, appliance command, credential, keystore, or production configuration appears in evidence.
+- [ ] Zyxel ZLD evidence records canonical root/target and aborts before outside-file reads, configuration parsing, state changes, or service actions.
+- [ ] No shared traffic, host/tenant file, real portal identity, appliance command/configuration action, credential, keystore, or production configuration appears in evidence.

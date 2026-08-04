@@ -1,25 +1,27 @@
 ---
-title: Sensor-proxy controller trust and CMS draft/render boundaries
+title: Sensor-proxy controller, CMS, and mobile profile-render boundaries
 ---
 
-# Sensor-proxy controller trust and CMS draft/render boundaries
+# Sensor-proxy controller, CMS, and mobile profile-render boundaries
 
-Source: hourly offensive-security scan of GitHub Security Advisories on 2026-08-04. The Camaleon and Microweber records were unreviewed database entries at scan time; confirm the affected revision, route configuration, caller role, and corrected behavior from upstream before reporting.
+Source: hourly offensive-security scan of GitHub Security Advisories on 2026-08-04. The Camaleon, Microweber, and LINE records were unreviewed database entries at scan time; confirm the affected revision, route/configuration, caller capability, and corrected behavior from upstream before reporting.
 
-This wave yields three durable operator patterns:
+This wave yields four durable operator patterns:
 
 1. an operator-approved enrollment action does not necessarily authenticate the controller whose response reaches a privileged sensor;
 2. a specialized autosave controller can override a protected parent controller while dropping object scope and authorization; and
-3. input can survive several incomplete filters because each parser sees a different representation before a later HTML sink reparses it.
+3. input can survive several incomplete filters because each parser sees a different representation before a later HTML sink reparses it; and
+4. remotely supplied mobile-profile templates can cross from display content into an application-privileged script runtime.
 
 Primary sources:
 
 - Tenable Sensor Proxy controller trust [GHSA-24h7-mgmp-x4j6 / CVE-2026-18667](https://github.com/advisories/GHSA-24h7-mgmp-x4j6) and [TNS-2026-21](https://www.tenable.com/security/tns-2026-21);
-- Camaleon CMS draft authorization [GHSA-hwrq-jcj5-6vc6 / CVE-2026-67616](https://github.com/advisories/GHSA-hwrq-jcj5-6vc6), [upstream fix](https://github.com/owen2345/camaleon-cms/commit/88ab703b5ac041afb93a9993470aa366093c5311), and [authorization design notes](https://github.com/owen2345/camaleon-cms/pull/1196); and
-- Microweber content-tag rendering [GHSA-793c-7c93-m769 / CVE-2026-67617](https://github.com/advisories/GHSA-793c-7c93-m769) and [research write-up](https://github.com/theopaid/Stored-XSS-via-Content-Tag-Names-Microweber-).
+- Camaleon CMS draft authorization [GHSA-hwrq-jcj5-6vc6 / CVE-2026-67616](https://github.com/advisories/GHSA-hwrq-jcj5-6vc6), [upstream fix](https://github.com/owen2345/camaleon-cms/commit/88ab703b5ac041afb93a9993470aa366093c5311), and [authorization design notes](https://github.com/owen2345/camaleon-cms/pull/1196);
+- Microweber content-tag rendering [GHSA-793c-7c93-m769 / CVE-2026-67617](https://github.com/advisories/GHSA-793c-7c93-m769) and [research write-up](https://github.com/theopaid/Stored-XSS-via-Content-Tag-Names-Microweber-); and
+- LINE Android profile-template code injection [GHSA-86g4-8jpx-6pgq / CVE-2026-16881](https://github.com/advisories/GHSA-86g4-8jpx-6pgq) and the [LY Corporation advisory](https://line.github.io/security-advisory-blog/CVE-2026-16881).
 
 !!! warning "Synthetic controllers, content, and render sinks only"
-    Use a disconnected Sensor Proxy lab, an owned TLS/control endpoint, disposable CMS users and posts, random markers, and patched process/DOM recorders. Never redirect an operational sensor, serve executable controller content, alter production drafts, execute JavaScript, collect sessions or CSRF tokens, or make a browser perform authenticated side effects.
+    Use a disconnected Sensor Proxy lab, an owned TLS/control endpoint, disposable CMS/mobile accounts and content, random markers, and patched process/DOM/script recorders. Never redirect an operational sensor, serve executable controller content, alter production drafts or profiles, execute JavaScript, collect sessions or CSRF tokens, or make a browser/mobile client perform authenticated side effects.
 
 ## Boundary map
 
@@ -30,6 +32,7 @@ Primary sources:
 | Camaleon draft update | caller may edit one draft | global draft ID lookup ignores post type and object policy | foreign synthetic draft reaches update recorder |
 | Microweber tag save | tag text passes method-specific and regex checks | title normalization preserves encoded structure that HTML parsing later revives | inert tag marker becomes an element/attribute in a detached DOM recorder |
 | Microweber render | stored tag is treated as display text | public template output or admin `innerHTML` reparses it as markup | parser creates a harmless marker node without an executable attribute |
+| LINE Android profile render | remote profile is accepted as display content | externally supplied template script reaches an application-privileged runtime | patched evaluator receives only an inert marker and aborts before execution |
 
 ## 1. Treat sensor enrollment as privileged remote-code provenance
 
@@ -119,6 +122,22 @@ At each stage record:
 
 A safe positive is **method/representation avoids an earlier filter -> stored bytes retain markup structure -> public or admin sink creates a harmless marker element rather than text**. Do not include event handlers, script URLs, network callbacks, CSRF-token reads, or authenticated requests. If no executable sink is exercised, report trusted markup insertion rather than XSS; if the affected application behavior is confirmed from the upstream record and your inert differential, label the evidence boundary precisely.
 
+## 4. Trace mobile profile templates to the final script authority
+
+LY Corporation states that LINE for Android before 26.7.2 inadequately validated or sandboxed externally supplied script content embedded in profile templates. Viewing a crafted profile could therefore execute code with the application's privileges. The advisory does not disclose the template format, ingestion field, evaluator, or bridge surface, and a server-side mitigation now protects older clients too. Do not invent a payload or treat an old APK version as proof of current reachability.
+
+Use two disposable LINE lab accounts on isolated Android test devices or emulators with no real contacts, messages, media, payment state, or production credentials. If the program permits client instrumentation, replace each template compiler, script evaluator, WebView navigation hook, and native bridge dispatcher with a recorder that logs the source profile, raw template bytes, decoded representation, selected runtime/origin, exposed bridge names, and effective application context, then aborts.
+
+1. Establish controls with a plain profile, a supported static template, and malformed template data that should remain inert or be rejected.
+2. Through only the product-supported profile-editing path available to the owned sender account, place a random non-executable marker in every documented template-capable field. Do not add JavaScript syntax, URLs, event handlers, native method names, or data-access expressions.
+3. Have the owned viewer open the profile while recording server-delivered bytes, client decoding, renderer selection, evaluator entry, origin/sandbox state, and bridge exposure.
+4. Vary representation separately: missing or empty template state, duplicated fields, encoding boundaries, nested template objects, cached versus freshly fetched profiles, and sender/viewer account transitions.
+5. Compare an affected client in the authorized lab, 26.7.2 or later, and the same old client with current server-side mitigation. Preserve a result matrix even if the mitigated service prevents reproduction.
+
+The safe positive is **owned sender stores an inert profile-template marker -> owned viewer renders it -> affected path selects a script-capable runtime -> patched evaluator records the marker under application privilege and aborts -> corrected client or server-filtered path rejects, strips, or renders it as data**. Merely displaying the marker is not code injection. A static review that identifies a reachable evaluator and privileged bridge is useful evidence, but label it separately from dynamic sink reachability.
+
+Report the exact sender capability, profile field, server transformation, client version, renderer, runtime origin, sandbox flags, and exposed application bridge. Never execute script, read client storage, invoke native APIs, contact a callback, access another user's profile data, or attempt to bypass the deployed server mitigation outside an explicitly approved vendor lab.
+
 ## Reporting checklist
 
 - [ ] Advisory review status, exact affected/fixed build, route, role, and feature configuration are recorded.
@@ -126,4 +145,5 @@ A safe positive is **method/representation avoids an earlier filter -> stored by
 - [ ] Camaleon evidence records route parent, requested object, stored owner/post type, authorization object, and persistence object.
 - [ ] Create, update, parent validation, and ownership assignment are tested as independent decisions.
 - [ ] Microweber evidence preserves every intermediate representation and uses a non-executable detached DOM.
-- [ ] No executable controller artifact, shell input, live CMS content, session, CSRF token, or browser side effect appears in evidence.
+- [ ] LINE evidence distinguishes server acceptance, renderer selection, evaluator reachability, and native-bridge exposure; affected-version metadata alone is not a positive.
+- [ ] No executable controller artifact, shell input, live CMS/mobile content, session, CSRF token, client storage, callback, or browser/mobile side effect appears in evidence.
