@@ -1,6 +1,6 @@
 # Open WebUI RAG, redirect-hop SSRF, and knowledge-boundary checks
 
-Sources: GitHub Security Advisories updates on 2026-05-15, with redirect-following details refreshed on 2026-05-28, Playwright loader coverage added on 2026-06-18, image-edit blind SSRF coverage added on 2026-07-07, and browser/NAT64 request-path coverage added on 2026-08-04.
+Sources: GitHub Security Advisories updates on 2026-05-15, with redirect-following details refreshed on 2026-05-28, Playwright loader coverage added on 2026-06-18, image-edit blind SSRF coverage added on 2026-07-07, and browser, NAT64, DNS-rebinding, direct-model, and cleanup-scope coverage added on 2026-08-04.
 
 This Open WebUI-heavy wave is durable because it shows how RAG, file attach, vector-search, web-fetch, image-load, chat-completion image inlining, and social-card image generation features collapse separate trust zones when URL validation, object ownership, and collection routing are not enforced at the final use site. Treat every retrieval object, redirect, vector collection, knowledge-base identifier, and model-message URL as attacker-controlled until the exact worker that dereferences it revalidates ownership and destination.
 
@@ -20,6 +20,9 @@ This Open WebUI-heavy wave is durable because it shows how RAG, file attach, vec
 - **Open WebUI NAT64-encoded destination bypass** — [GHSA-8x5v-cpv7-8jjp](https://github.com/advisories/GHSA-8x5v-cpv7-8jjp) / CVE-2026-70485 (high).
 - **Open WebUI Playwright subresource SSRF** — [GHSA-w2rx-84hp-gg95](https://github.com/advisories/GHSA-w2rx-84hp-gg95) / CVE-2026-70479 (high).
 - **Open WebUI Vega/Vega-Lite browser-side request proxy** — [GHSA-rffm-9q57-q649](https://github.com/advisories/GHSA-rffm-9q57-q649) / CVE-2026-70480 (medium).
+- **Open WebUI DNS-rebinding SSRF bypass** — [GHSA-h6x2-583h-x99r](https://github.com/advisories/GHSA-h6x2-583h-x99r) / CVE-2026-54020 (medium).
+- **Open WebUI direct-model knowledge metadata crosses file ownership** — [GHSA-6xhv-rxhv-pwm4](https://github.com/advisories/GHSA-6xhv-rxhv-pwm4) / CVE-2026-70487 (medium).
+- **Open WebUI knowledge-sync cleanup accepts foreign directory/file IDs** — [GHSA-jxc9-xmc4-gr23](https://github.com/advisories/GHSA-jxc9-xmc4-gr23) / CVE-2026-70488 (medium).
 - **nuxt-og-image SSRF — bypass of GHSA-pqhr-mp3f-hrpp / v6.2.5 fix (IPv6 + redirect)** — [GHSA-c2rm-g55x-8hr5](https://github.com/advisories/GHSA-c2rm-g55x-8hr5) / CVE-2026-44589 (low).
 
 ## Operator triage
@@ -107,3 +110,27 @@ For Vega/Vega-Lite, post a harmless chart to a two-user shared lab channel. Use 
 The report should distinguish **request-only browser proxying** from **response read**: a cross-origin GET may beacon without exposing its body, while a same-origin or permissive-CORS endpoint may become readable. Do not call this server-side SSRF, and do not use a victim browser with access to real internal services.
 
 Open WebUI lists 0.11.0 as the first patched release for these three records. Compare the same fixtures on the affected and fixed build: corrected browser loading should validate every request/redirect, block service workers and outbound WebSockets where they cannot be validated, unwrap standardized transition encodings before policy checks, and restrict chart loaders to inline or explicitly same-origin resources.
+
+## August 4 follow-up: bind DNS decisions, inline models, and cleanup children
+
+Three more 0.11.0 fixes add final-use checks to the same fixture. The DNS record is a time-of-check/time-of-use differential: URL policy resolved a hostname and approved a public answer, but the HTTP client performed a second resolution when opening the socket. The direct-model record trusted request-scoped `model.knowledge` file references as though a saved model owner had already authorized them. The sync-cleanup record authorized the knowledge base in the URL but acted on directory and file IDs from the request body without proving parent membership.
+
+### DNS-resolution binding
+
+Use an authoritative zone and two isolated canary listeners that you own: one globally reachable validation endpoint and one lab-private final endpoint. Configure deterministic alternating answers with zero TTL, log every DNS response, and record the actual peer accepted by the HTTP transport. Exercise retrieval ingestion, content probing, chat `image_url`, image edit, and—only with a mock OIDC provider—profile-picture retrieval.
+
+The bounded positive is **policy lookup receives the public canary -> connect-time lookup receives the private canary -> private listener records the request**. Do not target metadata, loopback admin services, or production internal hosts. If testing the OAuth picture path, use a fake bearer marker and report only whether the owned listener received the marker; never relay a real provider token. A corrected client must validate and connect to the same resolved address, or enforce the destination policy in its resolver/transport immediately before connection.
+
+### Request-scoped knowledge and cleanup membership
+
+Seed two users, two knowledge bases, one directory and one indexed marker file per owner. Use synthetic UUIDs shared through the test harness rather than enumeration. Replace file-content return, directory delete, association cleanup, and vector-drop operations with read/no-op recorders.
+
+| Operation | Authorized parent | Caller-selected child | Secure result |
+| --- | --- | --- | --- |
+| inline model with native tools | caller-owned model context | caller-owned file | marker may reach read recorder |
+| inline model with native tools | caller-owned model context | foreign file UUID | deny/drop before content retrieval |
+| sync cleanup | caller-writable knowledge base A | directory in A | no-op cleanup control |
+| sync cleanup | caller-writable knowledge base A | directory in B | deny before directory-delete recorder |
+| sync cleanup | caller-writable knowledge base A | file in B | deny before vector/association recorder |
+
+Capture principal, request-scoped versus saved model provenance, native/legacy tool mode, selected file ID, authorized knowledge-base ID, resolved child parent, and first sink reached. Strong positives stop at **foreign file marker reaches the read recorder** or **A-authorized request carries B child ID to a no-op cleanup sink**. Never retrieve another user's real file content, delete a directory, or drop vector collections. Keep UUID knowledge as an explicit precondition; these records do not establish ID enumeration.

@@ -1,6 +1,6 @@
 # Open WebUI auth, session, and API authorization-boundary batch
 
-Sources: GitHub Security Advisories updates on 2026-05-15, with OAuth client-binding and terminal-preview origin follow-ups added on 2026-08-04.
+Sources: GitHub Security Advisories updates on 2026-05-15, with OAuth client-binding, terminal-preview origin, transport-role, shared-folder deletion, tool-source, and render-error follow-ups added on 2026-08-04.
 
 This batch is durable because it is not one bug class: it is the same authorization mistake repeated across tools, shared chat, background tasks, completions, channels, collaborative documents, folders, LDAP/OAuth bootstrap, Socket.IO sessions, and API-key handling. Client-visible role, read permission, shared-chat state, or endpoint restrictions are not authorization unless each mutation and backend worker enforces the intended subject-object-action tuple.
 
@@ -24,6 +24,10 @@ This batch is durable because it is not one bug class: it is the same authorizat
 - **Open WebUI has an LDAP Empty Password Authentication Bypass** — [GHSA-2r4p-jpmg-48f4](https://github.com/advisories/GHSA-2r4p-jpmg-48f4) / CVE-2026-44551 (critical).
 - **Open WebUI OAuth token exchange accepts tokens minted for another client** — [GHSA-rq84-p6rr-vf89](https://github.com/advisories/GHSA-rq84-p6rr-vf89) / CVE-2026-70482 (high).
 - **Open WebUI terminal file preview collapses iframe origin isolation** — [GHSA-3xpf-xq7r-v8c5](https://github.com/advisories/GHSA-3xpf-xq7r-v8c5) / CVE-2026-70486 (high).
+- **Open WebUI shared-subfolder deletion crosses from write grant to owner chat destruction** — [GHSA-3cg5-48j3-v4gv](https://github.com/advisories/GHSA-3cg5-48j3-v4gv) / CVE-2026-70494 (high).
+- **Open WebUI KaTeX error fallback reparses message source as HTML** — [GHSA-pwxh-7358-jq2x](https://github.com/advisories/GHSA-pwxh-7358-jq2x) / CVE-2026-70492 (high).
+- **Open WebUI read-only tool responses disclose server-side source** — [GHSA-3r7g-q6cg-q2vx](https://github.com/advisories/GHSA-3r7g-q6cg-q2vx) / CVE-2026-70491 (medium).
+- **Open WebUI terminal WebSocket omits the verified-role gate** — [GHSA-5gpj-vj23-vhhv](https://github.com/advisories/GHSA-5gpj-vj23-vhhv) / CVE-2026-70490 (medium).
 
 ## Operator triage
 
@@ -49,3 +53,25 @@ The secure matrix is: own client accepted, foreign client rejected, invalid toke
 The terminal-preview record is a separate browser-origin chain. It requires a configured terminal server and a user able to place a file there. Use two disposable users, an HTML file containing only a script that changes a visible random DOM marker, and a terminal proxy with fake headers. Never read `localStorage`, cookies, or session tokens. Compare the `serveUrl` and `srcdoc` branches, `iframeSandboxAllowSameOrigin` on/off, restrictive synthetic CSP on/off, and victim/non-victim origins.
 
 A bounded positive is **terminal-served preview loads under the application origin with both `allow-scripts` and `allow-same-origin` -> inert child script changes the parent marker automatically**. Capture iframe URL/origin, sandbox tokens, CSP, event that opened the preview, and parent-access decision. Open WebUI lists 0.11.0 as fixed; the default fixed path should give the served document an opaque origin unless same-origin behavior was explicitly enabled.
+
+## August 4 follow-up: test every transport, grant tier, cascade, and error renderer
+
+Four additional records show different ways a valid preliminary decision can authorize too much at the sink. Use Open WebUI 0.10.2 as the affected comparison and 0.11.0 as the corrected build; the terminal WebSocket path begins in 0.8.8 and the folder cascade requires folder sharing plus a write grant.
+
+### Transport-role parity
+
+Create approved, pending, and deactivated disposable users. Configure a terminal adapter that records session-open attempts but never starts a shell, and grant it to a synthetic group. Compare HTTP terminal routes, the terminal WebSocket first-message JWT path, Socket.IO, expired/revoked tokens, and group membership retained/removed after deactivation.
+
+A positive is **pending or deactivated user is rejected by HTTP -> the same token and grant reach the no-op WebSocket session opener**. Record token status only as valid/expired/revoked, never the token itself. This finding does not imply a terminal-grant bypass: preserve whether the account still had public/group access and report the missing verified-role decision separately.
+
+### Grant-to-cascade and response-projection matrices
+
+Seed an owner folder with one child and marker-only chats, then grant another user read or write access. Replace move, chat delete, subtree delete, and persistence with no-op recorders. Compare root versus child folder, owner versus collaborator, read versus write, `delete_contents` false/true, and caller-owned versus owner-owned descendants. The strong boundary is **write collaborator selects owner child -> cascade recorder receives owner chat IDs without an owner/admin decision**. Never delete retained chats.
+
+For tools, seed source containing a random non-secret marker and expose only function specifications to a read-only user. Compare owner, writer, reader, public-reader, and no-grant callers across list, compact list, per-ID, export, and execution paths. Capture returned field names and a hash/presence bit for the marker. A reader may invoke an intentionally shared tool, but its source must not leak through a response-model subclass, extra-field behavior, or full-model spread. Do not place credentials or operational URLs in the fixture.
+
+### Error-path render boundary
+
+The KaTeX record is not a generic Markdown success-path test: a renderer exception caused the original math source to reach an HTML sink. In a detached browser fixture with no sessions, use a short deterministic test double that makes the math renderer throw and puts only an inert DOM-marker element in the source. Compare parse error, resource/stack-style exception, success, shared chat, and channel rendering. Instrument text insertion versus HTML insertion and block all scripts.
+
+A bounded positive is **renderer throws -> raw source reaches the HTML parser -> inert element appears**, not JavaScript execution or token access. Capture input provenance, exception class, fallback value, escaping state, and final DOM nodes. Generalize the check to syntax highlighters, charting, diagram, media, and preview components: sanitizer and escaping policy must apply to every catch/fallback branch as well as normal output.
