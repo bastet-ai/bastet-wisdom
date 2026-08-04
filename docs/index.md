@@ -9,15 +9,15 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 ## Recent entries
 
 - [Flowise workspace, runtime, and credential-authority boundaries](alerts/2026-08-04-flowise-workspace-runtime-credential-boundaries-ghsa.md)
+- [Open WebUI browser-loader, NAT64, and Vega request boundaries](alerts/2026-05-16-open-webui-rag-ssrf-and-knowledge-boundary-batch-ghsa.md#august-4-follow-up-normalize-transition-addresses-and-intercept-every-browser-request)
+- [Open WebUI OAuth-client and terminal-preview origin boundaries](alerts/2026-05-16-open-webui-auth-session-and-api-authorization-boundary-batch-ghsa.md#august-4-follow-up-bind-bearer-proofs-to-the-client-and-preview-origin)
+- [Open WebUI alternate image path and message-authorship checks](alerts/2026-05-08-open-webui-model-channel-and-knowledge-boundary-batch-ghsa.md#august-4-follow-up-alternate-feature-paths-and-message-authorship)
 - [Notebook, data-server, OPC UA, and proxy trust boundaries](alerts/2026-08-04-notebook-data-opcua-proxy-boundaries-ghsa.md)
 - [ASUSTOR privileged IPC and WordPress object-authority boundaries](alerts/2026-08-04-asustor-wordpress-authority-boundaries-ghsa.md)
 - [Static firmware TLS-key fingerprint workflow](methodology/weak-public-key-recon.md#static-firmware-key-follow-up)
 - [Zyxel ZLD configuration-file traversal validation](alerts/2026-08-04-node-wildfly-rocketchat-zyxel-boundaries-ghsa.md#6-bind-appliance-configuration-execution-to-the-approved-file-root)
 - [LINE Android profile-template render boundary](alerts/2026-08-04-sensor-cms-trust-boundaries-ghsa.md#4-trace-mobile-profile-templates-to-the-final-script-authority)
 - [Node.js proxy/SQLite, WildFly, Rocket.Chat, and Zyxel appliance boundaries](alerts/2026-08-04-node-wildfly-rocketchat-zyxel-boundaries-ghsa.md)
-- [Sensor-proxy controller, CMS, and mobile profile-render boundaries](alerts/2026-08-04-sensor-cms-trust-boundaries-ghsa.md)
-- [Data workflow, AI corpus, command-wrapper, and device-adoption boundaries](alerts/2026-08-03-data-workflow-device-trust-boundaries-ghsa.md)
-- [Python `cryptography` wildcard name-constraint differential](alerts/2026-08-03-bouncy-castle-crypto-policy-boundaries-ghsa.md#python-cryptography-name-constraint-and-path-cost-follow-up)
 
 
 

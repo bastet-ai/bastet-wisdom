@@ -4,9 +4,9 @@ title: Flowise workspace, runtime, and credential-authority boundaries
 
 # Flowise workspace, runtime, and credential-authority boundaries
 
-Twenty-one Flowise advisories published on August 4 expose a useful low-code/agent-platform review pattern: a flow-builder permission or public prediction route is not authority over every workspace file, flow type, runtime loader, child-process environment, execution-context property, outbound destination, OAuth credential, integration history, or billing object that a later component can select. Validate each edge independently with disposable objects and recorder-only sinks.
+Twenty-six Flowise advisories published on August 4 expose a useful low-code/agent-platform review pattern: a flow-builder permission or public prediction route is not authority over every workspace file, flow type, runtime loader, child-process environment, execution-context property, outbound destination, OAuth credential, integration history, execution record, provider-funded feature, or billing object that a later component can select. Validate each edge independently with disposable objects and recorder-only sinks.
 
-The records list `flowise <= 3.1.2` as affected and `3.1.3` as the first patched release. The JavaScript sandbox and MCP environment-bypass records also list `flowise-components <= 3.1.2` as affected and `3.1.3` as fixed. Confirm the package-specific ranges in each advisory rather than assuming one range covers every server and component path.
+Most records list `flowise <= 3.1.2` as affected and `3.1.3` as the first patched release. The private-chatflow TTS record instead lists `flowise <= 3.1.3` as affected and `3.1.4` as fixed. The JavaScript sandbox, MCP environment-bypass, and prompt-to-Python records also identify `flowise-components` ranges. Confirm the package-specific range in each advisory rather than assuming one release covers every server and component path.
 
 Primary sources:
 
@@ -30,7 +30,12 @@ Primary sources:
 - CSV Agent data-URI source interpolation [GHSA-4j8x-x6v7-w9rq / CVE-2026-69264](https://github.com/advisories/GHSA-4j8x-x6v7-w9rq);
 - S3 document-loader object-key traversal [GHSA-88pr-878c-24wf](https://github.com/advisories/GHSA-88pr-878c-24wf);
 - runtime-variable permission bypass [GHSA-8r8h-6vcc-xhrv / CVE-2026-70471](https://github.com/advisories/GHSA-8r8h-6vcc-xhrv); and
-- Pyodide validator Unicode-normalization bypass [GHSA-52fh-8v99-63c2 / CVE-2026-70470](https://github.com/advisories/GHSA-52fh-8v99-63c2).
+- Pyodide validator Unicode-normalization bypass [GHSA-52fh-8v99-63c2 / CVE-2026-70470](https://github.com/advisories/GHSA-52fh-8v99-63c2);
+- unauthenticated OAuth refresh-token response [GHSA-qgvm-j2hm-6m38 / CVE-2026-70478](https://github.com/advisories/GHSA-qgvm-j2hm-6m38);
+- CSV Agent prompt-to-Python validator bypass [GHSA-5xvg-pmgg-3mxr / CVE-2026-70477](https://github.com/advisories/GHSA-5xvg-pmgg-3mxr);
+- cross-tenant subscription selector [GHSA-gmmw-qg98-6j6p / CVE-2026-70476](https://github.com/advisories/GHSA-gmmw-qg98-6j6p);
+- unauthenticated private-chatflow TTS credential use [GHSA-8gj2-2cvc-6xx7](https://github.com/advisories/GHSA-8gj2-2cvc-6xx7); and
+- execution-update authorization gap [GHSA-fm2f-4339-4p2f / CVE-2026-70475](https://github.com/advisories/GHSA-fm2f-4339-4p2f).
 
 !!! warning "Disposable Flowise labs and inert recorders only"
     Use affected and corrected local instances, two synthetic workspaces, fake API keys and OAuth credentials, owned HTTP listeners, package indexes, and S3-compatible buckets, synthetic flows/CSV/SQLite/history fixtures, mocked payment-provider objects, and patched file/module/process/delete/provider loaders. Never enumerate customer or credential IDs, retrieve billing records or real integration histories, capture real OAuth secrets, delete flows or files, target metadata or internal services, deserialize unknown data, install an unknown package, load unknown JavaScript, or execute a command.
@@ -58,6 +63,11 @@ Primary sources:
 | CSV/Pyodide validator | builder may provide CSV/node data | raw data-URI segment or Unicode-normalized identifier changes generated Python | inert marker changes AST or affected/fixed validator decision |
 | S3 document loader | builder may read one owned bucket prefix | object key is joined to a local temporary directory | escaped marker reaches denied write-path recorder |
 | Custom-function variables | role may run a function without `variables:view` | runtime injects all workspace/static environment-backed variables | random synthetic variable appears in sandbox-input recorder |
+| OAuth refresh response | public route may initiate one refresh by credential ID | provider token response is returned to an unauthenticated caller | fake access-token marker reaches response projector |
+| CSV Agent LLM output | caller may ask a question about one CSV | generated Python passes a token blacklist and reaches host-capable Pyodide | inert AST marker reaches denied evaluator/bridge recorder |
+| Subscription update | organization member may manage its own plan | caller-supplied subscription ID selects another tenant's provider object | synthetic B subscription reaches no-op provider under A |
+| Text-to-speech generation | public route may serve a public chatflow | arbitrary chatflow ID selects a private flow's stored provider authority | private-flow fake key reaches mocked TTS dispatch |
+| Execution update | authenticated user may access some execution operations | update route omits operation permission and accepts caller-selected execution ID | foreign-role synthetic execution reaches no-op update recorder |
 
 ## 1. Diff feature gates, permissions, and storage scope
 
@@ -375,3 +385,44 @@ require no followed parent component escapes through a symlink
 ```
 
 A strong bounded positive is **owned object key -> canonical target leaves the temporary root -> denied write recorder receives the outside marker**. Record cleanup targets separately; never allow the loader to create, overwrite, or delete the canary. Generalize this check to cloud prefixes, ZIP/TAR members, uploaded filenames, Git trees, and model artifacts that are materialized locally.
+
+## 16. Separate OAuth route reachability from token response projection
+
+The later refresh advisory adds a stronger final edge to the earlier OAuth route finding: the public refresh handler returned the provider's `access_token` structure to its caller. Prove this without obtaining or minting a usable token.
+
+1. Configure one synthetic OAuth credential against an owned provider stub. Use random strings that no real provider will accept.
+2. Have the stub return a JSON object with a one-time `access_token` canary and harmless expiry fields.
+3. Compare no session, workspace A owner, workspace B user, malformed ID, and nonexistent ID requests.
+4. Record route-auth, credential owner, decrypt decision, provider destination, response field names, and whether the canary reaches the response serializer. Store only a hash/presence bit for the canary.
+
+A bounded positive is **no session -> valid synthetic credential ID -> owned provider receives the fake refresh fields -> fake access-token marker reaches the unauthenticated response**. This is distinct from a response that merely says “credential not found”: that proves route reachability, not token disclosure. Never use a real client secret, refresh token, or provider account.
+
+## 17. Treat LLM-produced code as untrusted compiler input
+
+The new CSV Agent record shows that an LLM response passed a regex blacklist and then reached Pyodide with host interfaces available. Do not replay published bypass strings or execute a command. Replace `runPythonAsync`, import hooks, filesystem calls, and host bridges with recorders that deny use.
+
+Build a corpus of harmless programs that exercise aliases, concatenated identifiers, attribute lookup, decorators, dataframe expression APIs, Unicode normalization, and syntax nesting, but whose only intended effect is to emit a random AST marker. For each case, capture the prompt/input provenance, raw model text, normalized source, validator result, parsed AST node classes, selected dataframe APIs, and first denied capability. Compare deterministic mocked model output on 3.1.2 and 3.1.3 before trying nondeterministic prompt injection.
+
+The reportable transition is **untrusted model output -> validator accepts a security-relevant syntax class outside the documented dataframe subset -> denied evaluator or host-bridge recorder is reached**. Keep prompt influence, validator bypass, evaluator reachability, and host capability as separate edges. No shell, network, package, or host-file payload is needed.
+
+## 18. Bind provider-funded operations to the owning object
+
+Subscription updates and text-to-speech generation are the same confused-deputy pattern at different authentication levels. A caller can request an operation, but the server must derive the Stripe-style subscription or TTS credential from an object the caller is authorized to use.
+
+Use mocked providers only:
+
+| Caller | Selected object | Mocked operation | Secure result |
+| --- | --- | --- | --- |
+| organization A member | A subscription | no-op plan/seat update | allowed control |
+| organization A member | B subscription | no-op plan/seat update | denied before provider call |
+| no session | public flow A | fake TTS dispatch | allowed only if public TTS is an intended feature |
+| no session | private flow B | fake TTS dispatch | denied before credential lookup/decrypt |
+| B owner | private flow B | fake TTS dispatch | allowed authenticated control |
+
+Use random, non-provider-shaped IDs and marker-only provider adapters. Do not change a plan, quantity, quota, or generate billable audio. Capture principal, active organization/workspace, requested object ID, resolved owner/public flag, credential-decrypt decision, and mocked operation. A strong finding stops at **A/no session selects B -> B's fake provider authority reaches the no-op adapter**.
+
+## 19. Authorize execution mutations before resolving update data
+
+For the execution update route, seed two synthetic execution records with marker-only state and use roles with `executions:view`, `executions:delete`, unrelated permission, and no execution permission. Replace persistence with a recorder that logs the requested ID and changed field names, then aborts.
+
+Test own and foreign-workspace IDs, omitted IDs, bulk-shaped bodies, immutable owner/workspace fields, and state/data metadata fields. The secure route must check `executions:update`, bind the object to the active workspace, and apply an explicit mutable-field schema before the update sink. A bounded positive is **role lacking update authority -> known synthetic execution ID -> no-op update recorder receives changed fields**. Never alter retained workflow history or place prompts, secrets, customer data, or executable content in the fixture.

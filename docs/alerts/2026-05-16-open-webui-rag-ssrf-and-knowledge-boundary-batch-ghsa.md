@@ -1,6 +1,6 @@
 # Open WebUI RAG, redirect-hop SSRF, and knowledge-boundary checks
 
-Sources: GitHub Security Advisories updates on 2026-05-15, with redirect-following details refreshed on 2026-05-28, Playwright loader coverage added on 2026-06-18, and image-edit blind SSRF coverage added on 2026-07-07.
+Sources: GitHub Security Advisories updates on 2026-05-15, with redirect-following details refreshed on 2026-05-28, Playwright loader coverage added on 2026-06-18, image-edit blind SSRF coverage added on 2026-07-07, and browser/NAT64 request-path coverage added on 2026-08-04.
 
 This Open WebUI-heavy wave is durable because it shows how RAG, file attach, vector-search, web-fetch, image-load, chat-completion image inlining, and social-card image generation features collapse separate trust zones when URL validation, object ownership, and collection routing are not enforced at the final use site. Treat every retrieval object, redirect, vector collection, knowledge-base identifier, and model-message URL as attacker-controlled until the exact worker that dereferences it revalidates ownership and destination.
 
@@ -17,6 +17,9 @@ This Open WebUI-heavy wave is durable because it shows how RAG, file attach, vec
 - **Open WebUI has Knowledge Base Destruction and RAG Poisoning via Unauthorized Collection Overwrite** — [GHSA-7r82-qhg4-6wvj](https://github.com/advisories/GHSA-7r82-qhg4-6wvj) / CVE-2026-44554 (high).
 - **Open WebUI: SSRF Protection Bypass in Playwright Web Loader via HTTP Redirects** — [GHSA-jrfp-m64g-pcwv](https://github.com/advisories/GHSA-jrfp-m64g-pcwv) / CVE-2026-54018 (high).
 - **Open WebUI has Blind Server Side Request Forgery in its Image Edit Functionality** — [GHSA-jgx9-jr5x-mvpv](https://github.com/advisories/GHSA-jgx9-jr5x-mvpv) / CVE-2026-34225 (medium; `open-webui` `<= 0.7.2`, no patched version listed in the advisory at publication time).
+- **Open WebUI NAT64-encoded destination bypass** — [GHSA-8x5v-cpv7-8jjp](https://github.com/advisories/GHSA-8x5v-cpv7-8jjp) / CVE-2026-70485 (high).
+- **Open WebUI Playwright subresource SSRF** — [GHSA-w2rx-84hp-gg95](https://github.com/advisories/GHSA-w2rx-84hp-gg95) / CVE-2026-70479 (high).
+- **Open WebUI Vega/Vega-Lite browser-side request proxy** — [GHSA-rffm-9q57-q649](https://github.com/advisories/GHSA-rffm-9q57-q649) / CVE-2026-70480 (medium).
 - **nuxt-og-image SSRF — bypass of GHSA-pqhr-mp3f-hrpp / v6.2.5 fix (IPv6 + redirect)** — [GHSA-c2rm-g55x-8hr5](https://github.com/advisories/GHSA-c2rm-g55x-8hr5) / CVE-2026-44589 (low).
 
 ## Operator triage
@@ -78,3 +81,29 @@ Report this as **image-edit URL-to-backend blind SSRF**. The reusable lesson is 
 - Object authorization belongs at the dereference point: file IDs, collection names, RAG search results, folder knowledge entries, and attach endpoints must all re-check owner, workspace, and share grants.
 - Vector-store collection names and metadata are security boundaries. Prefix by tenant/user, reject caller-supplied collection targets, and deny destructive operations unless the server resolved the object from an authorized parent.
 - Unauthenticated configuration endpoints should never disclose retrieval providers, internal network targets, embedding settings, or storage layout that make SSRF/RAG attacks easier.
+
+## August 4 follow-up: normalize transition addresses and intercept every browser request
+
+The 0.11.0 advisories add three reusable differentials. First, an IPv6 address can be globally routed while embedding a non-global IPv4 destination that NAT64 translates. Second, validating a Playwright `document` request does not validate the page's fetch/XHR/image/WebSocket/service-worker traffic. Third, Vega specifications execute in the viewer's browser, so they bypass server-side URL policy entirely.
+
+Use an isolated lab with an owned public redirector, a synthetic private canary service, a browser container on a test NAT64 network, and a browser profile with no real sessions. Never substitute cloud metadata, production loopback services, or internal admin APIs.
+
+### Destination-class matrix
+
+Record the submitted URL, parsed host, DNS answers, literal and unwrapped address, policy classification, redirect hop, browser resource type, and final socket peer. Compare:
+
+- ordinary public IPv4/IPv6 controls;
+- direct synthetic private/loopback addresses;
+- IPv4-mapped IPv6 and NAT64 encodings of the same owned canary;
+- an owned public page that issues document, fetch/XHR, image, font, WebSocket, and service-worker requests to the canary; and
+- redirects between two owned public authorities before the canary.
+
+A NAT64 positive is **literal IPv6 passes policy -> transport recorder shows its embedded IPv4 maps to the denied canary**. A Playwright positive is **top-level public document passes -> a non-document resource reaches the canary without the same destination decision**. Confirm the network actually provides NAT64 before attributing a failed/accepted string to reachability.
+
+### Browser-renderer matrix
+
+For Vega/Vega-Lite, post a harmless chart to a two-user shared lab channel. Use only an owned callback and a same-origin canary endpoint containing a random non-sensitive marker. Compare inline `data.values`, `data.url`, image-mark URLs, protocol-relative forms, redirects, and parser-normalized URLs. Capture the chart spec, browser network log, origin/CORS decision, and whether response bytes become chart data.
+
+The report should distinguish **request-only browser proxying** from **response read**: a cross-origin GET may beacon without exposing its body, while a same-origin or permissive-CORS endpoint may become readable. Do not call this server-side SSRF, and do not use a victim browser with access to real internal services.
+
+Open WebUI lists 0.11.0 as the first patched release for these three records. Compare the same fixtures on the affected and fixed build: corrected browser loading should validate every request/redirect, block service workers and outbound WebSockets where they cannot be validated, unwrap standardized transition encodings before policy checks, and restrict chart loaders to inline or explicitly same-origin resources.

@@ -1,6 +1,6 @@
 # Open WebUI auth, session, and API authorization-boundary batch
 
-Sources: GitHub Security Advisories updates on 2026-05-15.
+Sources: GitHub Security Advisories updates on 2026-05-15, with OAuth client-binding and terminal-preview origin follow-ups added on 2026-08-04.
 
 This batch is durable because it is not one bug class: it is the same authorization mistake repeated across tools, shared chat, background tasks, completions, channels, collaborative documents, folders, LDAP/OAuth bootstrap, Socket.IO sessions, and API-key handling. Client-visible role, read permission, shared-chat state, or endpoint restrictions are not authorization unless each mutation and backend worker enforces the intended subject-object-action tuple.
 
@@ -22,6 +22,8 @@ This batch is durable because it is not one bug class: it is the same authorizat
 - **Open WebUI: Stale Admin Role in Socket.IO Session Pool Enables Post-Demotion Cross-User Note Access** — [GHSA-45m8-cpm2-3v65](https://github.com/advisories/GHSA-45m8-cpm2-3v65) / CVE-2026-44553 (high).
 - **Open WebUI's Mass Assignment via Pydantic extra='allow' Allows Creating Folders in Other Users' Accounts** — [GHSA-hr43-rjmr-7wmm](https://github.com/advisories/GHSA-hr43-rjmr-7wmm) / CVE-2026-44550 (medium).
 - **Open WebUI has an LDAP Empty Password Authentication Bypass** — [GHSA-2r4p-jpmg-48f4](https://github.com/advisories/GHSA-2r4p-jpmg-48f4) / CVE-2026-44551 (critical).
+- **Open WebUI OAuth token exchange accepts tokens minted for another client** — [GHSA-rq84-p6rr-vf89](https://github.com/advisories/GHSA-rq84-p6rr-vf89) / CVE-2026-70482 (high).
+- **Open WebUI terminal file preview collapses iframe origin isolation** — [GHSA-3xpf-xq7r-v8c5](https://github.com/advisories/GHSA-3xpf-xq7r-v8c5) / CVE-2026-70486 (high).
 
 ## Operator triage
 
@@ -37,3 +39,13 @@ This batch is durable because it is not one bug class: it is the same authorizat
 - API keys are principals, not bypass tokens. Endpoint restrictions must be checked after all alternate header names, compatibility routes, and proxy/pass-through paths normalize credentials.
 - First-user/bootstrap logic needs a transaction or one-time server-side lock; external identity providers do not make race-prone admin creation safe.
 - Mass assignment protections should default to reject extra fields and derive owner/workspace from authenticated server context, never from caller JSON.
+
+## August 4 follow-up: bind bearer proofs to the client and preview origin
+
+The token-exchange record applies only when `ENABLE_OAUTH_TOKEN_EXCHANGE` is enabled. A successful provider `userinfo` call proves that a token is valid for a user; it does not prove that the token was minted for Open WebUI's OAuth client. Test this with a mock OIDC provider, two synthetic client IDs, and one disposable subject. Mint inert test tokens for the same subject under each client and record the provider's `client_id`, subject, Open WebUI trust-list decision, and session-issuance result.
+
+The secure matrix is: own client accepted, foreign client rejected, invalid token rejected, disallowed-domain subject rejected, and no session created from a token whose client cannot be established. Do not obtain a real user's token or target a public provider. The advisory notes that 0.11.0 requires a correctly configured `OAUTH_TOKEN_EXCHANGE_TRUSTED_CLIENT_IDS`; providers without usable RFC 7662 introspection have no safe token-exchange configuration, so test the actual deployment mode rather than treating upgrade alone as proof.
+
+The terminal-preview record is a separate browser-origin chain. It requires a configured terminal server and a user able to place a file there. Use two disposable users, an HTML file containing only a script that changes a visible random DOM marker, and a terminal proxy with fake headers. Never read `localStorage`, cookies, or session tokens. Compare the `serveUrl` and `srcdoc` branches, `iframeSandboxAllowSameOrigin` on/off, restrictive synthetic CSP on/off, and victim/non-victim origins.
+
+A bounded positive is **terminal-served preview loads under the application origin with both `allow-scripts` and `allow-same-origin` -> inert child script changes the parent marker automatically**. Capture iframe URL/origin, sandbox tokens, CSP, event that opened the preview, and parent-access decision. Open WebUI lists 0.11.0 as fixed; the default fixed path should give the served document an opaque origin unless same-origin behavior was explicitly enabled.

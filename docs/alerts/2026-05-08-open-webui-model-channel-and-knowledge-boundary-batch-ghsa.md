@@ -101,3 +101,14 @@ Five more Open WebUI advisories extend the same 0.10.0 comparison fixture:
 5. For the web-fetch filter, use owned public hosts named to exercise exact host, subdomain, suffix-collision, and path-suffix cases. This issue does not defeat Open WebUI's separate default non-global-IP guard; do not claim private-address SSRF without independently proving that guard is disabled or bypassed.
 
 Report the transitions narrowly: **deferred decode -> upstream path escape**, **unencoded session path -> query identity injection**, **authorized wrapper -> unauthorized selected model**, **read-only file relation -> write decision**, or **raw URL suffix -> wrong host-policy result**. Affected terminal/file paths begin in 0.9.6 and are fixed in 0.10.0; the arena path affects 0.8.12 through pre-0.10.0 builds.
+
+## August 4 follow-up: alternate feature paths and message authorship
+
+Two 0.11.0 advisories add an operation-path test to the existing channel/model fixture:
+
+- [GHSA-g423-grf7-98rv / CVE-2026-70484](https://github.com/advisories/GHSA-g423-grf7-98rv): a caller denied image generation can set the legacy chat-completion feature flag and still reach the configured image provider.
+- [GHSA-mj5r-jf49-m3w7 / CVE-2026-70481](https://github.com/advisories/GHSA-mj5r-jf49-m3w7): standard-channel write access is accepted as authority to update or delete another member's message.
+
+Use a fake image provider that only records dispatch and a standard channel with two disposable members and marker-only messages. Compare the direct image routes, native function calling, and legacy chat-completion path with image generation globally disabled/enabled and per-user allowed/denied. The secure result is the same permission decision at every dispatch path; a client `features` object is intent, not authorization. Do not generate an image or spend provider quota.
+
+For channels, compare own-message and other-member update/delete across standard, group, direct-message, read-only, and writable channels. Replace update/delete persistence with no-op recorders. Capture channel type, membership grant, operation, message author, caller, and sink reachability. A bounded positive is **ordinary standard-channel writer -> victim marker message ID -> no-op update/delete sink runs without an authorship decision**. Do not delete or forge retained messages, and keep the nearby cross-chat generation-cancellation record out of this workflow because it provides only availability impact.
