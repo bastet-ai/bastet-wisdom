@@ -4,19 +4,25 @@ title: Ghost fetch, upload, import, and offer-state boundaries
 
 # Ghost fetch, upload, import, and offer-state boundaries
 
-Four Ghost advisories published on August 4 provide a reusable CMS test sequence: normalize the destination actually reached, derive a file's served representation from bytes rather than caller metadata, sanitize imported rich text at the final content boundary, and revalidate mutable business-object state when an offer is redeemed.
+Ghost advisories published on August 4 provide a reusable CMS test sequence: normalize the destination actually reached, enumerate every feature that performs the fetch, constrain archive and generated-backup paths, rotate authentication state, project only role-appropriate fields, sanitize remote and imported content at the final render boundary, and revalidate mutable commerce state at the state-changing sink.
 
 Primary sources:
 
 - IPv4-mapped IPv6 SSRF-filter bypass [GHSA-wvp2-4qqp-4h3r / CVE-2026-53944](https://github.com/advisories/GHSA-wvp2-4qqp-4h3r);
 - Admin API upload `Content-Type` spoofing on S3/GCS backends [GHSA-944x-pm95-3jpr / CVE-2026-53948](https://github.com/advisories/GHSA-944x-pm95-3jpr);
-- Universal Import post-content XSS [GHSA-2gx6-7gx2-wwcf / CVE-2026-70588](https://github.com/advisories/GHSA-2gx6-7gx2-wwcf); and
-- archived subscription-offer redemption [GHSA-4wx2-7gvj-qfq3 / CVE-2026-70589](https://github.com/advisories/GHSA-4wx2-7gvj-qfq3).
+- Universal Import post-content XSS [GHSA-2gx6-7gx2-wwcf / CVE-2026-70588](https://github.com/advisories/GHSA-2gx6-7gx2-wwcf);
+- archived subscription-offer redemption [GHSA-4wx2-7gvj-qfq3 / CVE-2026-70589](https://github.com/advisories/GHSA-4wx2-7gvj-qfq3);
+- DNS-rebinding external-fetch SSRF [GHSA-ch52-px8q-f22j / CVE-2026-53945](https://github.com/advisories/GHSA-ch52-px8q-f22j), Mobiledoc image-dimension SSRF [GHSA-g366-23fw-ggp6 / CVE-2026-53946](https://github.com/advisories/GHSA-g366-23fw-ggp6), and staff image-fetch SSRF [GHSA-gcvv-72q8-9v76 / CVE-2026-70591](https://github.com/advisories/GHSA-gcvv-72q8-9v76);
+- database-backup path traversal [GHSA-cj62-hvv2-2q5h / CVE-2026-70592](https://github.com/advisories/GHSA-cj62-hvv2-2q5h) and theme-upload path traversal [GHSA-cjc9-q5gf-327p / CVE-2026-70593](https://github.com/advisories/GHSA-cjc9-q5gf-327p);
+- Ghost Admin session fixation [GHSA-7mpp-r37j-x5wh / CVE-2026-70594](https://github.com/advisories/GHSA-7mpp-r37j-x5wh) and blind password-hash disclosure [GHSA-jm22-3w23-5q7w / CVE-2026-70590](https://github.com/advisories/GHSA-jm22-3w23-5q7w);
+- ActivityPub client rendering XSS [GHSA-xpp7-93x6-v29m / CVE-2026-53950](https://github.com/advisories/GHSA-xpp7-93x6-v29m);
+- member-existence response discrepancy [GHSA-chgm-3698-jm42 / CVE-2026-53947](https://github.com/advisories/GHSA-chgm-3698-jm42); and
+- donation-to-paid-gift-membership value mismatch [GHSA-xm43-3m56-w3wf / CVE-2026-59817](https://github.com/advisories/GHSA-xm43-3m56-w3wf).
 
-The SSRF and upload records list Ghost 6.21.1 as the first fixed release. The import and offer-state records list 6.54.1. Confirm the exact affected range in each advisory; do not infer that one patch level fixes all four paths.
+The records span several independently patched release lines. The API package metadata lists 6.21.1 for the mapped-address upload-era wave, 6.21.2 for DNS rebinding, Mobiledoc fetches, and member-response behavior, 6.44.0 for the donation/gift flow, and 6.54.1 for import, offer, filesystem, session, general image-fetch, and field-projection issues. `@tryghost/activitypub` is independently fixed in 3.1.0. Confirm the exact affected range in each advisory; prose and package metadata differ by one patch number in some records, so do not infer that one Ghost version fixes every path.
 
 !!! warning "Owned Ghost lab and inert canaries only"
-    Use a disposable site, synthetic members/offers/posts, owned network listeners, and a test S3/GCS-compatible bucket on an isolated origin. Never target metadata or internal production services, upload executable content, run script, redeem a paid offer, or involve real members, billing instruments, staff sessions, or production media.
+    Use a disposable site, synthetic staff/members/offers/posts, owned network listeners, patched file/session/API sinks, and a test S3/GCS-compatible bucket on an isolated origin. Never target metadata or internal production services, overwrite files, retrieve password hashes, upload executable content, run script, redeem a paid offer, or involve real identities, billing instruments, sessions, or production media.
 
 ## 1. Compare policy address to transport address
 
@@ -56,9 +62,57 @@ Create a zero-value synthetic offer and one disposable member. Record offer iden
 
 The security decision belongs at the state-changing sink, not only when the offer link was issued or rendered. Capture member, offer ID, current server-side state, product/tier binding, requested benefit, and whether the no-op subscription mutation recorder ran. A bounded positive is **previously valid link or known ID -> offer archived -> final redemption still reaches the mutation recorder**. Do not claim price or privilege impact unless the synthetic fixture proves the exact benefit that would have been applied.
 
+## 5. Inventory fetch sinks, then bind every connection
+
+Do not stop after validating one generic URL helper. Build a feature-to-sink map for image cards with missing dimensions, Admin image fetches, oEmbed, webmentions, recommendations, previews, imports, and any background re-render or migration job. Route each feature to an owned hostname whose authoritative DNS service can return an owned public address first and an isolated lab-private canary later.
+
+Record URL parsing, every DNS answer and TTL, policy decision, redirect hop, connection-time resolution, and final socket peer. Run controls where the address remains public, starts private, changes public-to-private, changes between redirect hops, or returns mixed A/AAAA answers. A bounded positive is **feature accepts a public DNS answer -> later connection resolves or selects the denied canary -> owned canary records the request**. Do not probe metadata, loopback, or a real internal service. A timeout or DNS log without a canary HTTP request does not prove destination reachability.
+
+For stored image cards, test both create-time and later re-render behavior. The key invariant is that a URL approved when content was stored does not remain trusted when a worker fetches it later; the final peer must be classified for every connection.
+
+## 6. Separate archive-member paths from generated-backup paths
+
+Use a disposable content root containing only marker files and replace the final file writer with a canonical-path recorder. Exercise two independent paths:
+
+- theme archives with POSIX and Windows separators, absolute names, dot segments, duplicate entries, symlink members, and symlink-parent directories; and
+- database-backup names or selectors with dot segments, absolute forms, encoded separators, normalization collisions, and pre-existing symlink parents.
+
+Capture the raw archive member or backup selector, decoded value, normalized relative path, intended root, canonical parent, final candidate, and allow/deny decision. A reportable result is **authorized staff input -> final candidate escapes the intended root -> patched writer records an outside-root write attempt**. Never overwrite a real Ghost file, configuration, theme, database, or startup artifact. Keep theme extraction and backup generation as separate findings unless one input demonstrably reaches both sinks.
+
+## 7. Treat federated content as hostile at the final render
+
+Stand up an owned ActivityPub fixture that emits a synthetic actor and post with inert structural markers in one field at a time. Trace the ActivityStreams object through signature/fetch acceptance, normalization, persistence, API serialization, list/card views, detail view, notifications, and any rich-text renderer. Disable script and replace dangerous DOM APIs with recorders.
+
+Vary HTML-like text, encoded markup, link/media attributes, malformed nesting, unexpected field types, and content that is sanitized before being combined with local markup. A bounded positive is **owned remote field -> accepted federated object -> final client inserts a disallowed element or event-capable attribute into the DOM**. Do not execute JavaScript or access storage. Report the exact remote field and final sink; merely receiving attacker-authored HTML over ActivityPub is not XSS.
+
+## 8. Verify session identity changes at authentication boundaries
+
+Session fixation requires a separate same-origin prerequisite, so use only a lab helper that can set a known pre-auth session identifier. Record identifier hashes—not cookie values—before login, after successful Admin login, after privilege or MFA transitions, and after logout. Compare fresh login, failed login, concurrent tabs, remembered devices, and an already-authenticated session.
+
+The secure invariant is **authentication changes principal or assurance level -> old identifier becomes invalid -> new identifier is issued**. A bounded positive is **known pre-auth identifier survives successful login and authorizes the synthetic Admin marker endpoint**. Do not claim remote exploitability without independently proving how an attacker can plant or learn that identifier on the same origin, and never capture a real staff session.
+
+## 9. Test role-aware field projection without collecting hashes
+
+Create two synthetic staff users with random generated passwords, then patch the serializer or response logger to replace any password-derived field value with `[REDACTED:PRESENT]`. As the lower-role user, enumerate staff list/detail endpoints, include/fields/filter expansions, sort/export paths, nested relations, error responses, and alternate API versions.
+
+Record route, caller role, target identity, requested projection, response schema, and only whether a restricted field was present. The bounded positive is **staff-level caller selects another staff object -> serializer marks a password-derived field present**. Do not preserve, compare, crack, or transmit the value. Distinguish object authorization from field authorization: permission to view a staff profile never implies permission to receive authentication material.
+
+## 10. Bind payment amount, purchased object, and granted entitlement
+
+Use a provider stub that accepts only random canary payment tokens and cannot move money. Model donation, paid gift membership, ordinary paid membership, and free membership as distinct server-side products. Vary amount, currency, gift recipient, tier, interval, product/price ID, checkout return state, duplicate callbacks, and client-supplied metadata.
+
+At the no-op entitlement recorder, capture the provider-verified amount/currency, server-selected product, intended recipient, granted tier/duration, and source transaction ID. A strong result is **minimal donation payment succeeds -> callback is treated as a paid gift product -> recorder grants the higher-value membership**. Never use a real card or recipient. A low payment is not a finding unless the server actually binds it to and attempts to grant a stronger synthetic entitlement.
+
+## 11. Compare magic-link responses as structured observations
+
+Seed one existing and one absent synthetic email address. Replay identical sign-in requests while recording status, body schema, header set, redirect, response size class, and bounded latency distribution. Normalize dynamic request IDs and timestamps before diffing. Repeat across JSON, form, localization, malformed-email, rate-limit, and resend paths.
+
+The reportable result is a stable response-class oracle that separates the two synthetic populations; a one-off timing difference is not enough. Do not test real addresses or automate account discovery. Preserve only labels such as `existing-synthetic` and `absent-synthetic`, never the addresses themselves.
+
 ## Reporting boundaries
 
 - Name the exact mismatch: canonical-address class, declared-versus-derived media type, importer-versus-renderer schema, or link-time-versus-redemption-time state.
 - Include affected and corrected build results with identical fixtures.
 - Keep each edge independent. An accepted upload is not XSS without active same-origin rendering; imported markup is not executable without a final active sink; an archived ID being readable is not redemption without a state mutation.
-- Preserve only canary headers, IDs, state transitions, and DOM/parser decisions. Exclude content, tokens, member data, and provider secrets.
+- For the follow-up wave, separate fetch feature from network helper, archive extraction from backup generation, profile visibility from restricted-field projection, donation payment from gift entitlement, and pre-auth session planting from post-login reuse.
+- Preserve only canary headers, identifier hashes, redacted field-presence markers, IDs, state transitions, and DOM/parser decisions. Exclude content, password-derived values, tokens, member data, and provider secrets.
