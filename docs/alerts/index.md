@@ -10,6 +10,7 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Sensor-proxy controller trust and CMS draft/render boundaries](2026-08-04-sensor-cms-trust-boundaries-ghsa.md)
 - [Data workflow, AI corpus, command-wrapper, and device-adoption boundaries](2026-08-03-data-workflow-device-trust-boundaries-ghsa.md)
 - [Python `cryptography` wildcard name-constraint and bounded path-cost follow-up](2026-08-03-bouncy-castle-crypto-policy-boundaries-ghsa.md#python-cryptography-name-constraint-and-path-cost-follow-up)
 - [Python `cryptography` PKCS#7 oracle follow-up](2026-08-03-bouncy-castle-crypto-policy-boundaries-ghsa.md#python-cryptography-pkcs7-oracle-follow-up)

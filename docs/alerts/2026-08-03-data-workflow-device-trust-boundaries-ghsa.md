@@ -15,7 +15,7 @@ Primary sources:
 - DuckDB AWS extension secret-policy bypass [GHSA-g2r8-97m7-62w9 / CVE-2026-58139](https://github.com/advisories/GHSA-g2r8-97m7-62w9);
 - Deloitte AI Assist RAG corpus access [GHSA-85qw-gwgm-xj6w / CVE-2026-57476](https://github.com/advisories/GHSA-85qw-gwgm-xj6w) and inert configuration additions [GHSA-23xg-h5j2-8fcf / CVE-2026-57475](https://github.com/advisories/GHSA-23xg-h5j2-8fcf);
 - Emlog Pro AI transport trust [GHSA-j63f-h5jj-qrf5 / CVE-2026-67598](https://github.com/advisories/GHSA-j63f-h5jj-qrf5);
-- Serverless Devs `s init` command construction [GHSA-rm7q-w9c9-27rj / CVE-2026-51190](https://github.com/advisories/GHSA-rm7q-w9c9-27rj), ClearOS Log Viewer command construction [GHSA-pfmm-hj96-f74x / CVE-2026-67599](https://github.com/advisories/GHSA-pfmm-hj96-f74x), and GL.iNet native-plugin command fields [GHSA-r4vc-wqp8-j499 / CVE-2026-18614](https://github.com/advisories/GHSA-r4vc-wqp8-j499), [GHSA-39jx-5rpr-2f33 / CVE-2026-18616](https://github.com/advisories/GHSA-39jx-5rpr-2f33), and [GHSA-hh6h-4vwh-4vhf / CVE-2026-18615](https://github.com/advisories/GHSA-hh6h-4vwh-4vhf); and
+- Serverless Devs `s init` command construction [GHSA-rm7q-w9c9-27rj / CVE-2026-51190](https://github.com/advisories/GHSA-rm7q-w9c9-27rj), ClearOS Log Viewer command construction [GHSA-pfmm-hj96-f74x / CVE-2026-67599](https://github.com/advisories/GHSA-pfmm-hj96-f74x), and GL.iNet native-plugin command fields [GHSA-r4vc-wqp8-j499 / CVE-2026-18614](https://github.com/advisories/GHSA-r4vc-wqp8-j499), [GHSA-39jx-5rpr-2f33 / CVE-2026-18616](https://github.com/advisories/GHSA-39jx-5rpr-2f33), [GHSA-hh6h-4vwh-4vhf / CVE-2026-18615](https://github.com/advisories/GHSA-hh6h-4vwh-4vhf), [GHSA-j682-xx2h-hv5m / CVE-2026-18684](https://github.com/advisories/GHSA-j682-xx2h-hv5m), [GHSA-frjc-j2mw-rv29 / CVE-2026-18685](https://github.com/advisories/GHSA-frjc-j2mw-rv29), and [GHSA-7892-84cj-c35c / CVE-2026-18686](https://github.com/advisories/GHSA-7892-84cj-c35c); and
 - Omada adoption shared certificates [GHSA-8mhg-76f5-54fp / CVE-2025-15628](https://github.com/advisories/GHSA-8mhg-76f5-54fp), hard-coded trust keys [GHSA-wwx9-ww39-c5vg / CVE-2025-15627](https://github.com/advisories/GHSA-wwx9-ww39-c5vg), predictable session keys [GHSA-5wj2-44xm-2hrq / CVE-2025-15629](https://github.com/advisories/GHSA-5wj2-44xm-2hrq), weak credential protection in transit [GHSA-9469-xx96-p5v2 / CVE-2025-15544](https://github.com/advisories/GHSA-9469-xx96-p5v2), and adoption-race identity binding [GHSA-xmx9-537g-pr66 / CVE-2025-15630](https://github.com/advisories/GHSA-xmx9-537g-pr66).
 
 !!! warning "Disposable systems and inert sinks only"
@@ -132,6 +132,17 @@ The Serverless Devs, ClearOS, and GL.iNet records all describe fields that appea
 5. For GL.iNet, use only a disconnected MT3000 lab and test `s2s.enable_echo_server`, `server.set_peer`, and public-key-generation paths independently. Do not enable listeners, alter WireGuard peers, or persist configuration.
 
 Positive evidence is **structured field -> shell-enabled command string -> recorder shows grammar/argv change -> fixed path uses direct argv plus field-specific validation**. Never execute a shell, invoke `sudo`, or leave an appliance service/configuration changed.
+
+### August 4 GL.iNet RPC-wrapper follow-up
+
+Three adjacent records extend the same MT3000 command-construction audit to `modem.so` profile removal, `modem.so` upgrade configuration, and the `nas-web.add_user` RPC wrapper. Keep these as additional field-to-process paths on this page rather than treating each sparse record as a standalone exploit.
+
+1. Snapshot a disconnected 4.4.5 lab and patch the native-plugin process boundary to record method name, field name, executable, argv boundaries, shell mode, effective user, and persistence attempt, then abort.
+2. Build an RPC inventory from the local UI bundle and plugin schema. Test `remove_profile`, `set_upgrade`, and `nas-web.add_user` independently with valid values, invalid ordinary values, whitespace, quoting, and a harmless metacharacter-plus-random-marker token.
+3. For every request, record authentication state, role, CSRF/session requirement, exact RPC method, parsed argument object, and process-recorder output. The advisory statement that an issue is remotely reachable does not establish unauthenticated reachability.
+4. Restore the snapshot between methods and compare against a corrected firmware build when one is available.
+
+The bounded positive is **structured profile/upgrade/user field -> affected RPC wrapper -> recorder shows the random marker changing shell grammar or argv structure**. Do not remove profiles, initiate upgrades, create NAS users/shares, invoke a command, or retain appliance configuration. Keep endpoint authorization and command construction as separate findings.
 
 ## 6. Treat device adoption as a multi-party identity protocol
 

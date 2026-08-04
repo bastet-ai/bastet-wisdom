@@ -1,0 +1,129 @@
+---
+title: Sensor-proxy controller trust and CMS draft/render boundaries
+---
+
+# Sensor-proxy controller trust and CMS draft/render boundaries
+
+Source: hourly offensive-security scan of GitHub Security Advisories on 2026-08-04. The Camaleon and Microweber records were unreviewed database entries at scan time; confirm the affected revision, route configuration, caller role, and corrected behavior from upstream before reporting.
+
+This wave yields three durable operator patterns:
+
+1. an operator-approved enrollment action does not necessarily authenticate the controller whose response reaches a privileged sensor;
+2. a specialized autosave controller can override a protected parent controller while dropping object scope and authorization; and
+3. input can survive several incomplete filters because each parser sees a different representation before a later HTML sink reparses it.
+
+Primary sources:
+
+- Tenable Sensor Proxy controller trust [GHSA-24h7-mgmp-x4j6 / CVE-2026-18667](https://github.com/advisories/GHSA-24h7-mgmp-x4j6) and [TNS-2026-21](https://www.tenable.com/security/tns-2026-21);
+- Camaleon CMS draft authorization [GHSA-hwrq-jcj5-6vc6 / CVE-2026-67616](https://github.com/advisories/GHSA-hwrq-jcj5-6vc6), [upstream fix](https://github.com/owen2345/camaleon-cms/commit/88ab703b5ac041afb93a9993470aa366093c5311), and [authorization design notes](https://github.com/owen2345/camaleon-cms/pull/1196); and
+- Microweber content-tag rendering [GHSA-793c-7c93-m769 / CVE-2026-67617](https://github.com/advisories/GHSA-793c-7c93-m769) and [research write-up](https://github.com/theopaid/Stored-XSS-via-Content-Tag-Names-Microweber-).
+
+!!! warning "Synthetic controllers, content, and render sinks only"
+    Use a disconnected Sensor Proxy lab, an owned TLS/control endpoint, disposable CMS users and posts, random markers, and patched process/DOM recorders. Never redirect an operational sensor, serve executable controller content, alter production drafts, execute JavaScript, collect sessions or CSRF tokens, or make a browser perform authenticated side effects.
+
+## Boundary map
+
+| Surface | Trusted decision | Detached selector or later interpreter | Safe positive |
+| --- | --- | --- | --- |
+| Sensor enrollment | operator chooses to connect a sensor | remote host identity/content reaches an elevated execution path | owned endpoint plus inert response reaches a patched privileged sink |
+| Camaleon draft create | caller may autosave under post type A | `post_id`, owner fields, and a global draft lookup select another object | draft B reaches a no-op update recorder after authorization only against A/session |
+| Camaleon draft update | caller may edit one draft | global draft ID lookup ignores post type and object policy | foreign synthetic draft reaches update recorder |
+| Microweber tag save | tag text passes method-specific and regex checks | title normalization preserves encoded structure that HTML parsing later revives | inert tag marker becomes an element/attribute in a detached DOM recorder |
+| Microweber render | stored tag is treated as display text | public template output or admin `innerHTML` reparses it as markup | parser creates a harmless marker node without an executable attribute |
+
+## 1. Treat sensor enrollment as privileged remote-code provenance
+
+Tenable states that Sensor Proxy 1.4.1 and earlier could execute code with elevated privileges after an operator was induced to connect the sensor to an attacker-controlled host. The public advisory does not identify the exact protocol message or artifact sink. Do not guess a wire payload from the impact statement. Instrument the lab first.
+
+### Prerequisites
+
+- Sensor Proxy 1.4.1 or an earlier affected build in an isolated disposable VM;
+- Sensor Proxy 1.4.2 as the corrected control;
+- an owned hostname, generated lab CA, and HTTP/TLS response recorder;
+- patched download, archive, package, process, and service-management boundaries that record metadata and abort; and
+- fake enrollment identifiers and credentials with no route to a Tenable production tenant.
+
+### Validation workflow
+
+1. Record the legitimate enrollment flow end to end: configured authority, DNS result, TLS peer identity, redirects, response types, artifact metadata, signature or digest checks, and final privileged sink.
+2. Point only the disposable sensor at the owned endpoint through the normal operator-visible configuration path. Do not use phishing or deceptive UI in the proof.
+3. Vary one binding at a time: hostname, certificate authority, redirect authority, response content type, artifact name, declared digest, and signer identity.
+4. Return inert protocol-shaped responses that contain a random marker but no script, package, shell text, or executable bytes.
+5. At every privileged boundary, record the source authority, authenticated peer, expected signer/digest, selected artifact, effective user, and whether the marker arrived. Abort before write, install, service restart, or process creation.
+6. Repeat the same matrix against 1.4.2.
+
+The strongest bounded positive is **operator selects owned lab host -> sensor accepts insufficiently authenticated controller response -> inert marker reaches a patched elevated install/process sink on 1.4.1 -> 1.4.2 rejects before that sink**. A connection to the owned endpoint alone is not code execution. Report the exact missing binding—TLS peer, redirect authority, artifact signature, digest, or command provenance—that the recorder proves.
+
+## 2. Audit specialized controllers for dropped parent authorization
+
+The Camaleon fix documents four separable failures in the draft autosave path: global draft lookup, missing `authorize!` checks, unvalidated `post_parent`, and ownership reassignment through `user_id`. The parent posts controller protected ordinary mutations, but the specialized drafts controller overrode create/update and did not preserve those decisions.
+
+### Two-user, two-post-type fixture
+
+Create:
+
+- users `author-a` and `author-b` with only ordinary author permissions;
+- post types A and B;
+- one parent post and one draft owned by each user in each post type; and
+- a persistence recorder that captures the selected draft, requested parent, stored post type/owner, changed field names, and authorization object, then rolls back.
+
+Exercise create and update with these selector combinations:
+
+| Session | Route post type | `post_id` or draft ID | Expected |
+| --- | --- | --- | --- |
+| A | A | A-owned object | allowed control |
+| A | A | B-owned object in A | denied by object policy |
+| A | A | object in post type B | denied by post-type scope |
+| A | A | nonexistent parent | rejected without persistence |
+| A | A | A object plus caller-supplied `user_id=B` | ownership remains A |
+
+Capture both the affected and fixed build. A reportable positive is not merely a 2xx response: show **request route is scoped to A -> global lookup selects B's synthetic draft -> no object authorization is recorded -> B reaches the rollback recorder**. Test create and update separately because they take different lookup paths. Do not overwrite real content or publish draft bodies.
+
+### General audit heuristic
+
+When a framework controller inherits a protected CRUD path, search overrides and alternate route families for:
+
+- direct model lookups replacing parent-scoped relations;
+- skipped policy hooks in autosave, draft, preview, clone, import, bulk, or validation actions;
+- caller-supplied owner/parent fields applied after authorization; and
+- `save(validate: false)` or equivalent paths that make authorization the only remaining gate.
+
+Diff the object selected for authorization from the object passed to persistence. That identity comparison is stronger evidence than route status alone.
+
+## 3. Record every parser in stored rich-text and label-like fields
+
+The Microweber record describes a chain in which a GET save route bypasses method-limited middleware, a regex recognizes only one quoted event-attribute shape, title-case normalization leaves numeric entities structurally intact, and two renderers later treat the stored tag as HTML. The durable lesson is representation drift, not a reusable execution payload.
+
+### Inert parser pipeline
+
+Use a disposable admin account and post. Replace the public-template output and admin `innerHTML` assignment with recorders that parse into a detached DOM where scripts, event attributes, URL loads, custom elements, and navigation are disabled.
+
+Submit one random marker per case:
+
+1. plain alphanumeric tag control;
+2. harmless markup-shaped text such as a custom element with only `data-canary`;
+3. the same text with quoted, unquoted, and mixed-case harmless attributes;
+4. numeric-entity encoding of letters in the marker only;
+5. GET, POST, PATCH, and PUT versions where the route accepts them; and
+6. malformed tags that should remain text or be rejected.
+
+At each stage record:
+
+- raw method and decoded parameter value;
+- value after middleware;
+- value after field sanitizer;
+- value after title normalization;
+- exact stored bytes;
+- server-rendered bytes; and
+- detached-DOM node, attribute, and text output for both the public page and admin editor.
+
+A safe positive is **method/representation avoids an earlier filter -> stored bytes retain markup structure -> public or admin sink creates a harmless marker element rather than text**. Do not include event handlers, script URLs, network callbacks, CSRF-token reads, or authenticated requests. If no executable sink is exercised, report trusted markup insertion rather than XSS; if the affected application behavior is confirmed from the upstream record and your inert differential, label the evidence boundary precisely.
+
+## Reporting checklist
+
+- [ ] Advisory review status, exact affected/fixed build, route, role, and feature configuration are recorded.
+- [ ] Sensor evidence identifies the authenticated controller and exact privileged sink; it does not equate a callback with execution.
+- [ ] Camaleon evidence records route parent, requested object, stored owner/post type, authorization object, and persistence object.
+- [ ] Create, update, parent validation, and ownership assignment are tested as independent decisions.
+- [ ] Microweber evidence preserves every intermediate representation and uses a non-executable detached DOM.
+- [ ] No executable controller artifact, shell input, live CMS content, session, CSRF token, or browser side effect appears in evidence.
