@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [HTTP desync research campaigns](methodology/http-desync-research-campaigns.md)
+- [rclone path, symlink, and metadata boundary follow-up](alerts/2026-07-21-rclone-remote-control-boundaries-ghsa.md#august-5-follow-up-untrusted-remote-filesystem-boundaries)
 - [Jenkins and MarkLogic authority-boundary validation](alerts/2026-08-05-jenkins-marklogic-authority-boundaries-ghsa.md)
 - [Langflow provider, MCP, environment, and host-authority follow-up](alerts/2026-06-19-langflow-mailpit-outerbase-miniflux-render-boundaries-ghsa.md#august-5-provider-mcp-environment-and-host-authority-follow-up)
 - [Keycloak CIBA, JWE request-object, and parameter-precedence follow-up](alerts/2026-06-04-keycloak-mlflow-auth-boundary-batch-ghsa.md#august-5-ciba-jwe-request-object-and-parameter-precedence-follow-up)
@@ -16,8 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Template, signing-key, upload, and alternate-route authority boundaries](alerts/2026-08-05-template-key-route-authority-boundaries-ghsa.md)
 - [Ghost filter, caption, and feature-fetch follow-up](alerts/2026-08-04-ghost-fetch-upload-import-offer-boundaries-ghsa.md#august-5-follow-up-filters-captions-and-feature-specific-fetchers)
 - [Workspace, outbound-fetch, object-scope, and interpreter boundaries](alerts/2026-08-05-workspace-fetch-object-interpreter-boundaries-ghsa.md)
-- [AWS Nitro Enclave KMS boundary testing](methodology/aws-nitro-enclave-kms-boundary-testing.md)
-- [Route, trusted-context, and controller-authority boundaries](alerts/2026-08-05-route-context-controller-authority-boundaries-ghsa.md)
+
 
 
 

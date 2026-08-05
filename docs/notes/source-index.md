@@ -7,6 +7,7 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - ProjectDiscovery internal network scanning launch and agent workflow: https://projectdiscovery.io/blog/introducing-internal-network-scanning-see-your-network-the-way-an-attacker-inside-it-would
 - ProjectDiscovery rogue-agent benchmark trajectory case studies: https://projectdiscovery.io/blog/oh-my-rogue-agent
 - ProjectDiscovery offensive-agent behavioral audit and trajectory-integrity methodology: https://projectdiscovery.io/blog/watching-agents-work-a-behavioral-audit-of-offensive-security-llm-runs
+- PortSwigger HTTP Terminator desync-research campaign, protocol-ruler, deterministic evaluation, and discovery-cascade methodology: https://portswigger.net/research/http-terminator
 - Dompdf advisories/source: https://github.com/dompdf/dompdf/security/advisories and https://github.com/dompdf/dompdf
 - Andromeda bytecode C2 research framework: https://github.com/vyrus001/andromeda
 - badkeys weak-key checker and web service: https://github.com/badkeys/badkeys and https://badkeys.info/
@@ -87,7 +88,7 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - NLTK advisories/source: https://github.com/nltk/nltk/security/advisories and https://github.com/nltk/nltk
 - NiceGUI advisories/source: https://github.com/zauberzeug/nicegui/security/advisories and https://github.com/zauberzeug/nicegui
 - Picklescan advisories/source: https://github.com/mmaitre314/picklescan/security/advisories and https://github.com/mmaitre314/picklescan
-- rclone advisories/source: https://github.com/rclone/rclone/security/advisories and https://github.com/rclone/rclone
+- rclone advisories/source, including translated-link, `serve restic`, metadata, and RC error-boundary records: https://github.com/rclone/rclone/security/advisories, https://github.com/advisories/GHSA-cf44-9pgv-m4xc, https://github.com/advisories/GHSA-45pq-889g-fcgh, https://github.com/advisories/GHSA-945v-v9p3-v5xw, https://github.com/advisories/GHSA-gwfq-86j8-7qhv, and https://github.com/rclone/rclone
 - Hugging Face Transformers advisories/source: https://github.com/huggingface/transformers/security/advisories and https://github.com/huggingface/transformers
 - ONNX source/issues: https://github.com/onnx/onnx and https://github.com/onnx/onnx/issues
 - Budibase advisories/source: https://github.com/Budibase/budibase/security/advisories and https://github.com/Budibase/budibase
