@@ -190,3 +190,21 @@ Avoid reporting only "vulnerable version found" unless the affected feature is e
 - GitHub Advisory Database: [GHSA-4x37-hw65-52w8 / CVE-2026-37979](https://github.com/advisories/GHSA-4x37-hw65-52w8)
 - GitHub Advisory Database: [GHSA-p5mv-gj8j-xqgf / CVE-2026-7307](https://github.com/advisories/GHSA-p5mv-gj8j-xqgf)
 - GitHub Advisory Database: [GHSA-67c5-x5mf-rppq / CVE-2026-2611](https://github.com/advisories/GHSA-67c5-x5mf-rppq)
+
+## August 5 CIBA, JWE request-object, and parameter-precedence follow-up
+
+Three reviewed Keycloak updates add protocol-specific paths where an early identity or integrity decision does not survive into token issuance:
+
+- CIBA authentication while an account is temporarily locked [GHSA-q6h7-xxp7-7429 / CVE-2026-9798](https://github.com/advisories/GHSA-q6h7-xxp7-7429);
+- decrypted raw-JSON JWE request objects bypassing the configured signed-request policy [GHSA-p3v8-fm5p-v84h / CVE-2026-9793](https://github.com/advisories/GHSA-p3v8-fm5p-v84h); and
+- HTTP parameter pollution changing which authorization-request value a broadly configured client consumes [GHSA-wcvj-vpvw-9rr5 / CVE-2026-9689](https://github.com/advisories/GHSA-wcvj-vpvw-9rr5).
+
+Use a disposable realm, synthetic confidential client, two canary users, and an owned redirect endpoint. Patch token/session issuance or immediately revoke every canary artifact.
+
+### Protocol decision matrix
+
+1. **CIBA lock state:** establish one successful CIBA control, temporarily lock only the canary account through failed interactive attempts, then replay the same CIBA authentication pattern. Record account lock state, client authentication, CIBA transaction, authentication result, and whether token issuance is reached. Do not brute-force a real account.
+2. **JWE request-object integrity:** configure a client that requires signed request objects. Compare a correctly signed-and-encrypted canary, encrypted raw JSON with no inner signature, modified claims, wrong audience, and an ordinary unsigned request. The positive is raw decrypted claims reaching authorization despite the signature policy; do not forge real identity or payment claims.
+3. **Parameter precedence:** use duplicate authorization parameters whose first and last values point to two owned canary redirect paths. Capture raw query order, Keycloak's parsed multimap, validated value, value forwarded to the client, and the browser's final destination. Broad redirect configuration is a precondition, not proof.
+
+Report **locked account state -> alternate CIBA token path**, **JWE confidentiality -> incorrectly assumed request integrity**, or **duplicate parameter -> validation/consumption disagreement**. Keep tokens redacted and distinguish Keycloak's decision from a downstream client's parameter parser.

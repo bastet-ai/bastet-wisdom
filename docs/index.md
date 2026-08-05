@@ -8,6 +8,9 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Jenkins and MarkLogic authority-boundary validation](alerts/2026-08-05-jenkins-marklogic-authority-boundaries-ghsa.md)
+- [Langflow provider, MCP, environment, and host-authority follow-up](alerts/2026-06-19-langflow-mailpit-outerbase-miniflux-render-boundaries-ghsa.md#august-5-provider-mcp-environment-and-host-authority-follow-up)
+- [Keycloak CIBA, JWE request-object, and parameter-precedence follow-up](alerts/2026-06-04-keycloak-mlflow-auth-boundary-batch-ghsa.md#august-5-ciba-jwe-request-object-and-parameter-precedence-follow-up)
 - [TeamCity agent-polling protocol authority validation](alerts/2026-08-05-teamcity-agent-polling-authority-cve-2026-63077.md)
 - [Electron renderer, session, protocol, and platform-authority boundaries](alerts/2026-08-05-electron-renderer-session-protocol-authority-boundaries-ghsa.md)
 - [Template, signing-key, upload, and alternate-route authority boundaries](alerts/2026-08-05-template-key-route-authority-boundaries-ghsa.md)
@@ -15,9 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Workspace, outbound-fetch, object-scope, and interpreter boundaries](alerts/2026-08-05-workspace-fetch-object-interpreter-boundaries-ghsa.md)
 - [AWS Nitro Enclave KMS boundary testing](methodology/aws-nitro-enclave-kms-boundary-testing.md)
 - [Route, trusted-context, and controller-authority boundaries](alerts/2026-08-05-route-context-controller-authority-boundaries-ghsa.md)
-- [Signed-request, object-scope, and WordPress authority boundaries](alerts/2026-08-05-signed-request-object-scope-wordpress-authority-boundaries-ghsa.md)
-- [CPython archive relocation and platform-path validation](best-practices/archive-extraction-symlink-traversal.md#cpython-relocation-and-platform-path-matrix)
-- [Odysseus embedding endpoint authority boundaries](alerts/2026-08-05-odysseus-embedding-endpoint-authority-boundaries-ghsa.md)
 
 
 

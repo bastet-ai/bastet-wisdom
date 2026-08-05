@@ -172,3 +172,22 @@ Three additional IBM Langflow records extend the existing file and two-user vect
 Reuse the FAISS fixture above, but record both `persist_directory` and `collection_name` as authority-bearing selectors. Establish that user B cannot discover user A's namespace through normal list/UI paths; then submit the already known synthetic pair through B's own flow. Prove read and write independently with one random owner marker and one reversible `POISON-CANARY` record. Include mismatched directory/collection pairs, nonexistent values, same-user values, wrong workspace, and fixed-build controls.
 
 Report **caller-controlled Chroma storage pair -> owner binding omitted -> synthetic cross-user vector returned or persisted**. Do not claim arbitrary filesystem access unless the path itself escapes the configured Chroma root and a separate canary proves that edge.
+
+## August 5 provider, MCP, environment, and host-authority follow-up
+
+Nine IBM Langflow OSS records covering 1.0.0 through 1.10.3 extend the same file, outbound-fetch, and MCP-launch methods. Primary IBM bulletins include [node 7282147](https://www.ibm.com/support/pages/node/7282147) and [node 7282650](https://www.ibm.com/support/pages/node/7282650). The GitHub records are [GHSA-fqv5-gx59-2xgv / CVE-2026-9081](https://github.com/advisories/GHSA-fqv5-gx59-2xgv), [GHSA-94h9-q657-456h / CVE-2026-7657](https://github.com/advisories/GHSA-94h9-q657-456h), [GHSA-47c3-vjq8-vj9m / CVE-2026-10128](https://github.com/advisories/GHSA-47c3-vjq8-vj9m), [GHSA-qvrp-rpmf-prw4 / CVE-2026-17625](https://github.com/advisories/GHSA-qvrp-rpmf-prw4), [GHSA-x37c-x545-wrmw / CVE-2026-7646](https://github.com/advisories/GHSA-x37c-x545-wrmw), [GHSA-wq3q-gcx9-xvm2 / CVE-2026-9077](https://github.com/advisories/GHSA-wq3q-gcx9-xvm2), [GHSA-5jpf-5j69-486q / CVE-2026-17630](https://github.com/advisories/GHSA-5jpf-5j69-486q), [GHSA-f93f-mcp7-xm47 / CVE-2026-17626](https://github.com/advisories/GHSA-f93f-mcp7-xm47), and [GHSA-7rx7-4wfr-4qqv / CVE-2026-17623](https://github.com/advisories/GHSA-7rx7-4wfr-4qqv).
+
+Use one isolated Langflow instance with no inherited credentials or unrestricted egress. Replace `requests.get`, MCP resource readers, IDE-config writers, Docker launch, and child-process creation with recorders before supplying canaries.
+
+| Boundary | Fixture | Bounded positive |
+| --- | --- | --- |
+| provider-key validation to outbound HTTP | owned Ollama-like endpoint, redirects, mapped addresses, rebinding control | accepted `OLLAMA_BASE_URL` selects an owned denied final peer |
+| built-in component to process environment | fake `LANGFLOW_CANARY` only; recorder exposes key names, not values | built-in node returns the fake marker despite custom-component restrictions |
+| MCP `resources/read` to filesystem | disposable MCP root, encoded path forms, sibling canary | final canonical sibling path reaches denied reader |
+| MCP config to IDE files | temporary home/config root and localhost/non-local route matrix | authenticated remote request reaches no-op IDE-config writer despite local-only policy |
+| MCP command/config to child process | inert executable plus argv recorder | caller field changes executable or adds shell grammar before launch is denied |
+| Docker MCP options to host authority | fake image, temp mount root, volume/device argument matrix | caller option selects an outside-root mount/device at a patched runtime sink |
+
+For provider SSRF, capture validation-time DNS, every redirect, connection-time DNS, and final socket peer; never use metadata or real internal services. For MCP paths, preserve raw, URL-decoded, normalized, and real paths, and distinguish file selection from returned bytes. For process and Docker controls, record argv/runtime configuration without starting a shell, container, or mount. For environment access, expose only a generated fake variable and never inspect inherited values.
+
+Report each edge independently. Do not collapse **MCP config write**, **file read**, **host mount selection**, and **command execution** into one RCE claim unless separate denied-sink evidence proves every transition.
