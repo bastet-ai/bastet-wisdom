@@ -10,6 +10,7 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - Andromeda bytecode C2 research framework: https://github.com/vyrus001/andromeda
 - badkeys weak-key checker and web service: https://github.com/badkeys/badkeys and https://badkeys.info/
 - GitHub Security Advisories: https://github.com/advisories
+- CPython archive relocation, Windows drive-path, and hardlink-filter advisories: https://github.com/advisories/GHSA-9mc4-rqmq-h467, https://github.com/advisories/GHSA-7r27-jhmm-vmp6, and https://github.com/advisories/GHSA-gf2w-jqmq-fcm8
 - LINE Android profile-template code-injection advisory: https://line.github.io/security-advisory-blog/CVE-2026-16881 and https://github.com/advisories/GHSA-86g4-8jpx-6pgq
 - Zyxel ZLD firewall configuration-file traversal advisory: https://www.zyxel.com/global/en/support/security-advisories/zyxel-security-advisory-for-path-traversal-vulnerability-in-the-configuration-file-execution-cli-command-of-zld-firewalls-08-04-2026 and https://github.com/advisories/GHSA-75p7-jv3w-pjpc
 - ASUSTOR Backup Plan/EZSync privileged IPC advisory: https://www.asustor.com/security/security_advisory_detail?id=70 and https://github.com/advisories/GHSA-2p27-7hcf-mpp3

@@ -1,4 +1,4 @@
-# Archive extraction: prevent path traversal + symlink escapes
+# Archive extraction traversal and link-boundary validation
 
 Archive extraction is a common supply-chain and scanning surface (tar/zip/deb/rpm). A frequent failure mode is allowing paths or symlinks that escape the intended extraction directory.
 
@@ -81,8 +81,58 @@ For the race case, use a deterministic interposer or debugger barrier rather tha
 
 Keep the preconditions distinct. CVE-2026-18508 requires archive-controlled hardlink metadata plus relevant pre-existing filesystem state. CVE-2026-18477 concerns incremental restore state and an actor able to modify the restore tree at the required time; it does not require a crafted archive. Report exactly which primitive and environmental authority were proven.
 
+## CPython relocation and platform-path matrix
+
+Three CPython records add reusable cases for any wrapper that treats a standard-library extraction filter as the whole security boundary:
+
+- [GHSA-9mc4-rqmq-h467 / CVE-2026-11940](https://github.com/advisories/GHSA-9mc4-rqmq-h467) describes an incomplete `tarfile` fix. A hardlink names a deeper archived symlink, fallback processing validates the symlink at that deeper name, and then recreates it at the hardlink's shallower location. The same relative target can therefore resolve outside the extraction root after relocation.
+- [GHSA-7r27-jhmm-vmp6 / CVE-2026-3087](https://github.com/advisories/GHSA-7r27-jhmm-vmp6) describes `shutil.unpack_archive()` accepting a ZIP member with a Windows drive-absolute path and extracting it outside the selected destination on Windows.
+- [GHSA-gf2w-jqmq-fcm8 / CVE-2026-4360](https://github.com/advisories/GHSA-gf2w-jqmq-fcm8) describes `TarFile.extract()` failing to preserve `filter="data"` when processing a hardlink, allowing archive ownership metadata to survive a policy that should strip it.
+
+The general bug-hunting heuristic is **validate the object in its final namespace and execution branch**. A check is not sufficient when later hardlink fallback, path parsing, or metadata restoration changes the member's location or semantics.
+
+### Prerequisites and fixture
+
+- Run affected and corrected Python builds in disposable Windows VMs or Linux user/mount namespaces as appropriate.
+- Create random extraction and sibling-canary directories containing no sensitive data.
+- Wrap or interpose filesystem operations so an outside-root `open`, `symlink`, `link`, `chown`, or replacement is recorded and denied.
+- Capture the Python version, archive-member order/type/name/link target, extraction API, filter, platform path interpretation, effective UID, and canonical destination.
+
+Build archives programmatically in the fixture rather than redistributing weaponized samples. For the hardlink-relocation case, use only a random sibling canary and stop at the denied outside-root operation.
+
+| Case | Controlled change | Positive evidence |
+| --- | --- | --- |
+| ordinary file | in-root regular member | final canonical path remains below the extraction root |
+| symlink baseline | in-root symlink whose target stays in root | archived and final-location resolutions both stay in root |
+| hardlink baseline | hardlink to an earlier regular member | filter and canonical destination remain unchanged |
+| relocated symlink fallback | hardlink references a deeper symlink that is recreated at a shallower name | archived-location resolution passes, final-location resolution reaches the sibling canary, and the sink is denied |
+| Windows rooted path | ZIP member with a drive-qualified absolute name | parser records a destination outside the selected root without writing it |
+| separator controls | equivalent relative names with `/`, `\\`, and mixed separators | platform-specific canonical destination table |
+| ownership-filter branch | `TarFile.extract(..., filter="data")` on regular and hardlink members carrying synthetic UID/GID values | metadata application differs by member type on the affected build; corrected build strips it consistently |
+| corrected build | replay byte-identical fixtures | each outside-root or forbidden-metadata action is rejected before its syscall |
+
+Do not claim a generic `tarfile` escape from CVE-2026-4360: its demonstrated boundary is metadata-filter loss on the hardlink branch. Do not label a lexical drive path as exploitation until the Windows resolver or filesystem recorder proves the effective destination. For CVE-2026-11940, preserve both resolutions in evidence: the link target at its archived location and at the shallower location where fallback recreates it.
+
+### Reporting skeleton
+
+```text
+Extractor/API and version:
+Platform and path semantics:
+Archive member order and types:
+Requested policy/filter:
+Archived location -> canonical target:
+Final recreated location -> canonical target:
+Filesystem or metadata sink observed:
+Outside-root operation denied at:
+Affected versus corrected result:
+Impact demonstrated (path escape or metadata drift):
+```
+
 ## References
 
 - GitHub Advisory example: `malcontent` symlink path traversal due to argument confusion + missing symlink validation (CVE-2026-24846)
 - GNU tar `--one-top-level` hardlink boundary: https://github.com/advisories/GHSA-4f5j-wqjr-hx49
 - GNU tar incremental restore TOCTOU boundary: https://github.com/advisories/GHSA-v7fx-gjvh-347c
+- CPython hardlink-to-symlink relocation boundary: https://github.com/advisories/GHSA-9mc4-rqmq-h467
+- CPython Windows drive-absolute ZIP boundary: https://github.com/advisories/GHSA-7r27-jhmm-vmp6
+- CPython hardlink ownership-filter boundary: https://github.com/advisories/GHSA-gf2w-jqmq-fcm8
