@@ -17,7 +17,10 @@ Primary sources:
 - Ghost Admin session fixation [GHSA-7mpp-r37j-x5wh / CVE-2026-70594](https://github.com/advisories/GHSA-7mpp-r37j-x5wh) and blind password-hash disclosure [GHSA-jm22-3w23-5q7w / CVE-2026-70590](https://github.com/advisories/GHSA-jm22-3w23-5q7w);
 - ActivityPub client rendering XSS [GHSA-xpp7-93x6-v29m / CVE-2026-53950](https://github.com/advisories/GHSA-xpp7-93x6-v29m);
 - member-existence response discrepancy [GHSA-chgm-3698-jm42 / CVE-2026-53947](https://github.com/advisories/GHSA-chgm-3698-jm42); and
-- donation-to-paid-gift-membership value mismatch [GHSA-xm43-3m56-w3wf / CVE-2026-59817](https://github.com/advisories/GHSA-xm43-3m56-w3wf).
+- donation-to-paid-gift-membership value mismatch [GHSA-xm43-3m56-w3wf / CVE-2026-59817](https://github.com/advisories/GHSA-xm43-3m56-w3wf);
+- public Content API filter projection of private fields [GHSA-jx35-x7fj-vgpr](https://github.com/advisories/GHSA-jx35-x7fj-vgpr);
+- staff-authored feature-image caption rendering [GHSA-pr22-p9rp-2cqv](https://github.com/advisories/GHSA-pr22-p9rp-2cqv); and
+- unauthenticated feature-specific fetches such as Webmentions reaching internal-network hosts [GHSA-x5mm-wm4g-j5xv](https://github.com/advisories/GHSA-x5mm-wm4g-j5xv).
 
 The records span several independently patched release lines. The API package metadata lists 6.21.1 for the mapped-address upload-era wave, 6.21.2 for DNS rebinding, Mobiledoc fetches, and member-response behavior, 6.44.0 for the donation/gift flow, and 6.54.1 for import, offer, filesystem, session, general image-fetch, and field-projection issues. `@tryghost/activitypub` is independently fixed in 3.1.0. Confirm the exact affected range in each advisory; prose and package metadata differ by one patch number in some records, so do not infer that one Ghost version fixes every path.
 
@@ -108,6 +111,14 @@ At the no-op entitlement recorder, capture the provider-verified amount/currency
 Seed one existing and one absent synthetic email address. Replay identical sign-in requests while recording status, body schema, header set, redirect, response size class, and bounded latency distribution. Normalize dynamic request IDs and timestamps before diffing. Repeat across JSON, form, localization, malformed-email, rate-limit, and resend paths.
 
 The reportable result is a stable response-class oracle that separates the two synthetic populations; a one-off timing difference is not enough. Do not test real addresses or automate account discovery. Preserve only labels such as `existing-synthetic` and `absent-synthetic`, never the addresses themselves.
+
+## August 5 follow-up: filters, captions, and feature-specific fetchers
+
+The later records add three edges to the same harness. First, public API filters are executable query structure, not merely search strings. Seed only synthetic staff records with random marker fields, patch query execution, and vary allowed fields, nested expressions, aliases, comparison operators, wildcards, and case behavior. Record parsed filter AST, selected database columns, projection schema, and a redacted `restricted-field-present` boolean. A bounded positive is **public filter syntax selects or infers a field excluded from the public schema**. Never retrieve, compare, or brute-force password-derived values.
+
+Second, feature-image captions must be traced through editor input, storage, Admin preview, public render, and any email or feed serializer. Use inert structural markers in a script-disabled detached DOM. A positive requires a disallowed node or attribute at the final parser context; caption storage or HTML acceptance alone is not XSS.
+
+Third, add Webmentions and every newly identified feature-specific fetcher to the section 5 feature-to-sink matrix. Test unauthenticated reachability separately from destination policy, redirects, DNS changes, and response disclosure. Use owned public and isolated canary peers only. A blind callback proves outbound reachability, not response read or code execution.
 
 ## Reporting boundaries
 

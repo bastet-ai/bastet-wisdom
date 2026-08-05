@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Template, signing-key, upload, and alternate-route authority boundaries](alerts/2026-08-05-template-key-route-authority-boundaries-ghsa.md)
+- [Ghost filter, caption, and feature-fetch follow-up](alerts/2026-08-04-ghost-fetch-upload-import-offer-boundaries-ghsa.md#august-5-follow-up-filters-captions-and-feature-specific-fetchers)
 - [Workspace, outbound-fetch, object-scope, and interpreter boundaries](alerts/2026-08-05-workspace-fetch-object-interpreter-boundaries-ghsa.md)
 - [AWS Nitro Enclave KMS boundary testing](methodology/aws-nitro-enclave-kms-boundary-testing.md)
 - [Route, trusted-context, and controller-authority boundaries](alerts/2026-08-05-route-context-controller-authority-boundaries-ghsa.md)
@@ -17,7 +19,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Flowise workspace, runtime, and credential-authority boundaries](alerts/2026-08-04-flowise-workspace-runtime-credential-boundaries-ghsa.md)
 - [Ghost fetch, upload, import, and offer-state boundaries](alerts/2026-08-04-ghost-fetch-upload-import-offer-boundaries-ghsa.md)
 - [Agent tool, browser action, and stored-query boundaries](alerts/2026-08-04-agent-tool-render-stored-query-boundaries.md)
-- [Open WebUI DNS, inline-model knowledge, and cleanup-parent checks](alerts/2026-05-16-open-webui-rag-ssrf-and-knowledge-boundary-batch-ghsa.md#august-4-follow-up-bind-dns-decisions-inline-models-and-cleanup-children)
 
 
 
