@@ -155,3 +155,86 @@ Excluded write, execution, or disclosure claims:
 ```
 
 Keep the RC error disclosure as supporting recon only. A normal API error containing a synthetic path or build detail can establish response behavior, but do not repoint configuration at host files, force panics on a shared service, or publish stack addresses.
+
+## August 5 second follow-up: encoding, archive, tenant-path, protocol, and redirect boundaries
+
+Eight additional reviewed records expand the same invariant: after filename decoding, URL normalization, archive joining, or redirects, the final path, command frame, principal, and transport must retain the authority selected by the operator.
+
+| Advisory | Boundary | Affected / fixed range |
+| --- | --- | --- |
+| [GHSA-7p4m-qxvv-g567](https://github.com/advisories/GHSA-7p4m-qxvv-g567) | non-default local filename encodings can decode standard object names into native parent paths | `1.51.0` through `1.74.4`; fixed in `1.75.0` |
+| [GHSA-4vr5-p2gc-h23p](https://github.com/advisories/GHSA-4vr5-p2gc-h23p) | `archive extract` joins an entry containing parent components to an S3 destination prefix | `<= 1.74.3`; fixed in `1.74.4` |
+| [GHSA-fqj9-69pf-6pjg](https://github.com/advisories/GHSA-fqj9-69pf-6pjg) | `serve restic --private-repos` authorizes one path representation but derives the backend selector from an uncanonicalized one | `<= 1.74.3`; fixed in `1.74.4` |
+| [GHSA-8v25-v8p6-qf7v](https://github.com/advisories/GHSA-8v25-v8p6-qf7v) | `serve s3` joins bucket and object names so parent segments can select root-level objects inside the configured serve root | `<= 1.74.3`; fixed in `1.74.4` |
+| [GHSA-2m8m-jhrm-w6j2](https://github.com/advisories/GHSA-2m8m-jhrm-w6j2) | SFTP filenames reach PowerShell hash commands through ASCII-only quote handling | `<= 1.74.4`; fixed in `1.75.0` |
+| [GHSA-8c48-q9wj-3w37](https://github.com/advisories/GHSA-8c48-q9wj-3w37) | a custom FTP encoding can restore CR/LF before a filename enters the control channel | `< 1.75.0`; fixed in `1.75.0` |
+| [GHSA-gx4c-2hqx-cw2r](https://github.com/advisories/GHSA-gx4c-2hqx-cw2r) and [GHSA-h4mf-4v27-hggj](https://github.com/advisories/GHSA-h4mf-4v27-hggj) | same-host HTTPS-to-HTTP redirects preserve S3 STS or WebDAV Basic/Cookie credentials | S3 `<= 1.74.3`, fixed in `1.74.4`; WebDAV `<= 1.74.0`, fixed in `1.75.0` |
+| [GHSA-8mxv-9xhp-86h4](https://github.com/advisories/GHSA-8mxv-9xhp-86h4) | S3 redirects retain IBM IAM bearer tokens or SSE-C headers across weaker or foreign destinations | `<= 1.74.0`; fixed in `1.75.0` |
+
+The ranges above are those recorded by the reviewed advisories. Confirm the exact backend, build, and configuration in scope. Several paths require non-default encodings, a feature flag, an unsafe redirect emitted by an otherwise legitimate endpoint, or a lower-trust source namespace.
+
+!!! warning "Patched sinks, fake credentials, and disposable roots only"
+    Use synthetic object names, archives, users, repositories, protocol servers, fake tokens, and patched filesystem, command, FTP, and HTTP transports. Never write outside a temporary root, read or alter another backup, execute PowerShell, inject a real FTP command, expose reusable credentials, downgrade production transport, or target customer storage.
+
+### Post-decoding and archive containment matrix
+
+Build one harness that records the original object/archive name, configured encoding, decoded portable path, native path, selected destination root/prefix, and final canonical path or object key. Replace open, create, overwrite, and cloud-write operations with deny-by-default recorders.
+
+Exercise:
+
+- default local encoding, `Slash`, `None`, `Raw`, and platform-relevant masks that omit `Dot` or `BackSlash`;
+- fullwidth-dot components, native separators, ordinary dotted names, and benign Unicode controls;
+- archive entries that are in-prefix, contain parent components, begin with `./`, or use platform separators; and
+- local and object-store destinations, keeping every target inside disposable buckets or directories.
+
+A bounded positive is **untrusted standard/archive name -> conversion or join -> final selector leaves the chosen destination -> denied sink records only the synthetic sibling marker**. Default encoding rejecting the fixture does not clear a deployment that explicitly uses a weaker custom encoding. Enforce containment after conversion to the platform-native path; checking only whether an encoder mask contains `Dot` misses separator-specific variants.
+
+### Multi-user service path normalization
+
+Use two fake Basic-auth users, two empty restic prefixes, two synthetic S3 buckets, and distinct random marker object IDs. Instrument raw request target, framework-decoded route parameters, authenticated username, private-repository authorization input, backend path input, normalized final selector, and no-op read/write/delete sink.
+
+Compare ordinary paths with literal and encoded dot-segment variants. For `serve restic --private-repos`, require the authenticated username and canonical repository prefix to agree after one shared normalization pipeline. For `serve s3`, bind bucket authorization to the final normalized object key, not the pre-join bucket segment.
+
+The proof is **user A passes the route-level check -> a different path representation selects user B's repository or a root-level synthetic object -> denied backend sink records the foreign marker ID**. Do not return object content, overwrite a config, or issue a real delete. Note that the `serve s3` record describes escape from a bucket directory into the configured serve root, not escape from the rclone remote itself.
+
+### String-to-protocol grammar recorders
+
+For SFTP, replace process execution with an argv and PowerShell-parser recorder. Feed ordinary names, ASCII quote controls, and inert Unicode quote markers through the real filename conversion and hash-command builder. A positive requires the final PowerShell parse tree to contain syntax outside the intended single path literal. Stop before process creation and do not publish an executable payload.
+
+For FTP, use a local fake server whose control-channel parser records command boundaries but refuses mutations. Compare default encoding with explicitly configured masks that preserve CR/LF. Feed a filename containing only an inert second-command marker and prove whether the client emits one command frame or two. Do not use `DELE`, upload executable content, or connect to an operational FTP service.
+
+Keep configuration preconditions in the report. If the source actor already has equivalent rights on the SFTP/FTP destination, the parser defect may have no authority gain; establish the lower-trust source to stronger destination boundary separately.
+
+### Redirect authority and transport matrix
+
+Use an owned TLS endpoint, owned plaintext listener, locally trusted test CA, and fake credentials with no external value. Patch the final sender to log only header names and hashes. Test same-host and cross-host redirects across HTTPS-to-HTTPS, HTTPS-to-HTTP, and port changes.
+
+Record for every hop:
+
+- original and destination scheme, hostname, and effective port;
+- resolved and selected peer;
+- redirect policy decision;
+- presence/hash of `Authorization`, `Cookie`, `X-Amz-Security-Token`, IBM IAM bearer, SSE-C, and copy-source SSE-C headers; and
+- whether the request would traverse plaintext.
+
+The secure origin comparison is the tuple **scheme + canonical host + effective port**. Any downgrade must fail closed; sensitive credentials should not be replayed merely because `URL.Host` is unchanged. A bounded positive is **trusted fake credential reaches the initial owned HTTPS peer -> redirect changes authority or transport strength -> patched next-hop recorder observes the credential header**.
+
+Do not frame a malicious original endpoint as the primary attacker: it already receives the credentials. Establish the credible boundary as a legitimate endpoint, gateway, accelerator, or redirect behavior followed by an adjacent/on-path observer or a foreign redirect origin.
+
+### Second-follow-up evidence fields
+
+```text
+rclone version, backend, and exact feature flags:
+Source actor and destination authority:
+Raw object, archive, or URL representation:
+Configured filename encoding:
+Decoded / native / canonical path or key:
+Authenticated user and authorized prefix:
+Protocol parse tree or command-frame count:
+Redirect hop scheme / host / effective port:
+Fake credential header presence and hash:
+Denied filesystem / backend / process / network sink:
+Affected-versus-fixed result:
+Deployment-specific preconditions:
+Strongest supported claim and excluded effects:
+```
