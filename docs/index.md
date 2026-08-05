@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Workspace, outbound-fetch, object-scope, and interpreter boundaries](alerts/2026-08-05-workspace-fetch-object-interpreter-boundaries-ghsa.md)
 - [AWS Nitro Enclave KMS boundary testing](methodology/aws-nitro-enclave-kms-boundary-testing.md)
 - [Route, trusted-context, and controller-authority boundaries](alerts/2026-08-05-route-context-controller-authority-boundaries-ghsa.md)
 - [Signed-request, object-scope, and WordPress authority boundaries](alerts/2026-08-05-signed-request-object-scope-wordpress-authority-boundaries-ghsa.md)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Ghost fetch, upload, import, and offer-state boundaries](alerts/2026-08-04-ghost-fetch-upload-import-offer-boundaries-ghsa.md)
 - [Agent tool, browser action, and stored-query boundaries](alerts/2026-08-04-agent-tool-render-stored-query-boundaries.md)
 - [Open WebUI DNS, inline-model knowledge, and cleanup-parent checks](alerts/2026-05-16-open-webui-rag-ssrf-and-knowledge-boundary-batch-ghsa.md#august-4-follow-up-bind-dns-decisions-inline-models-and-cleanup-children)
-- [Open WebUI transport-role, shared-folder, tool-source, and render-error checks](alerts/2026-05-16-open-webui-auth-session-and-api-authorization-boundary-batch-ghsa.md#august-4-follow-up-test-every-transport-grant-tier-cascade-and-error-renderer)
 
 
 
