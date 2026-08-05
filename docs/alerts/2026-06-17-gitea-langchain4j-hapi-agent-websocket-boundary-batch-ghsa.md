@@ -129,3 +129,17 @@ Operator validation boundaries:
 ## Notes on skipped adjacent items
 
 The same scan rechecked Disclosed, PortSwigger research, Trail of Bits, ProjectDiscovery, GitHub advisory published/updated feeds, and CISA KEV. CakePHP and Gitea redirect backslash bypasses, Filament disabled RichEditor XSS, Langflow unauthenticated upload resource exhaustion/path disclosure, Multer/Deno/HAPI ReDoS, Capsule namespace finalize access-control drift, Keycloak identity-first enumeration, and generic memory/resource issues were tracked but not promoted in this page because the batch above provides higher-signal replayable authorization, parser, SQL, WebSocket, filesystem, and agent-boundary workflows. CISA added Joomla Content Editor, LiteSpeed cPanel symlink, and Cisco SD-WAN Manager path traversal KEVs; they were recorded for state, but the public offensive guidance should wait for stronger primary technical detail or a non-duplicative boundary beyond existing cPanel/SD-WAN filesystem notes.
+
+## August 5 Gitea migration and OAuth fetch follow-up
+
+[GHSA-685p-fm6j-c445 / CVE-2026-34966](https://github.com/advisories/GHSA-685p-fm6j-c445) adds an outbound-fetch boundary to Gitea before 1.27.0. The record identifies migration release-asset URLs, pull-request patch URLs, and OAuth avatar URLs as fetch paths that used Go's default HTTP client without the product's policy-aware dialer. The durable finding is not simply “SSRF”: policy validation and connection authority diverged across sibling fetch helpers, and migration could persist fetched content as an asset.
+
+Use an owned two-address HTTP/DNS fixture and a disposable Gitea instance with fake credentials only:
+
+1. Capture normal migration and OAuth-avatar requests from the affected build. Test each fetch family independently; do not assume one vulnerable helper proves all three paths.
+2. Supply an owned public URL, a redirect to a second owned peer, a hostname whose owned DNS answer changes, and mapped/canonical address controls. Never target metadata, loopback services, internal production hosts, or `file:` URLs.
+3. Record URL validation, redirect decisions, DNS answers at validation and connection time, final socket peer, response byte count/hash, and whether a synthetic marker is persisted as a release asset.
+4. Stop after the fixed marker reaches the denied persistence sink. Do not retrieve application configuration, database credentials, signing secrets, repository content, or any unowned response.
+5. Negative controls: Gitea 1.27.0+, the policy-aware dialer on every redirect, a denied final-peer address, an unsupported scheme, and a migration/OAuth path that never invokes the fetch helper.
+
+Report **migration or OAuth URL -> default HTTP client -> final peer not bound to SSRF policy -> synthetic response reaches denied asset/avatar sink**. Keep final-peer reachability and persisted response retrieval as separate claims.

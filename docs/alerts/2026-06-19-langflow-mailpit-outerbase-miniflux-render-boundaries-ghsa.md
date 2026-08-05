@@ -191,3 +191,20 @@ Use one isolated Langflow instance with no inherited credentials or unrestricted
 For provider SSRF, capture validation-time DNS, every redirect, connection-time DNS, and final socket peer; never use metadata or real internal services. For MCP paths, preserve raw, URL-decoded, normalized, and real paths, and distinguish file selection from returned bytes. For process and Docker controls, record argv/runtime configuration without starting a shell, container, or mount. For environment access, expose only a generated fake variable and never inspect inherited values.
 
 Report each edge independently. Do not collapse **MCP config write**, **file read**, **host mount selection**, and **command execution** into one RCE claim unless separate denied-sink evidence proves every transition.
+
+## August 5 second follow-up: validation, cache, memory, and filesystem authority
+
+An adjacent IBM Langflow OSS wave covering 1.0.0 through 1.10.3 adds seven operator-relevant boundaries: [GHSA-994g-w9jv-hxcv / CVE-2026-8182](https://github.com/advisories/GHSA-994g-w9jv-hxcv), [GHSA-x252-wm2h-6mf4 / CVE-2026-8478](https://github.com/advisories/GHSA-x252-wm2h-6mf4), [GHSA-wq52-m42w-xg45 / CVE-2026-9201](https://github.com/advisories/GHSA-wq52-m42w-xg45), [GHSA-4q62-cj5w-qmfx / CVE-2026-9196](https://github.com/advisories/GHSA-4q62-cj5w-qmfx), [GHSA-7xr9-m7x2-5wqq / CVE-2026-7869](https://github.com/advisories/GHSA-7xr9-m7x2-5wqq), [GHSA-vph6-jp7f-x3cx / CVE-2026-9130](https://github.com/advisories/GHSA-vph6-jp7f-x3cx), and [GHSA-f7wm-r5v3-mxr4 / CVE-2026-10547](https://github.com/advisories/GHSA-f7wm-r5v3-mxr4).
+
+| Boundary | Bounded validation target |
+| --- | --- |
+| unauthenticated two-request path to server-side code handling | Derive both requests from an isolated affected build, replace the interpreter/process sink with a recorder, and prove only that a fixed inert value reaches it. Do not publish an execution payload or test an exposed production instance. |
+| caller code to truncated trusted-template digest | Patch the executor, seed one harmless trusted template, and compare full-digest, truncated-digest, non-colliding, and corrected-build decisions. A digest collision accepted by the validator is sufficient; never execute the candidate. |
+| LLM-generated component to pre-approval backend validation | Use a deterministic fake model response containing a no-op component and record whether validation reaches filesystem/network/import hooks before approval. Deny those hooks; do not let generated code run. |
+| knowledge-base name to filesystem path | Reuse the disposable containment fixture above and target one empty canary directory. Record raw name, normalized path, containment decision, and denied create/write syscall. |
+| `session_id` to MemoryComponent history authority | Create two users, flows, and random synthetic sessions; test `/api/v1/run/*`, `/api/v1/responses`, and `/api/v2/workflow/*` with the already known foreign session id. Stop at one marker and never collect real chat history. |
+| foreign `flow_id` to shared build-vertex cache | Submit a no-op graph marker through deprecated `POST /api/v1/build/{flow_id}/vertices`, then have the owner read/build only the synthetic flow. Patch cache writes and workflow dispatch so the proof cannot execute or mutate a real flow. |
+
+Treat the sparse traversal record [GHSA-p865-qggm-g9qx / CVE-2026-8183](https://github.com/advisories/GHSA-p865-qggm-g9qx) as a route-discovery seed, not proof that every Langflow path is readable. Preserve the raw request target, proxy decoding, framework route parameters, canonical file target, and denied open call. Use only a lab canary file.
+
+Report the edges separately as **unauthenticated request sequence to denied interpreter sink**, **truncated component digest to trust decision**, **generated component to pre-approval validator**, **knowledge-base name to outside-root denied write**, **session id to foreign synthetic memory**, or **foreign flow id to shared cache entry**. Do not infer universal RCE, arbitrary file access, or cross-user disclosure from an advisory title alone.

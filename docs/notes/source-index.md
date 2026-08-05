@@ -4,6 +4,8 @@ Maintain this as the seed list of official or primary sources for the tool famil
 
 ## Application security research
 
+- Langflow August 5 validation, component-trust, knowledge-base, memory, and build-cache records: https://github.com/advisories/GHSA-994g-w9jv-hxcv, https://github.com/advisories/GHSA-x252-wm2h-6mf4, https://github.com/advisories/GHSA-wq52-m42w-xg45, https://github.com/advisories/GHSA-4q62-cj5w-qmfx, https://github.com/advisories/GHSA-7xr9-m7x2-5wqq, https://github.com/advisories/GHSA-vph6-jp7f-x3cx, and https://github.com/advisories/GHSA-f7wm-r5v3-mxr4
+- Gitea migration and OAuth fetch-policy advisory: https://github.com/go-gitea/gitea/security/advisories/GHSA-2wm4-vwp6-v7xc and https://github.com/advisories/GHSA-685p-fm6j-c445
 - ProjectDiscovery internal network scanning launch and agent workflow: https://projectdiscovery.io/blog/introducing-internal-network-scanning-see-your-network-the-way-an-attacker-inside-it-would
 - ProjectDiscovery rogue-agent benchmark trajectory case studies: https://projectdiscovery.io/blog/oh-my-rogue-agent
 - ProjectDiscovery offensive-agent behavioral audit and trajectory-integrity methodology: https://projectdiscovery.io/blog/watching-agents-work-a-behavioral-audit-of-offensive-security-llm-runs

@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Langflow validation, cache, memory, and filesystem authority follow-up](alerts/2026-06-19-langflow-mailpit-outerbase-miniflux-render-boundaries-ghsa.md#august-5-second-follow-up-validation-cache-memory-and-filesystem-authority)
+- [Gitea migration and OAuth final-peer SSRF follow-up](alerts/2026-06-17-gitea-langchain4j-hapi-agent-websocket-boundary-batch-ghsa.md#august-5-gitea-migration-and-oauth-fetch-follow-up)
 - [Traefik route, transport, and namespace authority boundaries](alerts/2026-08-05-traefik-route-transport-namespace-boundaries-ghsa.md)
 - [Nuxt server-island component and DevTools RPC authority follow-up](alerts/2026-08-05-nuxt-route-payload-cache-boundaries-ghsa.md#august-5-follow-up-server-island-component-and-devtools-rpc-authority)
 - [Nuxt route-rule and SSR payload-cache authority boundaries](alerts/2026-08-05-nuxt-route-payload-cache-boundaries-ghsa.md)
@@ -16,8 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [rclone path, symlink, and metadata boundary follow-up](alerts/2026-07-21-rclone-remote-control-boundaries-ghsa.md#august-5-follow-up-untrusted-remote-filesystem-boundaries)
 - [Jenkins and MarkLogic authority-boundary validation](alerts/2026-08-05-jenkins-marklogic-authority-boundaries-ghsa.md)
 - [Langflow provider, MCP, environment, and host-authority follow-up](alerts/2026-06-19-langflow-mailpit-outerbase-miniflux-render-boundaries-ghsa.md#august-5-provider-mcp-environment-and-host-authority-follow-up)
-- [Keycloak CIBA, JWE request-object, and parameter-precedence follow-up](alerts/2026-06-04-keycloak-mlflow-auth-boundary-batch-ghsa.md#august-5-ciba-jwe-request-object-and-parameter-precedence-follow-up)
-- [TeamCity agent-polling protocol authority validation](alerts/2026-08-05-teamcity-agent-polling-authority-cve-2026-63077.md)
+
 
 
 
