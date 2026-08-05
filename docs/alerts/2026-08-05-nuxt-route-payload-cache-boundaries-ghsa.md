@@ -107,3 +107,65 @@ Excluded data-access or action claims:
 ```
 
 Keep response bodies to random markers. A cache hit, route match, or skipped hook alone is not proof of cross-user disclosure; bind the current principal, marker creator, cache decision, and returned marker in one trace.
+
+## August 5 follow-up: server-island component and DevTools RPC authority
+
+Three later reviewed records add two distinct Nuxt control planes:
+
+| Advisory | Boundary | Affected / fixed range |
+| --- | --- | --- |
+| [GHSA-9473-5f9j-94wq](https://github.com/advisories/GHSA-9473-5f9j-94wq) | request-supplied server-island props reach Vue dynamic-component resolution and, when `vue.runtimeCompiler: true`, an attacker-supplied template can reach the Nitro server-side compiler | Nuxt `3.4.0` through `3.21.9` and `4.0.0` through `4.5.0`; fixed in `3.21.10` and `4.5.1` |
+| [GHSA-48hr-524c-v5w3](https://github.com/advisories/GHSA-48hr-524c-v5w3) | a plain string in a forwarded island prop can instantiate a globally registered component or native element without requiring the runtime compiler | Nuxt `3.1.0` through `3.21.9` and `4.0.0` through `4.5.0`; fixed in `3.21.10` and `4.5.1` |
+| [GHSA-279x-mwfv-vcqv](https://github.com/advisories/GHSA-279x-mwfv-vcqv) | an unauthenticated Vite HMR RPC client can change the persisted editor command and then reach `openInEditor()` on a developer host | `@nuxt/devtools < 3.3.1`; fixed in `3.3.1` |
+
+!!! warning "Instrument compilers, constructors, and process launchers"
+    Use a disposable Nuxt project, harmless test components, inert template and element markers, a patched Vue compiler/component resolver, and a denied process-spawn recorder. Never compile attacker code, launch an editor or command, expose a developer's real HMR listener, inspect source files, or use a component whose setup performs network, filesystem, credential, or database operations.
+
+### Server-island prop-to-component matrix
+
+Inventory every server island that forwards caller-controlled values into `<component :is>`, `resolveDynamicComponent()`, `h()`, or a polymorphic `as`/`asChild` prop. Record whether `vue.runtimeCompiler` is active in the server and client bundles and enumerate globally registered components by name only; do not invoke unknown components.
+
+Build a synthetic island whose only allowed target is `SafeCard`. Patch the component resolver and runtime compiler so they log their inputs and return inert placeholders. Exercise:
+
+- the expected `SafeCard` identifier;
+- an unknown component string;
+- the name of a harmless globally registered canary component;
+- native-element strings such as an inert `div` and blocked network-capable element classes; and
+- an object containing a `template` key, with runtime compilation disabled and enabled.
+
+Capture raw props, schema decision, resolved target kind, compiler invocation count, and placeholder output. The two positives are different:
+
+- **component authority expansion**: a caller-controlled string resolves a global component or native element outside the island's explicit allowlist; and
+- **compiler authority expansion**: a caller-controlled object reaches the server runtime compiler when runtime compilation is enabled.
+
+Do not claim server code execution from component selection alone. For the compiler path, stop at the patched compiler receiving the inert marker; do not run generated render functions. Test affected and fixed releases with the same fixture and include direct, encoded, nested, array, and alternate forwarded-prop shapes so validation cannot be bypassed by moving the value one level deeper.
+
+### DevTools WebSocket RPC matrix
+
+Treat Nuxt DevTools as a developer-host control plane, not as an ordinary browser debugging widget:
+
+1. Start a disposable affected Nuxt development server in a container or VM with no repository credentials and bind HMR only to the lab interface.
+2. Replace `launch-editor` or the final child-process constructor with a recorder that logs redacted argv and always denies execution.
+3. From an owned second client, connect to the Vite HMR WebSocket using the `vite-hmr` subprotocol and record whether the `nuxt:devtools:rpc` channel requires a token or validates `Origin` before accepting calls.
+4. Invoke only an ordinary read-only RPC baseline, then attempt `updateOptions`, `clearOptions`, and `openInEditor` with an inert command-name marker and a known synthetic file path.
+5. Record RPC identity, origin, auth decision, persisted option transition, method result, and denied spawn argv. Repeat on `@nuxt/devtools 3.3.1+` and with remote HMR exposure removed.
+
+A bounded positive is **unauthenticated client reaches the DevTools RPC channel -> changes the editor-command option -> `openInEditor` sends the inert marker to the denied process-launch sink**. WebSocket reachability or option mutation alone is not command execution. Keep the exact command-bearing RPC body out of public evidence.
+
+### Follow-up evidence fields
+
+```text
+Nuxt / @nuxt/devtools version:
+Development or production mode:
+Server-island component and forwarded prop:
+vue.runtimeCompiler server/client state:
+Raw prop and schema/allowlist decision:
+Resolved component or native-element kind:
+Runtime-compiler recorder invocation:
+HMR bind address and WebSocket Origin:
+RPC authentication / origin decision:
+Persisted editor-option transition:
+Denied process argv recorder:
+Affected-versus-fixed result:
+Strongest bounded claim and excluded execution claims:
+```

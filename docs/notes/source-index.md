@@ -8,6 +8,8 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - ProjectDiscovery rogue-agent benchmark trajectory case studies: https://projectdiscovery.io/blog/oh-my-rogue-agent
 - ProjectDiscovery offensive-agent behavioral audit and trajectory-integrity methodology: https://projectdiscovery.io/blog/watching-agents-work-a-behavioral-audit-of-offensive-security-llm-runs
 - PortSwigger HTTP Terminator desync-research campaign, protocol-ruler, deterministic evaluation, and discovery-cascade methodology: https://portswigger.net/research/http-terminator
+- Traefik CRD TCP cross-provider namespace and Gateway API `ExtensionRef` namespace-confusion advisories: https://github.com/advisories/GHSA-42cj-m3vj-89wv and https://github.com/advisories/GHSA-qq9q-x9w4-chhj
+- Nuxt server-island template/component and DevTools RPC advisories: https://github.com/advisories/GHSA-9473-5f9j-94wq, https://github.com/advisories/GHSA-48hr-524c-v5w3, and https://github.com/advisories/GHSA-279x-mwfv-vcqv
 - Dompdf advisories/source: https://github.com/dompdf/dompdf/security/advisories and https://github.com/dompdf/dompdf
 - Andromeda bytecode C2 research framework: https://github.com/vyrus001/andromeda
 - badkeys weak-key checker and web service: https://github.com/badkeys/badkeys and https://badkeys.info/

@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Traefik route, transport, and namespace authority boundaries](alerts/2026-08-05-traefik-route-transport-namespace-boundaries-ghsa.md)
+- [Nuxt server-island component and DevTools RPC authority follow-up](alerts/2026-08-05-nuxt-route-payload-cache-boundaries-ghsa.md#august-5-follow-up-server-island-component-and-devtools-rpc-authority)
 - [Nuxt route-rule and SSR payload-cache authority boundaries](alerts/2026-08-05-nuxt-route-payload-cache-boundaries-ghsa.md)
 - [rclone encoding, archive, tenant-path, protocol, and redirect follow-up](alerts/2026-07-21-rclone-remote-control-boundaries-ghsa.md#august-5-second-follow-up-encoding-archive-tenant-path-protocol-and-redirect-boundaries)
 - [HTTP desync research campaigns](methodology/http-desync-research-campaigns.md)
@@ -16,8 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Langflow provider, MCP, environment, and host-authority follow-up](alerts/2026-06-19-langflow-mailpit-outerbase-miniflux-render-boundaries-ghsa.md#august-5-provider-mcp-environment-and-host-authority-follow-up)
 - [Keycloak CIBA, JWE request-object, and parameter-precedence follow-up](alerts/2026-06-04-keycloak-mlflow-auth-boundary-batch-ghsa.md#august-5-ciba-jwe-request-object-and-parameter-precedence-follow-up)
 - [TeamCity agent-polling protocol authority validation](alerts/2026-08-05-teamcity-agent-polling-authority-cve-2026-63077.md)
-- [Electron renderer, session, protocol, and platform-authority boundaries](alerts/2026-08-05-electron-renderer-session-protocol-authority-boundaries-ghsa.md)
-- [Template, signing-key, upload, and alternate-route authority boundaries](alerts/2026-08-05-template-key-route-authority-boundaries-ghsa.md)
 
 
 
