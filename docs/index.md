@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [TeamCity agent-polling protocol authority validation](alerts/2026-08-05-teamcity-agent-polling-authority-cve-2026-63077.md)
 - [Electron renderer, session, protocol, and platform-authority boundaries](alerts/2026-08-05-electron-renderer-session-protocol-authority-boundaries-ghsa.md)
 - [Template, signing-key, upload, and alternate-route authority boundaries](alerts/2026-08-05-template-key-route-authority-boundaries-ghsa.md)
 - [Ghost filter, caption, and feature-fetch follow-up](alerts/2026-08-04-ghost-fetch-upload-import-offer-boundaries-ghsa.md#august-5-follow-up-filters-captions-and-feature-specific-fetchers)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Signed-request, object-scope, and WordPress authority boundaries](alerts/2026-08-05-signed-request-object-scope-wordpress-authority-boundaries-ghsa.md)
 - [CPython archive relocation and platform-path validation](best-practices/archive-extraction-symlink-traversal.md#cpython-relocation-and-platform-path-matrix)
 - [Odysseus embedding endpoint authority boundaries](alerts/2026-08-05-odysseus-embedding-endpoint-authority-boundaries-ghsa.md)
-- [Flowise workspace, runtime, and credential-authority boundaries](alerts/2026-08-04-flowise-workspace-runtime-credential-boundaries-ghsa.md)
+
 
 
 

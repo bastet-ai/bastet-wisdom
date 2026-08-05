@@ -4,11 +4,12 @@ title: Electron renderer, session, protocol, and platform-authority boundaries
 
 # Electron renderer, session, protocol, and platform-authority boundaries
 
-Ten August 5 Electron advisories expose a reusable desktop-application testing pattern: an app may declare renderer, origin, session, path, process-signing, or GPU-process boundaries while a later Electron API makes its decision from different authority data. Validate the exact transition with a disposable app, inert fixtures, and patched sinks rather than accessing files, devices, credentials, or host privileges.
+Eleven August 5 Electron advisories expose a reusable desktop-application testing pattern: an app may declare renderer, origin, child-window, session, path, process-signing, or GPU-process boundaries while a later Electron API makes its decision from different authority data. Validate the exact transition with a disposable app, inert fixtures, and patched sinks rather than accessing files, devices, credentials, or host privileges.
 
 Primary validation seeds:
 
 - context bridge isolation bypass [GHSA-h7rp-cf8h-j98x](https://github.com/advisories/GHSA-h7rp-cf8h-j98x);
+- untrusted `window.open()` feature strings reaching privileged `BrowserWindow` options [GHSA-v93f-fgjr-hjrj](https://github.com/advisories/GHSA-v93f-fgjr-hjrj);
 - custom-protocol cross-origin reads [GHSA-v3j7-r9gq-3gjw](https://github.com/advisories/GHSA-v3j7-r9gq-3gjw);
 - iframe permission-origin confusion [GHSA-9pf5-hg6p-4pwp](https://github.com/advisories/GHSA-9pf5-hg6p-4pwp) and native-autofill UI positioning [GHSA-x8rc-wpg4-grpf](https://github.com/advisories/GHSA-x8rc-wpg4-grpf);
 - HTTP redirect into the local-file loader [GHSA-v64r-4m7r-3mvq](https://github.com/advisories/GHSA-v64r-4m7r-3mvq);
@@ -27,6 +28,7 @@ Inventory each `BrowserWindow`, `WebContents`, `WebFrameMain`, `session`, custom
 | Component | Authority data to capture | Dangerous transition |
 | --- | --- | --- |
 | renderer and iframe | top origin, frame origin, sandbox, `contextIsolation`, `nodeIntegration` | untrusted JavaScript to preload/main capability |
+| child-window creation | opener origin, raw feature string, parsed options, handler override | web content to main-process file/network option |
 | `contextBridge` API | exposed method, Promise return, IPC channel, argument schema | page object/prototype state to isolated-world invocation |
 | custom protocol | scheme privileges, handler session, request origin, response URL/session | remote origin to custom data or another network/cache partition |
 | `net.fetch()` / `net.request()` | initial URL, every redirect target, final scheme and resource class | approved remote URL to local resource |
@@ -64,6 +66,23 @@ For camera, microphone, and serial permission checks, use fake permission reques
 A positive for the origin-confusion advisory is **the vulnerable handler receives or authorizes from origin A while the actual requesting frame is B**, with a patched permission sink recording the would-be decision. No physical device should be opened.
 
 For the native-autofill record, render a fake trusted button and a cross-origin owned iframe in a detached test window. Capture frame bounds, requested popup geometry, final native-widget bounds, and a screenshot containing no credentials. Report only if the child can place the native widget outside its own rectangle over trusted UI. Do not solicit or enter real autofill data and do not turn the fixture into a credential prompt.
+
+### Child-window feature-string authority
+
+The `window.open()` follow-up applies only when untrusted content can create a child window and the app does not deny the request or replace every child option in `setWindowOpenHandler`. Use a disposable app whose opener loads only owned inert HTML. Patch `BrowserWindow` construction and every file/network-consuming option before any resource is opened.
+
+For each test, capture:
+
+1. opener URL, origin, frame identity, and trust class;
+2. raw `window.open()` feature string;
+3. Electron's parsed child-window options;
+4. the handler result and `overrideBrowserWindowOptions` value;
+5. the final option object delivered to the patched constructor; and
+6. any file or network authority that the option would have selected.
+
+Compare an omitted handler, a handler that returns `allow` without overrides, an explicit allowlist override, and a deny control. Use ordinary display options as negative controls and inert synthetic path/URL markers for options that can cause main-process access. A bounded positive is **untrusted feature string -> non-allowlisted privileged option survives parsing -> patched main-process constructor or resource recorder receives the attacker-selected marker**. Do not name or open a host file, contact an unowned URL, or create an actual privileged child.
+
+Keep the claim narrow: feature parsing reaching a denied file/network recorder proves option-authority injection. It is not renderer code execution, Node.js access, file disclosure, or SSRF unless the application's real downstream behavior is separately demonstrated with authorized synthetic resources.
 
 ## 4. Separate custom-scheme access from protocol-handler authorization
 
@@ -140,6 +159,7 @@ Record declared dimensions, computed byte requirement, shared-memory allocation 
 ## Reporting boundaries
 
 - Preserve affected and fixed Electron versions, app flags, frame/session identities, raw-to-normalized values, and the final denied sink.
+- A child feature string reaching a privileged option is not file or network access unless a synthetic resource reaches the corresponding owned recorder.
 - A context-isolation marker is not automatically Node.js code execution.
 - A redirect reaching a local loader is not file disclosure unless a synthetic body reaches an app-controlled response sink.
 - A permission-origin mismatch is not real device access; use patched callbacks only.
