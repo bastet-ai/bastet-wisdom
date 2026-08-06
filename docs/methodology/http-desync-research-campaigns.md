@@ -6,7 +6,7 @@ title: HTTP desync research campaigns
 
 Use this workflow to turn protocol specifications, parser oddities, and HTTP anomaly observations into replayable desync research without treating every strange response as request smuggling. It adapts PortSwigger's August 2026 HTTP Terminator research into a bounded operator methodology: generate testable hypotheses, evaluate cross-request contamination with deterministic controls, isolate weaponization from discovery, and feed confirmed behavior into a human-reviewed research cascade.
 
-Primary research: [James Kettle, “Can AI do novel security research? Meet the HTTP Terminator”](https://portswigger.net/research/http-terminator) and [Tom Stacey with Tobia Righi, “CRLF-Powered Desync Attacks: Beheading HTTP Streams”](https://portswigger.net/research/crlf-powered-desync-attacks).
+Primary research: [James Kettle, “Can AI do novel security research? Meet the HTTP Terminator”](https://portswigger.net/research/http-terminator), [Tom Stacey with Tobia Righi, “CRLF-Powered Desync Attacks: Beheading HTTP Streams”](https://portswigger.net/research/crlf-powered-desync-attacks), and Traefik's reviewed [GHSA-3ccp-42pg-hgv6 / CVE-2026-71324](https://github.com/advisories/GHSA-3ccp-42pg-hgv6) for HTTP/2 or HTTP/3 `CONNECT` body forwarding into a shared HTTP/1.1 backend pool.
 
 !!! warning "Authorized, isolated testing only"
     Use disposable front-end/back-end pairs, owned callback services, synthetic sessions, and customer-approved test windows. Never run high-volume desync probes against shared production infrastructure, target live users, capture queued responses, or reuse a contaminated connection across tenants. On an operational target, stop at the lowest-impact parser differential the owner approved.
@@ -95,6 +95,38 @@ For each, use fixed random bodies and record status lines, declared lengths, byt
 ### Response-header injection and reverse-desync seeds
 
 Apply the same discipline in the reverse direction. Record whether decoded input enters `Location` or another response header, whether a blank line can terminate the header block, and whether the client/front end consumes bytes beyond the declared response length. Keep cookie setting and active HTML out of the proof. A bounded result is an inert extra header or two synthetic response boundaries observed by a disposable client; modern clients may discard stacked bytes and close, so absence of a reverse desync must remain a recorded negative result.
+
+## Proxied CONNECT body and backend-pool differential
+
+The Traefik record adds a reusable protocol-bridge seed: a front end can accept an HTTP/2 or HTTP/3 `CONNECT`, forward it as HTTP/1.1, serialize the DATA body without ordinary HTTP/1.1 body framing, and return the backend connection to a shared idle pool after a keep-alive non-2xx response. If the origin does not drain the body, trailing bytes can be parsed as a second request and its response can remain queued for the next client.
+
+Do not begin with another user's request. Build an isolated proxy/origin fixture with two synthetic clients and three marker-only routes. Record:
+
+```text
+frontend protocol and CONNECT target
+-> DATA bytes and END_STREAM
+-> exact HTTP/1.1 bytes written upstream
+-> origin CONNECT status / Connection decision / body drain
+-> origin request boundaries and response order
+-> backend socket ID and idle-pool transition
+-> next synthetic client's assigned response marker
+```
+
+Run a one-variable matrix:
+
+| Variant | Question | Required evidence |
+| --- | --- | --- |
+| H2 or H3 front end -> H1 origin | can the stream half-close while the backend socket stays reusable? | END_STREAM, backend request boundaries, and socket reuse |
+| H1 front end -> H1 origin | does closing the CONNECT body also close the client/backend path? | no pooled cross-marker is the expected control |
+| keep-alive non-2xx origin | does the origin leave trailing bytes undrained? | origin parses a second synthetic route on the same socket |
+| connection-closing origin | does closing prevent reuse? | socket never enters the idle pool |
+| backend reuse disabled | is pooling necessary? | identical trigger produces no cross-client marker |
+| normalized versus authority-form target | does path rewriting change only origin behavior? | emitted target plus origin keep-alive/close decision |
+| affected versus corrected proxy | is the body deferred, discarded, framed, or isolated? | byte trace and no cross-client response assignment |
+
+A bounded positive is **one synthetic attacker stream -> origin records an extra marker request -> the same backend socket returns to the shared pool -> a separate synthetic client receives the wrong marker response**. Ordinary pipelining on the attacker's own client is not enough. Keep ForwardAuth or equivalent authentication subrequests as a separate route family because they may use a different HTTP client and pool.
+
+For the cited Traefik branches, the reviewed record lists fixes in `2.11.53`, `3.6.24`, and `3.7.9`; it states that the experimental FastProxy path was not affected. Confirm the exact proxy implementation and branch rather than treating a version string as topology proof. Never replay the public queue-poisoning demonstration against shared users or retain any response body beyond random fixture markers.
 
 ## 1. Define one testable hypothesis
 

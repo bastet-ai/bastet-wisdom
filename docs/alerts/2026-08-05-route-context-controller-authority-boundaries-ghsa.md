@@ -4,7 +4,7 @@ title: Route, trusted-context, and controller-authority boundaries
 
 # Route, trusted-context, and controller-authority boundaries
 
-Ten August 5 records expose a reusable operator pattern: an early policy decision validates one representation or principal, while a later router, controller, object resolver, or process sink acts on something stronger. The durable workflow is to record every transition and deny the final side effect.
+Thirteen records expose a reusable operator pattern: an early policy decision validates one representation or principal, while a later router, controller, object resolver, filesystem helper, or process sink acts on something stronger. The durable workflow is to record every transition and deny the final side effect.
 
 Discovery and primary-source seeds:
 
@@ -18,6 +18,8 @@ Discovery and primary-source seeds:
 - Crater customer-to-company scope drift [GHSA-j2xj-x8wc-f6xg](https://github.com/advisories/GHSA-j2xj-x8wc-f6xg) / [CVE-2026-55739](https://nvd.nist.gov/vuln/detail/CVE-2026-55739);
 - OpenStack Ironic project-reader Portgroup scope drift [GHSA-x4h6-wf22-px84](https://github.com/advisories/GHSA-x4h6-wf22-px84), [CVE-2026-71201](https://nvd.nist.gov/vuln/detail/CVE-2026-71201), and [Launchpad bug 2162715](https://bugs.launchpad.net/ironic/+bug/2162715); and
 - HashBrown CMS branch-to-shell command construction [GHSA-h9gr-58w4-64cq](https://github.com/advisories/GHSA-h9gr-58w4-64cq) / [CVE-2026-70375](https://nvd.nist.gov/vuln/detail/CVE-2026-70375).
+- Apache Answer single-answer state and avatar-cleanup ownership records: [GHSA-x73g-vq9w-776v / CVE-2026-60023](https://github.com/advisories/GHSA-x73g-vq9w-776v) and [GHSA-536r-pphc-ghq8 / CVE-2026-48912](https://github.com/advisories/GHSA-536r-pphc-ghq8); and
+- KubeVirt `safepath` final-syscall link-following record: [GHSA-rcfc-7m3g-h5xh / CVE-2026-13201](https://github.com/advisories/GHSA-rcfc-7m3g-h5xh).
 
 Most entries were unreviewed GitHub/NVD mirrors when this page was written. Treat them as validation seeds, confirm behavior against the linked project revision, and do not infer package ranges or fixed versions not stated by a primary source.
 
@@ -101,7 +103,37 @@ Record the caller tenant, blanket ability/role, route or query parameters, resol
 
 The positive is **valid low-role permission -> foreign object or foreign parent resolves -> tenant predicate is absent or applied to the wrong relation -> patched sink records the marker ID**. Compare list, detail, bulk, and parent-child variants because scope is often present in one family and omitted in another.
 
-## 6. Treat agent paths and command fields as structured data
+Apache Answer adds both lifecycle state and caller-selected cleanup targets to this matrix. In a two-user disposable forum, seed only synthetic public, pending, deleted, and private answer markers under public and non-public parent questions. Patch the single-answer serializer and avatar deletion sink.
+
+| Test family | Variable to isolate | Bounded positive |
+| --- | --- | --- |
+| answer list versus detail | answer state and parent visibility | list denies a pending/deleted marker but detail serializer receives the same marker |
+| parent/child policy | public parent with non-public child | parent visibility substitutes for the child's independent state check |
+| avatar cleanup | caller-owned versus foreign synthetic file URL | authenticated user selects another user's marker and the denied delete sink receives its object/path |
+| URL aliases | canonical URL, equivalent owned alias, unrelated canary URL | resolver binds cleanup to the authenticated owner's stored object before deletion |
+
+Capture route family, caller, object ID, parent ID, child lifecycle state, owner, resolved storage key, policy result, and patched sink. Stop at marker IDs and hashes; never retrieve answer text or delete an uploaded file. Version `2.0.2` is the corrected comparator identified by the Apache records.
+
+## 6. Revalidate no-follow guarantees at the final syscall
+
+KubeVirt's `safepath` record shows why obtaining an `O_PATH|O_NOFOLLOW` descriptor is not the end of a symlink proof. A later helper can address that descriptor through `/proc/self/fd/N` and call a link-following ownership or mode syscall, causing the kernel to act on the leaf target that the earlier open intentionally did not follow.
+
+Use a disposable mount/user namespace with an in-root symlink to a synthetic sibling canary. Patch or interpose `chown`, `chmod`, and equivalent final operations so they record and deny the call. Preserve this trace:
+
+```text
+requested path and allowed root
+-> component-walk lstat/open flags
+-> returned descriptor and /proc/self/fd alias
+-> leaf type and readlink result
+-> final helper and follow/no-follow syscall semantics
+-> canonical object that would receive metadata
+```
+
+Compare regular files, directories, an in-root symlink to an in-root target, an in-root symlink to the sibling canary, a swapped leaf at a deterministic barrier, and a corrected build. A bounded positive is **no-follow open accepts a descriptor to the symlink itself -> downstream helper uses a link-following descriptor alias -> denied metadata sink identifies the outside-root canary target**. Opening a symlink with `O_PATH|O_NOFOLLOW` is expected behavior and is not the finding; the authority change occurs only at the later syscall.
+
+Keep the stated precondition: the cited path requires access from a `virt-launcher` pod into a `virt-handler` operation. Do not test on a shared cluster, alter host ownership or modes, or treat pod access as host compromise without the final privileged target evidence.
+
+## 7. Treat agent paths and command fields as structured data
 
 PocketFlow and HashBrown expose two ends of the same problem: a structured tool/config field reaches a stronger filesystem or shell interpreter.
 
