@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Traefik rewrite, identity-header, route-cache, namespace, and derived-key boundaries](alerts/2026-08-05-traefik-route-transport-namespace-boundaries-ghsa.md#4-diff-raw-routed-rewritten-and-backend-paths)
 - [Traefik proxied CONNECT backend-pool differential](methodology/http-desync-research-campaigns.md#proxied-connect-body-and-backend-pool-differential)
 - [OpenChamber and LudusMCP route, file, and process boundaries](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#2-compare-route-authentication-across-operating-modes)
 - [Apache Answer object-state and KubeVirt final-syscall boundaries](alerts/2026-08-05-route-context-controller-authority-boundaries-ghsa.md#5-bind-object-lookup-to-tenant-scope)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Keycloak SAML `OneTimeUse` replay follow-up](alerts/2026-06-04-keycloak-mlflow-auth-boundary-batch-ghsa.md#august-6-saml-onetimeuse-replay-follow-up)
 - [Assemblyline remote artifact identifier-to-file boundary](alerts/2026-08-05-workspace-fetch-object-interpreter-boundaries-ghsa.md#treat-remote-artifact-identifiers-as-paths-until-proven-otherwise)
 - [Quay mirror-fetch and VuFind handler-termination authority boundaries](alerts/2026-08-06-quay-mirror-vufind-handler-authority-boundaries-ghsa.md)
-- [Traefik route, transport, and namespace authority boundaries](alerts/2026-08-05-traefik-route-transport-namespace-boundaries-ghsa.md)
+
 
 
 
