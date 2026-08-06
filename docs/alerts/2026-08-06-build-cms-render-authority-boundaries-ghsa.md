@@ -4,7 +4,7 @@ title: Build cache, CMS, and renderer authority boundaries
 
 # Build cache, CMS, and renderer authority boundaries
 
-Twenty August 6 records expose a common testing question: does an early trust decision remain bound to the final file, peer, object, identity, method, parser state, or browser context? The reusable workflows cover Nx remote-cache extraction, AWS CLI EMR SSH wrappers, Contao job/crawler boundaries, Mermaid renderer state, Statamic identity/content routes, embedded PDF engines, HTML/Markdown normalization, and Craft CMS configuration and route authority.
+Twenty-five August 6 records expose a common testing question: does an early trust decision remain bound to the final file, peer, object, identity, method, parser state, or browser context? The reusable workflows cover Nx remote-cache extraction, AWS CLI EMR SSH wrappers, Contao job/crawler boundaries, Mermaid renderer state, Statamic identity/content routes, embedded PDF engines, HTML/Markdown normalization, Craft CMS configuration and route authority, and repository-analysis wrappers.
 
 Source records:
 
@@ -16,9 +16,11 @@ Source records:
 - PDF.js script execution and the embedded `ngx-extended-pdf-viewer` fork: [GHSA-hq66-cqwq-w95j / CVE-2026-16633](https://github.com/advisories/GHSA-hq66-cqwq-w95j) and [GHSA-w9hm-4m3m-fxmm](https://github.com/advisories/GHSA-w9hm-4m3m-fxmm);
 - jsoup custom raw-text-element cleaning: [GHSA-pmhh-3w7g-xqp8 / CVE-2026-71497](https://github.com/advisories/GHSA-pmhh-3w7g-xqp8);
 - League CommonMark control-byte URL normalization: [GHSA-29pj-957v-52mc / CVE-2026-71478](https://github.com/advisories/GHSA-29pj-957v-52mc); and
-- Craft CMS generic user saves, post-cleanse condition merging, Twig sandbox class hierarchy, and sibling global-set action authorization: [GHSA-p8x7-9vfw-p7vc](https://github.com/advisories/GHSA-p8x7-9vfw-p7vc), [GHSA-265m-7826-wjqm](https://github.com/advisories/GHSA-265m-7826-wjqm), [GHSA-f5wm-88jv-g5hx](https://github.com/advisories/GHSA-f5wm-88jv-g5hx), and [GHSA-9p7c-v5x3-rfx8 / CVE-2026-14793](https://github.com/advisories/GHSA-9p7c-v5x3-rfx8).
+- Craft CMS generic user saves, post-cleanse condition merging, Twig sandbox class hierarchy, and sibling global-set action authorization: [GHSA-p8x7-9vfw-p7vc](https://github.com/advisories/GHSA-p8x7-9vfw-p7vc), [GHSA-265m-7826-wjqm](https://github.com/advisories/GHSA-265m-7826-wjqm), [GHSA-f5wm-88jv-g5hx](https://github.com/advisories/GHSA-f5wm-88jv-g5hx), and [GHSA-9p7c-v5x3-rfx8 / CVE-2026-14793](https://github.com/advisories/GHSA-9p7c-v5x3-rfx8);
+- Craft CMS asset-preview authorization, non-sandboxed class creation, pre-render environment interpolation, and draft-label output encoding: [GHSA-44px-qjjc-xrhq](https://github.com/advisories/GHSA-44px-qjjc-xrhq), [GHSA-957r-qf9p-67xw](https://github.com/advisories/GHSA-957r-qf9p-67xw), [GHSA-596p-6jv8-775v](https://github.com/advisories/GHSA-596p-6jv8-775v), and [GHSA-2rp4-x2j7-qmcc](https://github.com/advisories/GHSA-2rp4-x2j7-qmcc); and
+- PHP_CodeSniffer blame-report command construction: [GHSA-hmqg-cxww-wqhq](https://github.com/advisories/GHSA-hmqg-cxww-wqhq).
 
-The Mermaid, League CommonMark, and JS-YAML resource-exhaustion records are source-tracked but not converted into availability-testing workflows. The sparse Silverstripe breadcrumb XSS record is also source-tracked rather than generalized beyond its stated sink.
+The Mermaid, League CommonMark, JS-YAML, and node-re2 resource-exhaustion records are source-tracked but not converted into availability-testing workflows. The sparse Silverstripe breadcrumb XSS and Craft registration-metrics records, Craft's theoretical path-hardening record, withdrawn duplicate Craft records, and node-re2 bounded heap-read record are also source-tracked rather than generalized beyond their stated sinks.
 
 !!! warning "Denied sinks and synthetic authority only"
     Use disposable workspaces, owned cache/HTTP/SSH peers, fake credentials, two-user CMS fixtures, patched file/process/configuration/script/mutation sinks, and detached browser DOMs. Never overwrite host files, intercept operational SSH, collect crawler credentials, read another user's content, delete CMS data, upload executable content, execute templates or commands, or run active document/HTML content in a privileged origin.
@@ -182,6 +184,38 @@ Map every allowed class, interface, method, property, and `AllowedInSandbox` att
 
 Build a route/method matrix for adjacent create, save, reorder, and delete actions. Compare administrator and non-administrator sessions while patching project-config persistence. A positive is **sibling actions enforce the admin gate -> reorder reaches persistence for the non-admin principal**. Keep display-order modification separate from content access or code execution.
 
+### Preview route versus asset visibility
+
+Seed public and private assets with random non-sensitive marker IDs. Compare the ordinary asset-view route with every preview, thumbnail, transform, metadata, and embed route while patching preview rendering and file reads. Capture the authenticated principal, requested asset ID, request-scoped asset query, `canView` result, preview route generated, and fields returned. A bounded positive is **ordinary view denies the private marker -> preview handler resolves the same asset globally -> synthetic preview metadata is returned**. An asset ID or generated preview URL is not proof that bytes are readable; keep metadata, transformed-image access, and original-file access as separate claims.
+
+### Pre-render interpolation versus sandbox policy
+
+Exercise literal values, undefined variables, synthetic secret-provider markers, and ordinary Twig expressions through the same render route. Patch environment/secret lookup and template output so no process environment is read or reflected. Preserve:
+
+```text
+raw template parameter -> environment/secret interpolation
+-> resulting template bytes -> sandbox policy -> render/error class
+-> denied output or comparison sink
+```
+
+A bounded positive is **sandboxed route denies direct secret access -> a `${CANARY_NAME}`-shaped value reaches the patched secret resolver before sandboxing -> inert secret marker influences the final comparison/error recorder**. This establishes ordering and an oracle surface, not recovered credentials. Do not enumerate environment names or run a character-by-character extraction loop.
+
+### Non-sandboxed class factories
+
+First prove that the tested title/URI/template context is non-sandboxed and requires the stated administrative configuration. Replace the class constructor and file APIs with recorders, then vary an allowed inert class, blocked class, unrelated filesystem class, subclass, alias, and malformed constructor arguments. A positive is **template-controlled class name passes the factory policy -> constructor recorder selects a non-allowlisted filesystem-capable class and synthetic path**. Do not open `.env`, password, configuration, or host files; class selection is the final safe sink. Keep this admin/configuration-dependent surface separate from low-privilege template rendering.
+
+### Stored labels in a higher-privilege browser context
+
+Use an author and administrator fixture plus harmless text/DOM markers. Create a synthetic draft name, then enumerate every chip, card, index, relation selector, and drafts-list renderer that consumes it. Record stored value, encoder used, serialized HTML, victim route/role, and script-disabled DOM. A bounded positive is **author-controlled draft name -> administrator-facing renderer omits encoding -> harmless marker becomes an element in the detached DOM**. Do not execute handlers or issue authenticated administrator actions; DOM insertion and cross-role reach are sufficient.
+
+## 12. Audit repository-analysis wrappers at the final process sink
+
+The PHP_CodeSniffer record is limited to `Gitblame`, `Hgblame`, and `Svnblame` reports processing attacker-shaped filenames; the default `Full` and other non-blame reports are not the stated surface. This is a useful repository-trust check for pull-request CI, review services, pre-commit hooks, and developer analysis of third-party trees.
+
+Create a disposable repository containing ordinary names plus inert metacharacter-shaped filenames supported by the fixture filesystem. Put recorder binaries for `git`, `hg`, and `svn` in a temporary `PATH`, and patch every shell/process API to deny execution. Run each blame and non-blame report across affected and fixed PHP_CodeSniffer releases. Capture raw filename bytes, report selection, quoting/escaping stage, shell-versus-argv API, working directory, final command/argv, and denied process result.
+
+A bounded positive is **repository filename -> blame-report formatter -> shell recorder observes the marker as command grammar rather than one literal filename argument**. The non-blame report and fixed release should preserve the marker as data or avoid the process path. Never place an executable payload in a filename, run the fixture on a developer's real checkout, or treat a generated command string as execution without the final denied process trace.
+
 ## Evidence and reporting boundaries
 
 - Distinguish cache-server control, on-path cache tampering, and local archive control.
@@ -194,4 +228,5 @@ Build a route/method matrix for adjacent create, save, reorder, and delete actio
 - Inventory vendored or forked renderer engines; dependency manifests alone can miss the reachable parser.
 - Preserve raw bytes, library output, and final browser normalization before claiming a sanitizer or URL-policy bypass.
 - For configuration and template systems, re-evaluate authority after decode, merge, subclass resolution, and generic model binding.
+- For repository analyzers, distinguish report selection, command-string construction, and actual process invocation; preserve an argv-versus-shell trace.
 - State exact affected/fixed versions from the source record and verify the deployed integration before reporting.

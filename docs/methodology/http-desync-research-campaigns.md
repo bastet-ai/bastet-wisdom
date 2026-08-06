@@ -6,7 +6,7 @@ title: HTTP desync research campaigns
 
 Use this workflow to turn protocol specifications, parser oddities, and HTTP anomaly observations into replayable desync research without treating every strange response as request smuggling. It adapts PortSwigger's August 2026 HTTP Terminator research into a bounded operator methodology: generate testable hypotheses, evaluate cross-request contamination with deterministic controls, isolate weaponization from discovery, and feed confirmed behavior into a human-reviewed research cascade.
 
-Primary research: [James Kettle, “Can AI do novel security research? Meet the HTTP Terminator”](https://portswigger.net/research/http-terminator), [Tom Stacey with Tobia Righi, “CRLF-Powered Desync Attacks: Beheading HTTP Streams”](https://portswigger.net/research/crlf-powered-desync-attacks), and Traefik's reviewed [GHSA-3ccp-42pg-hgv6 / CVE-2026-71324](https://github.com/advisories/GHSA-3ccp-42pg-hgv6) for HTTP/2 or HTTP/3 `CONNECT` body forwarding into a shared HTTP/1.1 backend pool.
+Primary research: [James Kettle, “Can AI do novel security research? Meet the HTTP Terminator”](https://portswigger.net/research/http-terminator), [Tom Stacey with Tobia Righi, “CRLF-Powered Desync Attacks: Beheading HTTP Streams”](https://portswigger.net/research/crlf-powered-desync-attacks), Traefik's reviewed [GHSA-3ccp-42pg-hgv6 / CVE-2026-71324](https://github.com/advisories/GHSA-3ccp-42pg-hgv6) for HTTP/2 or HTTP/3 `CONNECT` body forwarding into a shared HTTP/1.1 backend pool, and h2's reviewed [GHSA-6hr6-w5qg-qmwg](https://github.com/advisories/GHSA-6hr6-w5qg-qmwg) for duplicate `Host` fields crossing an HTTP/2-to-HTTP/1.1 bridge.
 
 !!! warning "Authorized, isolated testing only"
     Use disposable front-end/back-end pairs, owned callback services, synthetic sessions, and customer-approved test windows. Never run high-volume desync probes against shared production infrastructure, target live users, capture queued responses, or reuse a contaminated connection across tenants. On an operational target, stop at the lowest-impact parser differential the owner approved.
@@ -127,6 +127,21 @@ Run a one-variable matrix:
 A bounded positive is **one synthetic attacker stream -> origin records an extra marker request -> the same backend socket returns to the shared pool -> a separate synthetic client receives the wrong marker response**. Ordinary pipelining on the attacker's own client is not enough. Keep ForwardAuth or equivalent authentication subrequests as a separate route family because they may use a different HTTP client and pool.
 
 For the cited Traefik branches, the reviewed record lists fixes in `2.11.53`, `3.6.24`, and `3.7.9`; it states that the experimental FastProxy path was not affected. Confirm the exact proxy implementation and branch rather than treating a version string as topology proof. Never replay the public queue-poisoning demonstration against shared users or retain any response body beyond random fixture markers.
+
+## Duplicate authority fields across an HTTP/2 bridge
+
+The h2 record adds a narrower campaign seed: affected releases through `4.4.0` accept more than one `Host` field and expose all copies to the consuming application. The security effect depends on a later component translating that block to HTTP/1.1 or making an authority decision from a different copy; acceptance alone is not request smuggling.
+
+Use an isolated H2 client, the exact h2-based consumer/bridge, and a raw-byte HTTP/1.1 origin recorder. Submit one request at a time with:
+
+- one `:authority` and no `Host`;
+- matching `:authority` and one `Host`;
+- duplicate equal `Host` fields;
+- duplicate distinct synthetic host markers in both orders;
+- mixed case and surrounding optional whitespace where the API permits it; and
+- affected h2 `4.4.0` versus fixed `4.4.1`.
+
+Preserve the decoded H2 field list and order, consumer API representation, authority/route decision, exact HTTP/1.1 bytes, origin parser result, and connection reuse. Patch routing, cache, and authentication decisions to inert recorders. A bounded positive is **one H2 stream -> bridge emits two HTTP/1.1 `Host` lines or routes by one marker while the origin recorder selects the other**. Promote it to desync only if the deterministic cross-request evaluator later proves a framing disagreement and synthetic response reassignment. Never target real virtual hosts, caches, authenticated routes, or shared backend pools.
 
 ## 1. Define one testable hypothesis
 
