@@ -44,6 +44,25 @@ This batch is durable because each item exposes a reusable operator boundary: lo
 - Positive proof is a query result crossing from the attacker's expected thread/namespace into another synthetic checkpoint. Negative proof is strict string/schema enforcement or patched 1.3.1 behavior.
 - Evidence should include the package version, exact API path that accepts `config.configurable`, redacted payload shape, expected tenant/thread IDs, observed checkpoint ID, and cleanup.
 
+### August 6: LangGraph SQL namespace segment matching
+
+[GHSA-47pj-3jcm-6whg](https://github.com/advisories/GHSA-47pj-3jcm-6whg) / CVE-2026-71433 adds a distinct store-boundary failure in `langgraph-checkpoint-postgres` and `langgraph-checkpoint-sqlite` before 3.1.1. These stores flattened hierarchical namespace tuples into dot-joined strings and implemented scoped reads with SQL pattern matching. A prefix such as `("foo",)` could therefore include sibling namespaces such as `("foobar",)` or `("foo2",)`; `_` and `%` in labels acted as pattern metacharacters; suffix matching could confuse leaves such as `alice` and `malice`; and SQLite `LIKE` introduced a case-folding difference from exact `get`/`put`/`delete` operations. This is pattern construction, not SQL injection, and the advisory limits impact to `search` and `list_namespaces` reads.
+
+Build an isolated two-tenant store fixture for each backend. Seed only random marker values under namespace tuples that differ by one controlled dimension:
+
+| Case | Requested scope | Control sibling |
+| --- | --- | --- |
+| segment prefix | `("tenant", "1")` | `("tenant", "12")` |
+| lexical sibling | `("foo",)` | `("foobar",)` |
+| underscore | `("user_1",)` | `("userX1",)` |
+| percent | a label containing `%` | a non-descendant matching the resulting pattern |
+| suffix | `suffix=("alice",)` | leaf `malice` |
+| SQLite case | one mixed-case label | a case-only sibling |
+
+Record the logical namespace tuple, flattened database value, bound pattern, escape character, generated predicate, backend, operation, and returned marker IDs. Run exact `get`, `put`, and `delete` as negative controls without mutating the sibling record. A bounded positive is **scope tuple A -> SQL pattern lacks a segment boundary or escapes -> `search`/`list_namespaces` returns synthetic marker B**. Repeat against 3.1.1 and, where practical, `InMemoryStore`; the fixed SQL behavior should require exact namespace equality or a literal dot before descendants and should escape pattern characters.
+
+Do not query real agent memory, prompts, checkpoints, or hosted tenant data. Report read-scope drift only: do not infer write/delete access, SQL injection, or universal hosted exposure. Preserve deployment backend and namespace-label preconditions; fixed-length identifiers without `%` or `_` are an important negative control because one such label cannot be a prefix of another.
+
 ### Chisel tunnel ACL enforcement
 
 - Use a dedicated Chisel lab server with an `--authfile` that allows one benign destination, such as a disposable echo listener on `127.0.0.1:9001`, and denies another listener on `127.0.0.1:9002`.
