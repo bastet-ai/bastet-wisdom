@@ -8,7 +8,9 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
-- [Agent child-tool, shell-approval, artifact-file, and attachment-fetch follow-up](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#3-recompute-deny-policy-after-every-tool-injection)
+- [Polaris storage-location and WSO2 token-authority boundaries](alerts/2026-08-06-polaris-wso2-storage-token-authority-boundaries-ghsa.md)
+- [TinyAGI, NanoClaw, and openclaw-cn authority follow-up](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#2-compare-route-authentication-across-operating-modes)
+- [Keycloak SAML `OneTimeUse` replay follow-up](alerts/2026-06-04-keycloak-mlflow-auth-boundary-batch-ghsa.md#august-6-saml-onetimeuse-replay-follow-up)
 - [Assemblyline remote artifact identifier-to-file boundary](alerts/2026-08-05-workspace-fetch-object-interpreter-boundaries-ghsa.md#treat-remote-artifact-identifiers-as-paths-until-proven-otherwise)
 - [Quay mirror-fetch and VuFind handler-termination authority boundaries](alerts/2026-08-06-quay-mirror-vufind-handler-authority-boundaries-ghsa.md)
 - [CRLF header-injection expansion for HTTP desync campaigns](methodology/http-desync-research-campaigns.md#crlf-header-injection-expansion)
@@ -16,8 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Gitea migration and OAuth final-peer SSRF follow-up](alerts/2026-06-17-gitea-langchain4j-hapi-agent-websocket-boundary-batch-ghsa.md#august-5-gitea-migration-and-oauth-fetch-follow-up)
 - [Traefik route, transport, and namespace authority boundaries](alerts/2026-08-05-traefik-route-transport-namespace-boundaries-ghsa.md)
 - [Nuxt server-island component and DevTools RPC authority follow-up](alerts/2026-08-05-nuxt-route-payload-cache-boundaries-ghsa.md#august-5-follow-up-server-island-component-and-devtools-rpc-authority)
-- [Nuxt route-rule and SSR payload-cache authority boundaries](alerts/2026-08-05-nuxt-route-payload-cache-boundaries-ghsa.md)
-- [rclone encoding, archive, tenant-path, protocol, and redirect follow-up](alerts/2026-07-21-rclone-remote-control-boundaries-ghsa.md#august-5-second-follow-up-encoding-archive-tenant-path-protocol-and-redirect-boundaries)
 
 
 

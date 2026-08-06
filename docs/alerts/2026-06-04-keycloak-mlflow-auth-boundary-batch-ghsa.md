@@ -208,3 +208,21 @@ Use a disposable realm, synthetic confidential client, two canary users, and an 
 3. **Parameter precedence:** use duplicate authorization parameters whose first and last values point to two owned canary redirect paths. Capture raw query order, Keycloak's parsed multimap, validated value, value forwarded to the client, and the browser's final destination. Broad redirect configuration is a precondition, not proof.
 
 Report **locked account state -> alternate CIBA token path**, **JWE confidentiality -> incorrectly assumed request integrity**, or **duplicate parameter -> validation/consumption disagreement**. Keep tokens redacted and distinguish Keycloak's decision from a downstream client's parameter parser.
+
+## August 6 SAML `OneTimeUse` replay follow-up
+
+[GHSA-fghp-hcwh-75j2 / CVE-2026-18967](https://github.com/advisories/GHSA-fghp-hcwh-75j2) describes a Keycloak SAML broker using IdP-initiated flow without enforcing the assertion's `OneTimeUse` condition. The GitHub entry was an unreviewed mirror when this section was added; validate it against the [Red Hat CVE record](https://access.redhat.com/security/cve/CVE-2026-18967), exact deployed build, and broker configuration.
+
+Use an isolated realm, a synthetic upstream IdP signing key, one canary user, and a patched session-creation sink. Generate one correctly signed assertion containing `OneTimeUse`, record its assertion ID and validity window, and submit the identical assertion twice. Pair that with controls for a fresh assertion ID, expired assertion, wrong audience, wrong recipient, altered signed content, and service-provider-initiated flow where available.
+
+Capture:
+
+```text
+raw assertion hash and ID
+-> signature / issuer / audience / recipient checks
+-> OneTimeUse replay-store lookup
+-> brokered identity
+-> patched session-creation result
+```
+
+A bounded positive is **first signed canary assertion accepted -> identical assertion ID accepted again within its validity window -> second patched session-creation marker observed**. Do not reuse a real user's assertion or create operational sessions. Report missing single-use enforcement, not a signature bypass or universal SAML replay.

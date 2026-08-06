@@ -4,7 +4,7 @@ title: Agent control-plane, tool-policy, file, and fetch authority boundaries
 
 # Agent control-plane, tool-policy, file, and fetch authority boundaries
 
-Twelve August 6 records expose a reusable agent-platform testing pattern: an early mode, deny-list, approval, path, or URL decision is not authoritative when a later route, tool injector, alternate command handler, shell, file sink, or connector sees richer input.
+Nineteen August 6 records expose a reusable agent-platform testing pattern: an early mode, deny-list, approval, path, or URL decision is not authoritative when a later route, tool injector, alternate command handler, shell, file sink, or connector sees richer input.
 
 Source records:
 
@@ -18,8 +18,11 @@ Source records:
 - CowAgent Self-Evolution MCP tool re-injection: [GHSA-wjcq-xp37-c947](https://github.com/advisories/GHSA-wjcq-xp37-c947) and [issue #2904](https://github.com/zhayujie/CowAgent/issues/2904);
 - LobsterAI message-derived artifact file reads: [GHSA-7v78-v35x-cqg5](https://github.com/advisories/GHSA-7v78-v35x-cqg5) and [issue #2176](https://github.com/netease-youdao/LobsterAI/issues/2176); and
 - JeecgBoot anonymous chat-attachment SSRF: [GHSA-wwv2-c3p6-cpr5](https://github.com/advisories/GHSA-wwv2-c3p6-cpr5) and [issue #9672](https://github.com/jeecgboot/JeecgBoot/issues/9672).
+- TinyAGI unauthenticated message, `prompt_file`, and response-attachment boundaries: [GHSA-w22m-c8rq-w42r](https://github.com/advisories/GHSA-w22m-c8rq-w42r), [issue #284](https://github.com/TinyAGI/tinyagi/issues/284), [GHSA-2r4w-xxv7-6r74](https://github.com/advisories/GHSA-2r4w-xxv7-6r74), [issue #283](https://github.com/TinyAGI/tinyagi/issues/283), [GHSA-69rx-5vq2-c562](https://github.com/advisories/GHSA-69rx-5vq2-c562), and [issue #282](https://github.com/TinyAGI/tinyagi/issues/282);
+- NanoClaw child-agent privilege inheritance: [GHSA-grxx-9qr2-2q6v](https://github.com/advisories/GHSA-grxx-9qr2-2q6v) and [issue #2807](https://github.com/nanocoai/nanoclaw/issues/2807); and
+- `openclaw-cn` wrapper approval, elevated-sender, and dangling-symlink `apply_patch` boundaries: [GHSA-p2px-f69r-9h28](https://github.com/advisories/GHSA-p2px-f69r-9h28), [issue #563](https://github.com/mf-yang/openclaw-cn/issues/563), [GHSA-f57q-9mhr-fhmm](https://github.com/advisories/GHSA-f57q-9mhr-fhmm), [issue #564](https://github.com/mf-yang/openclaw-cn/issues/564), [GHSA-2mj8-f2gc-5q5j](https://github.com/advisories/GHSA-2mj8-f2gc-5q5j), and [issues #565–566](https://github.com/mf-yang/openclaw-cn/issues/565).
 
-The GHSA entries are unreviewed mirrors. The NanoClaw, Hermes, Mercury, and LobsterAI project issues remain open in the cited records; the CowAgent and JeecgBoot issues are closed without a fixed release identified in the mirror; the IronClaw correction is merged; and the LettaBot and super-agent-party evidence is researcher-published rather than a vendor advisory. Treat all stated release ranges as validation seeds and confirm the deployed commit, route exposure, configuration, and current project status before reporting.
+The GHSA entries are unreviewed mirrors. The NanoClaw, TinyAGI, `openclaw-cn`, Hermes, Mercury, and LobsterAI project issues remain open in the cited records; the CowAgent and JeecgBoot issues are closed without a fixed release identified in the mirror; the IronClaw correction is merged; and the LettaBot and super-agent-party evidence is researcher-published rather than a vendor advisory. Treat all stated release ranges as validation seeds and confirm the deployed commit, route exposure, configuration, and current project status before reporting.
 
 !!! warning "Denied sinks and synthetic data only"
     Use disposable agent instances, fake status objects, synthetic memory rows, temporary canary roots, owned no-content HTTP peers, and patched tool/file/network/process sinks. Never read host files, persist real conversation content, execute commands, probe internal services, or relay credentials or responses.
@@ -52,6 +55,8 @@ Create a route matrix across:
 
 Record status, response schema or field-name hash, effective mode, and whether the authentication middleware ran. A bounded positive is **same unauthenticated request denied in the restrictive control mode but returns synthetic management metadata in shared mode**. Do not enumerate real pairing requests or conversation identifiers. Report mode-dependent route authorization, not a universal application takeover.
 
+TinyAGI adds a capability-bearing message route. Patch the provider process constructor and compare unauthenticated and authenticated canary messages across provider adapters. Record route middleware, selected agent/provider, configured tool policy, approval mode, and final argv. The bounded positive is **unauthenticated `POST /api/message` -> normal queue and agent invocation -> provider recorder receives `--dangerously-skip-permissions` or an equivalent pre-approved mode**. Do not send a tool-seeking prompt or execute the provider; argv evidence is enough.
+
 ## 3. Recompute deny policy after every tool injection
 
 The Hermes record states that built-in memory tools were filtered for `disabled_toolsets=['memory']`, after which provider schemas such as `fact_store` and `fact_feedback` were appended and inserted into the runtime's valid-tool set. This is a general test for plugins, MCP servers, provider tools, aliases, and dynamically discovered capabilities.
@@ -76,6 +81,8 @@ The Mercury and CowAgent records add two useful variants. Mercury accepts `allow
 
 Add delegated and background agents to the policy matrix. Create two inert child agents and one fake MCP tool whose handler only records a marker. Compare the declared child allow-list, construction-time tools, final model-visible schemas, dispatcher-valid names, target-object ownership, and patched handler result. A bounded positive is **restricted child/reviewer starts without a capability -> runtime registry or MCP reconciliation restores it -> denied tool recorder receives the marker**. For orchestration tools, patch halt/delete operations and record the synthetic target agent ID; do not interrupt real work.
 
+NanoClaw adds a construction-time identity variant. Patch child-agent creation and configuration persistence, then compare the parent caller's identity and policy with the child owner, workspace, tool allow-list, environment, and channel bindings. A bounded positive is **ordinary parent reaches child creation -> caller-controlled fields select a stronger child mode or inherited authority -> patched creator records the elevated configuration**. Child creation alone is not privilege escalation; preserve the exact authority delta and deny every real tool action.
+
 ## 4. Differential-test approval parsing against execution parsing
 
 The IronClaw record describes risk classification splitting shell chains on some separators while `sh -c` also recognized newline. Its merged correction adds newline/CRLF and wrapper-aware regression coverage. Reuse that methodology wherever an agent remembers approval for a command tool.
@@ -96,6 +103,14 @@ Mercury contributes two controls that should be standard in this harness:
 
 Use marker-only command strings and replace every spawn or shell constructor with a denied recorder. Pair each alternate route with the semantically equivalent guarded tool call. A bounded positive is **guarded route requests approval -> alternate route or redirection-bearing safe family is auto-approved -> denied recorder observes the same write- or execution-capable shell semantics**. Do not create the marker file or publish a command-bearing API body.
 
+The `openclaw-cn` record adds shell multiplexers such as `busybox sh -c` and `toybox sh -c`. Compare two inert payloads using the same outer executable after an `allow-always` decision. Capture the approved full command, resolved outer binary, persisted allow-list pattern, inner applet and payload, second approval decision, and denied spawn. A bounded positive is **first wrapper command approved -> trust persists only as the multiplexer path -> changed inner shell payload skips a second approval -> execution branch reaches the denied recorder**. If the tested build crashes before spawn, report only the missed approval and overbroad persisted trust.
+
+### Bind elevated chat authority to stable sender identity
+
+For chat-controlled elevated modes, compare stable sender identifiers with recipient/self fields and mutable profile metadata. Use two synthetic chat users and patch session-state persistence.
+
+Test allow-list values against sender ID, normalized sender address, recipient address, display name, username, tag, case changes, and provider prefixes. Record the general command gate separately from the narrower elevated gate. The bounded positive is **command-authorized but non-elevated sender -> recipient or mutable metadata matches the elevated allow-list -> `/elevated` state recorder receives an enable transition**. Do not execute an elevated tool; the unauthorized state transition is sufficient.
+
 ## 5. Bind file tools to a canonical allowed root and delivery authority
 
 NanoClaw's record links an absolute path accepted by `send_file` to an outbox delivery path. The super-agent-party record links non-HTTP `file_url` input to local file handling through a manually executable tool. Test both the read authority and the subsequent response/delivery authority.
@@ -113,6 +128,10 @@ Patch `open`, copy, and outbox/send functions so they only record the requested 
 Record input, decoded path, `realpath`/final target, allowed-root decision, tool provenance, and attempted response/outbox destination. A bounded positive is **untrusted tool/API input -> canonical target outside the temporary allowed root -> denied read/copy sink reached -> normal response or delivery path selected**. Never point the harness at home directories, credentials, project source, or production mounts.
 
 Also test passive artifact parsing. The LobsterAI record describes assistant/tool text containing a `MEDIA:` or `file:` path being parsed in the renderer, automatically forwarded across an Electron preload/IPC bridge, and resolved by a main-process file reader when the session opens. Seed only a synthetic session message and patch `stat`/`readFile` at the main-process boundary. Record message provenance, parsed artifact path, session root, final canonical target, IPC method, and denied syscall. The strongest bounded claim is **message-derived path outside the disposable workspace -> automatic preview loader -> denied main-process reader**; a rendered artifact label alone is not file disclosure.
+
+TinyAGI contributes two end-to-end file-authority variants. First, an unauthenticated agent-configuration route can persist a caller-selected `prompt_file`, which prompt construction later reads and sends to the model provider. Second, provider/agent output containing a `[send_file: path]` tag can enter an outbound channel attachment queue. Use a temporary canary file, patched `readFile`/provider body recorder, and patched Telegram/Discord/WhatsApp attachment constructors. A bounded positive is **unauthenticated route or influenced model output -> outside-workspace canary path -> denied reader or attachment sink -> provider/outbound delivery authority selected**. Never let canary contents reach a live model or messaging account.
+
+For workspace mutation tools, include dangling final symlinks, not only existing symlinks and `..`. The `openclaw-cn` record describes a component walk returning success on `ENOENT` before the final `writeFile` follows an in-workspace dangling symlink to an outside target. Create only a disposable symlink and patch the final writer. Record lexical path, nearest existing ancestor, `lstat` result, symlink target, intended final location, and denied write. The positive is **direct traversal denied -> dangling in-root alias accepted -> final write recorder resolves outside the temporary root**; do not create the outside file.
 
 ## 6. Distinguish URL detection from final-peer enforcement
 
