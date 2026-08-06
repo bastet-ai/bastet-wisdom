@@ -8,8 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Agent child-tool, shell-approval, artifact-file, and attachment-fetch follow-up](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#3-recompute-deny-policy-after-every-tool-injection)
 - [Assemblyline remote artifact identifier-to-file boundary](alerts/2026-08-05-workspace-fetch-object-interpreter-boundaries-ghsa.md#treat-remote-artifact-identifiers-as-paths-until-proven-otherwise)
-- [Agent control-plane, tool-policy, file, and fetch authority boundaries](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md)
 - [Quay mirror-fetch and VuFind handler-termination authority boundaries](alerts/2026-08-06-quay-mirror-vufind-handler-authority-boundaries-ghsa.md)
 - [CRLF header-injection expansion for HTTP desync campaigns](methodology/http-desync-research-campaigns.md#crlf-header-injection-expansion)
 - [Langflow validation, cache, memory, and filesystem authority follow-up](alerts/2026-06-19-langflow-mailpit-outerbase-miniflux-render-boundaries-ghsa.md#august-5-second-follow-up-validation-cache-memory-and-filesystem-authority)
