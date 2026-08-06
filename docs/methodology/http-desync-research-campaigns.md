@@ -6,7 +6,7 @@ title: HTTP desync research campaigns
 
 Use this workflow to turn protocol specifications, parser oddities, and HTTP anomaly observations into replayable desync research without treating every strange response as request smuggling. It adapts PortSwigger's August 2026 HTTP Terminator research into a bounded operator methodology: generate testable hypotheses, evaluate cross-request contamination with deterministic controls, isolate weaponization from discovery, and feed confirmed behavior into a human-reviewed research cascade.
 
-Primary research: [James Kettle, “Can AI do novel security research? Meet the HTTP Terminator”](https://portswigger.net/research/http-terminator).
+Primary research: [James Kettle, “Can AI do novel security research? Meet the HTTP Terminator”](https://portswigger.net/research/http-terminator) and [Tom Stacey with Tobia Righi, “CRLF-Powered Desync Attacks: Beheading HTTP Streams”](https://portswigger.net/research/crlf-powered-desync-attacks).
 
 !!! warning "Authorized, isolated testing only"
     Use disposable front-end/back-end pairs, owned callback services, synthetic sessions, and customer-approved test windows. Never run high-volume desync probes against shared production infrastructure, target live users, capture queued responses, or reuse a contaminated connection across tenants. On an operational target, stop at the lowest-impact parser differential the owner approved.
@@ -35,6 +35,66 @@ This workflow is useful when you need to:
 - a known-good clean request plus malformed negative controls.
 
 Pin product versions, configuration, upstream protocol, connection-pool behavior, and image digests. A finding that depends on upstream HTTP/1.1 may disappear when the edge uses HTTP/2 to the origin, and the reverse is also possible.
+
+## CRLF header-injection expansion
+
+The August 2026 CRLF research adds an important campaign seed: treat request or response header injection as a possible **framing primitive**, not merely an open-redirect or reflected-content finding. The decisive question is where decoded line breaks are inserted into the next HTTP message and whether that message reaches a persistent parser boundary.
+
+### Map raw input to the upstream message
+
+Do not start with queue poisoning. First build an isolated transform recorder and vary one insertion point at a time:
+
+| Candidate input | Transform to record | Harmless differential |
+| --- | --- | --- |
+| normalized request path | raw path -> decoded path -> upstream request target | inert header reaches the origin recorder |
+| custom upstream header | application value -> proxy-added header value | invalid header grammar produces a stable lab-only status |
+| cookie or body field | decoded field -> rewritten path/header | marker changes the origin request line or header set |
+| redirect target | raw path -> decoded `Location` value | inert marker creates an extra response header in a local client |
+| regex-derived proxy variable | match -> decoded variable -> serialized request | whitespace or delimiter survives into upstream bytes |
+
+Capture the raw client bytes, every decode/normalization stage, and the exact bytes emitted upstream. A status change is only a **header-injection lead**. Promote it to request splitting only when one clean client request is serialized as two complete origin requests, and to desync only when the deterministic cross-request evaluator proves contamination.
+
+Prefer predictable, non-sensitive parser responses in the lab—for example an unsupported protocol token, invalid transfer coding, invalid expectation, or malformed length. Do not copy high-rate queue-poisoning examples from public research into production validation.
+
+### Test framing transitions separately
+
+Once the recorder confirms line-break injection, evaluate these transitions one at a time:
+
+1. **Header insertion:** one injected inert header appears in one upstream request.
+2. **Request splitting:** one downstream request becomes two syntactically complete upstream requests.
+3. **Injected framing:** an injected `Transfer-Encoding`, `Content-Length`, or body-eligibility decision makes the edge and origin consume different byte counts.
+4. **Response assignment:** a synthetic follow-up route receives the wrong synthetic response.
+5. **Browser reachability:** an owned browser can serialize the required URL, method, and body without forbidden-header control.
+
+Record the strongest completed transition and stop there. Browser-compatible serialization does not prove browser-powered exploitation, and a browser-powered trigger does not prove cross-user impact.
+
+### Classify connection scope before impact
+
+CRLF-powered cases may be globally pooled, connection-locked, IP-locked, or request-tunnelled. Determine the scope with canaries instead of live traffic:
+
+| Test | Interpretation |
+| --- | --- |
+| separate clients receive cross-markers through one isolated edge pool | shared-upstream contamination in the fixture |
+| only repeated requests on one client connection cross | connection-locked behavior |
+| separate clients cross only through one owned source-address fixture | source-address affinity lead |
+| extra origin request executes but its response remains attached to the initiating client | request tunnelling or local splitting |
+
+Use a local browser profile with no real cookies to test browser serialization and connection reuse. Patch navigation, popup, callback, and data-export sinks to record only random markers. Never use iframes, refresh loops, many connections, another user's session, or shared-IP users to demonstrate reachability.
+
+### HEAD, interim response, and range gadgets are distinct claims
+
+The research shows that response-length behavior can turn otherwise blind tunnelling or stacked responses into stronger primitives. Keep each edge independently evidenced:
+
+- `Expect: 100-continue` changes intermediary response parsing;
+- a `HEAD` response causes an over-read into a second synthetic response;
+- a synthetic byte range changes the recorded response length; or
+- a response header survives a front-end stripping rule.
+
+For each, use fixed random bodies and record status lines, declared lengths, bytes consumed, bytes discarded, and connection-close decisions. Do not place scripts, cookies, tokens, account actions, cache mutations, or internal-file routes in the fixture. A parser over-read is not XSS, cookie theft, access-control bypass, or cache poisoning without a separately proven safe sink.
+
+### Response-header injection and reverse-desync seeds
+
+Apply the same discipline in the reverse direction. Record whether decoded input enters `Location` or another response header, whether a blank line can terminate the header block, and whether the client/front end consumes bytes beyond the declared response length. Keep cookie setting and active HTML out of the proof. A bounded result is an inert extra header or two synthetic response boundaries observed by a disposable client; modern clients may discard stacked bytes and close, so absence of a reverse desync must remain a recorded negative result.
 
 ## 1. Define one testable hypothesis
 
