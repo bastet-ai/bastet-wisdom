@@ -4,7 +4,7 @@ title: Build cache, CMS, and renderer authority boundaries
 
 # Build cache, CMS, and renderer authority boundaries
 
-Twelve August 6 records expose a common testing question: does an early trust decision remain bound to the final file, peer, object, identity, method, or browser context? The reusable workflows cover Nx remote-cache extraction, AWS CLI EMR SSH wrappers, Contao job/crawler boundaries, Mermaid renderer state, and Statamic identity/content routes.
+Twenty August 6 records expose a common testing question: does an early trust decision remain bound to the final file, peer, object, identity, method, parser state, or browser context? The reusable workflows cover Nx remote-cache extraction, AWS CLI EMR SSH wrappers, Contao job/crawler boundaries, Mermaid renderer state, Statamic identity/content routes, embedded PDF engines, HTML/Markdown normalization, and Craft CMS configuration and route authority.
 
 Source records:
 
@@ -12,12 +12,16 @@ Source records:
 - AWS CLI EMR helper host-key verification: [GHSA-hqvf-45jj-mccq / CVE-2026-18654](https://github.com/advisories/GHSA-hqvf-45jj-mccq);
 - Contao cross-job attachment path resolution and crawler credential forwarding: [GHSA-grm4-wm43-9jh5 / CVE-2026-55825](https://github.com/advisories/GHSA-grm4-wm43-9jh5) and [GHSA-3mr9-p497-58f6 / CVE-2026-55824](https://github.com/advisories/GHSA-3mr9-p497-58f6);
 - Mermaid configuration/architecture prototype writes and sibling CSS reach: [GHSA-c4c3-pg64-4m4v / CVE-2026-71438](https://github.com/advisories/GHSA-c4c3-pg64-4m4v), [GHSA-3rrr-jr9j-h3q3 / CVE-2026-71437](https://github.com/advisories/GHSA-3rrr-jr9j-h3q3), and [GHSA-6x64-9x62-f2gx / CVE-2026-50159](https://github.com/advisories/GHSA-6x64-9x62-f2gx); and
-- Statamic OAuth identity matching, restricted navigation content, frontend upload rules, Antlers method resolution, and notification-email HTML: [GHSA-93qh-5269-9wcf / CVE-2026-64665](https://github.com/advisories/GHSA-93qh-5269-9wcf), [GHSA-qh8c-7588-qfrv / CVE-2026-64662](https://github.com/advisories/GHSA-qh8c-7588-qfrv), [GHSA-qhr7-v3xp-vw9m / CVE-2026-71434](https://github.com/advisories/GHSA-qhr7-v3xp-vw9m), [GHSA-j2vp-f2pv-5rj4 / CVE-2026-64663](https://github.com/advisories/GHSA-j2vp-f2pv-5rj4), and [GHSA-vx89-p3j7-8xqc / CVE-2026-71435](https://github.com/advisories/GHSA-vx89-p3j7-8xqc).
+- Statamic OAuth identity matching, restricted navigation content, frontend upload rules, Antlers method resolution, and notification-email HTML: [GHSA-93qh-5269-9wcf / CVE-2026-64665](https://github.com/advisories/GHSA-93qh-5269-9wcf), [GHSA-qh8c-7588-qfrv / CVE-2026-64662](https://github.com/advisories/GHSA-qh8c-7588-qfrv), [GHSA-qhr7-v3xp-vw9m / CVE-2026-71434](https://github.com/advisories/GHSA-qhr7-v3xp-vw9m), [GHSA-j2vp-f2pv-5rj4 / CVE-2026-64663](https://github.com/advisories/GHSA-j2vp-f2pv-5rj4), and [GHSA-vx89-p3j7-8xqc / CVE-2026-71435](https://github.com/advisories/GHSA-vx89-p3j7-8xqc);
+- PDF.js script execution and the embedded `ngx-extended-pdf-viewer` fork: [GHSA-hq66-cqwq-w95j / CVE-2026-16633](https://github.com/advisories/GHSA-hq66-cqwq-w95j) and [GHSA-w9hm-4m3m-fxmm](https://github.com/advisories/GHSA-w9hm-4m3m-fxmm);
+- jsoup custom raw-text-element cleaning: [GHSA-pmhh-3w7g-xqp8 / CVE-2026-71497](https://github.com/advisories/GHSA-pmhh-3w7g-xqp8);
+- League CommonMark control-byte URL normalization: [GHSA-29pj-957v-52mc / CVE-2026-71478](https://github.com/advisories/GHSA-29pj-957v-52mc); and
+- Craft CMS generic user saves, post-cleanse condition merging, Twig sandbox class hierarchy, and sibling global-set action authorization: [GHSA-p8x7-9vfw-p7vc](https://github.com/advisories/GHSA-p8x7-9vfw-p7vc), [GHSA-265m-7826-wjqm](https://github.com/advisories/GHSA-265m-7826-wjqm), [GHSA-f5wm-88jv-g5hx](https://github.com/advisories/GHSA-f5wm-88jv-g5hx), and [GHSA-9p7c-v5x3-rfx8 / CVE-2026-14793](https://github.com/advisories/GHSA-9p7c-v5x3-rfx8).
 
-The Mermaid resource-exhaustion records [GHSA-rhh3-jpg6-66xh](https://github.com/advisories/GHSA-rhh3-jpg6-66xh) and [GHSA-2v8p-3f2j-5mp7](https://github.com/advisories/GHSA-2v8p-3f2j-5mp7) are source-tracked but not converted into an availability-testing workflow.
+The Mermaid, League CommonMark, and JS-YAML resource-exhaustion records are source-tracked but not converted into availability-testing workflows. The sparse Silverstripe breadcrumb XSS record is also source-tracked rather than generalized beyond its stated sink.
 
 !!! warning "Denied sinks and synthetic authority only"
-    Use disposable workspaces, owned cache/HTTP/SSH peers, fake credentials, two-user CMS fixtures, patched file/process/mutation sinks, and detached browser DOMs. Never overwrite host files, intercept operational SSH, collect crawler credentials, read another user's content, delete CMS data, upload executable content, or run active HTML in a privileged mailbox or origin.
+    Use disposable workspaces, owned cache/HTTP/SSH peers, fake credentials, two-user CMS fixtures, patched file/process/configuration/script/mutation sinks, and detached browser DOMs. Never overwrite host files, intercept operational SSH, collect crawler credentials, read another user's content, delete CMS data, upload executable content, execute templates or commands, or run active document/HTML content in a privileged origin.
 
 ## 1. Build one raw-to-final authority trace
 
@@ -125,6 +129,59 @@ Identify only templates where untrusted values influence a variable, method, or 
 
 Submit harmless HTML markers and record template source, escaped output, MIME part, and detached-mail DOM. Patch links/forms/resource loads and mail delivery. Report HTML injection only when markup survives into the HTML part; keep script execution, credential capture, and mailbox-specific behavior separate and unclaimed.
 
+## 8. Inventory the renderer actually shipped
+
+The `ngx-extended-pdf-viewer` record is a dependency-recon warning: the package embeds a fork of PDF.js, so a `package.json` dependency scan does not reveal the vulnerable engine. Build a renderer inventory from bundled filenames, source maps, license banners, SBOM/VEX data, package tarballs, and runtime feature flags. Record both the wrapper version and embedded engine commit/version.
+
+In a disposable origin, patch the PDF.js script evaluator and XFA rich-text insertion sink. Feed a synthetic PDF carrying only inert marker actions, then compare:
+
+- scripting enabled and disabled;
+- XFA enabled and disabled;
+- wrapper defaults versus direct PDF.js defaults;
+- inline-script-permitting and denying CSP fixtures; and
+- affected, wrapper-patched, and upstream-patched releases.
+
+Capture document feature, wrapper option, effective engine option, CSP decision, parsed action/rich-text node, and denied evaluator/DOM sink. A bounded positive is **untrusted PDF -> enabled engine feature -> inert marker reaches the patched script or active-DOM sink**. Do not execute JavaScript, read page state, or open a test document under a real application origin. Report wrapper and embedded-engine exposure separately; nominal dependency absence is not evidence of safety.
+
+## 9. Diff sanitizer parse, serialization, and host reparse
+
+The jsoup record requires a custom `Safelist` that permits raw-text elements; built-in safelists are not the stated surface. The key differential is that malformed tag-name bytes can change parser state, so text accepted under one interpretation becomes markup after serialization and browser reparsing.
+
+Create a table-driven harness using harmless marker elements and no event handlers. For each allowed raw-text element, vary exact names, suffix control bytes, malformed closing tags, adjacent markup, character references, and chunk boundaries. Preserve:
+
+```text
+raw bytes -> jsoup token/tag identity -> safelist decision -> serialized HTML
+-> script-disabled browser token/DOM identity -> denied active-node sink
+```
+
+A bounded positive is **cleaner classifies the marker as raw text -> serialized output reparses as a different active element or attribute-bearing node**. Compare custom and built-in safelists, and test CSS handling separately when `style` is allowed: jsoup does not itself make CSS safe. Do not place executable handlers, live forms, or network-loading URLs in the fixture.
+
+## 10. Normalize URLs the way the final browser does
+
+The League CommonMark record shows a policy check and browser disagreeing about control bytes in a URL scheme. Test only inert, non-executing scheme markers in a patched navigation fixture. Exercise literal tabs, CR/LF, leading C0 bytes, percent-encoded forms, HTML entities, Unicode whitespace, and ordinary safe/denied controls through both core Markdown destinations and extension-supplied `href`/`src` attributes.
+
+Record raw bytes, Markdown parser branch, attribute override order, library safety verdict, emitted attribute bytes, browser-normalized scheme, and denied navigation decision. A bounded positive is **library marks the raw URL safe -> emitted bytes survive -> browser normalization selects the denied scheme marker**. Preserve inert non-link controls to distinguish a filter bypass from an executable sink; an `href` emitted on an element that cannot navigate is not XSS.
+
+## 11. Re-check CMS authority after every transformation
+
+The Craft records expose four related test families. Use a low-privileged Control Panel user, a second disposable administrator, synthetic global sets, and patched password/config/template/process sinks.
+
+### Generic save versus dedicated privileged action
+
+Submit the same harmless password marker through the dedicated password route and generic element-save route. Vary self versus another synthetic user, `Edit users` versus `Administrate users`, elevated-session state, omitted fields, and nested/alternate encodings. Capture model scenario, safe/mass-assignable attributes, resolved target user, current-password/elevated-session decision, and denied password-write sink. A positive is **dedicated route denies the marker -> generic save binds `newPassword` -> write recorder selects self or the synthetic administrator without the required proof**. Never change a usable account password.
+
+### Cleanse before decode/merge
+
+Send inert forbidden configuration keys as ordinary nested objects and as strings decoded or merged after the initial cleanse. Patch behavior/event attachment, object creation, and process execution. Preserve raw request type, first-cleanse result, decoded object, merge order, second validation, selected class/behavior/event, and denied sink. A positive is **outer string passes cleanse -> later decode reconstructs a forbidden key -> patched configuration sink receives it**. Stop before class instantiation or command execution.
+
+### Sandbox class and hierarchy authority
+
+Map every allowed class, interface, method, property, and `AllowedInSandbox` attribute to the runtime object's complete ancestry. Use inert subclasses and a patched method dispatcher to compare exact-class, interface, inherited-method, overridden-method, and project-added allowlist cases. A positive is **interface/base approval -> runtime subclass exposes an inherited non-allowlisted method -> dispatcher recorder selects it**. This proves method authority drift, not RCE; do not render a command-capable Twig template.
+
+### Sibling action authorization
+
+Build a route/method matrix for adjacent create, save, reorder, and delete actions. Compare administrator and non-administrator sessions while patching project-config persistence. A positive is **sibling actions enforce the admin gate -> reorder reaches persistence for the non-admin principal**. Keep display-order modification separate from content access or code execution.
+
 ## Evidence and reporting boundaries
 
 - Distinguish cache-server control, on-path cache tampering, and local archive control.
@@ -134,4 +191,7 @@ Submit harmless HTML markers and record template source, escaped output, MIME pa
 - Capture generated client defaults and every redirect authority before claiming credential forwarding.
 - Separate shared-realm prototype state, sibling CSS reach, and script execution.
 - For CMS routes, pair every alternate surface with the canonical route and the same synthetic policy.
+- Inventory vendored or forked renderer engines; dependency manifests alone can miss the reachable parser.
+- Preserve raw bytes, library output, and final browser normalization before claiming a sanitizer or URL-policy bypass.
+- For configuration and template systems, re-evaluate authority after decode, merge, subclass resolution, and generic model binding.
 - State exact affected/fixed versions from the source record and verify the deployed integration before reporting.
