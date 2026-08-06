@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Quay mirror-fetch and VuFind handler-termination authority boundaries](alerts/2026-08-06-quay-mirror-vufind-handler-authority-boundaries-ghsa.md)
 - [CRLF header-injection expansion for HTTP desync campaigns](methodology/http-desync-research-campaigns.md#crlf-header-injection-expansion)
 - [Langflow validation, cache, memory, and filesystem authority follow-up](alerts/2026-06-19-langflow-mailpit-outerbase-miniflux-render-boundaries-ghsa.md#august-5-second-follow-up-validation-cache-memory-and-filesystem-authority)
 - [Gitea migration and OAuth final-peer SSRF follow-up](alerts/2026-06-17-gitea-langchain4j-hapi-agent-websocket-boundary-batch-ghsa.md#august-5-gitea-migration-and-oauth-fetch-follow-up)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [rclone encoding, archive, tenant-path, protocol, and redirect follow-up](alerts/2026-07-21-rclone-remote-control-boundaries-ghsa.md#august-5-second-follow-up-encoding-archive-tenant-path-protocol-and-redirect-boundaries)
 - [HTTP desync research campaigns](methodology/http-desync-research-campaigns.md)
 - [rclone path, symlink, and metadata boundary follow-up](alerts/2026-07-21-rclone-remote-control-boundaries-ghsa.md#august-5-follow-up-untrusted-remote-filesystem-boundaries)
-- [Jenkins and MarkLogic authority-boundary validation](alerts/2026-08-05-jenkins-marklogic-authority-boundaries-ghsa.md)
 
 
 
