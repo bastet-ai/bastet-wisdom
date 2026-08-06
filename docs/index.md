@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Assemblyline remote artifact identifier-to-file boundary](alerts/2026-08-05-workspace-fetch-object-interpreter-boundaries-ghsa.md#treat-remote-artifact-identifiers-as-paths-until-proven-otherwise)
 - [Agent control-plane, tool-policy, file, and fetch authority boundaries](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md)
 - [Quay mirror-fetch and VuFind handler-termination authority boundaries](alerts/2026-08-06-quay-mirror-vufind-handler-authority-boundaries-ghsa.md)
 - [CRLF header-injection expansion for HTTP desync campaigns](methodology/http-desync-research-campaigns.md#crlf-header-injection-expansion)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Nuxt server-island component and DevTools RPC authority follow-up](alerts/2026-08-05-nuxt-route-payload-cache-boundaries-ghsa.md#august-5-follow-up-server-island-component-and-devtools-rpc-authority)
 - [Nuxt route-rule and SSR payload-cache authority boundaries](alerts/2026-08-05-nuxt-route-payload-cache-boundaries-ghsa.md)
 - [rclone encoding, archive, tenant-path, protocol, and redirect follow-up](alerts/2026-07-21-rclone-remote-control-boundaries-ghsa.md#august-5-second-follow-up-encoding-archive-tenant-path-protocol-and-redirect-boundaries)
-- [HTTP desync research campaigns](methodology/http-desync-research-campaigns.md)
+
 
 
 

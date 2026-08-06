@@ -4,11 +4,12 @@ title: Workspace, outbound-fetch, object-scope, and interpreter boundaries
 
 # Workspace, outbound-fetch, object-scope, and interpreter boundaries
 
-Nineteen August 5 records expose one reusable operator pattern: a weak early gate authorizes a route, path, object, destination, or structured value, then a stronger filesystem, credential, tenant, network, SQL, template, or process sink acts on it. Test the complete transition and deny the final effect.
+Twenty records expose one reusable operator pattern: a weak early gate authorizes a route, path, object, destination, or structured value, then a stronger filesystem, credential, tenant, network, SQL, template, or process sink acts on it. Test the complete transition and deny the final effect.
 
 Discovery and primary-source seeds:
 
 - Eclipse Theia tokenless HTTP filesystem read [GHSA-xrrm-6636-87r2](https://github.com/advisories/GHSA-xrrm-6636-87r2) / [CVE-2026-61891](https://nvd.nist.gov/vuln/detail/CVE-2026-61891), hosted-plugin traversal [GHSA-34gw-v4cc-pv7c](https://github.com/advisories/GHSA-34gw-v4cc-pv7c) / [CVE-2026-12609](https://nvd.nist.gov/vuln/detail/CVE-2026-12609), tokenless upload [GHSA-2mw2-h8hj-xpjg](https://github.com/advisories/GHSA-2mw2-h8hj-xpjg) / [CVE-2026-60009](https://nvd.nist.gov/vuln/detail/CVE-2026-60009), and workspace-preference prototype pollution [GHSA-5f8h-2xph-wwxv](https://github.com/advisories/GHSA-5f8h-2xph-wwxv) / [CVE-2026-14574](https://nvd.nist.gov/vuln/detail/CVE-2026-14574);
+- Assemblyline service-client server-supplied digest traversal [GHSA-75jv-vfxf-3865](https://github.com/CybercentreCanada/assemblyline/security/advisories/GHSA-75jv-vfxf-3865) / [CVE-2025-55013](https://nvd.nist.gov/vuln/detail/CVE-2025-55013) and the [upstream validation patch](https://github.com/CybercentreCanada/assemblyline-service-client/commit/351414e7e96cc1f5640ae71ae51b939e8ba30900);
 - `art-template` sub-template root escape [GHSA-mj55-6q5h-prw4](https://github.com/advisories/GHSA-mj55-6q5h-prw4) / [CVE-2026-71215](https://nvd.nist.gov/vuln/detail/CVE-2026-71215);
 - Firefly III webhook loopback/rebinding [GHSA-q8pq-98hq-mg7f](https://github.com/advisories/GHSA-q8pq-98hq-mg7f) / [CVE-2026-71250](https://nvd.nist.gov/vuln/detail/CVE-2026-71250), Pixelfed ActivityPub fetch [GHSA-5cfc-gvxj-5r55](https://github.com/advisories/GHSA-5cfc-gvxj-5r55) / [CVE-2026-71246](https://nvd.nist.gov/vuln/detail/CVE-2026-71246), MLflow AI Gateway destination authority [GHSA-h7x2-h6g9-p789](https://github.com/advisories/GHSA-h7x2-h6g9-p789) / [CVE-2026-71211](https://nvd.nist.gov/vuln/detail/CVE-2026-71211), and Mealie DNS-rebinding [GHSA-q2c2-jwjg-8cxx](https://github.com/advisories/GHSA-q2c2-jwjg-8cxx) / [CVE-2026-71210](https://nvd.nist.gov/vuln/detail/CVE-2026-71210);
 - Paperless-ngx stored IMAP credential relay [GHSA-666w-8983-6664](https://github.com/advisories/GHSA-666w-8983-6664) / [CVE-2026-71244](https://nvd.nist.gov/vuln/detail/CVE-2026-71244);
@@ -44,6 +45,21 @@ Instrument raw request target, route family, cookie/token input, middleware resu
 For upload testing, parse a locally generated multipart request and replace `fs.move` with a recorder that rejects the operation. Include a cross-origin `multipart/form-data` fixture to determine whether a browser can reach the handler without preflight, but do not host a public exploit page. A bounded positive is **tokenless HTTP request reaches handler -> decoded/canonical target escapes the authorized root -> denied sink records the synthetic marker path**. Never retrieve the marker body or write the target.
 
 The `art-template` record extends the path fixture to loaders. Record configured template root, supplied include/extend name, `path.resolve` result, final real path, and denied `readFileSync`. Test relative in-root names, `..`, absolute names, symlinked parents, and platform separators. The decisive evidence is the out-of-root canary path reaching the loader, not rendered file content.
+
+### Treat remote artifact identifiers as paths until proven otherwise
+
+Assemblyline adds a client/server variant: the service server returns a value represented as a SHA-256 digest, but the client joins that value directly beneath its tasking directory before writing a downloaded artifact. The finding requires a malicious or compromised service server, or an actor able to impersonate that server; normal deployments are expected to run the client in a constrained service container. Establish that trust precondition instead of presenting the client as an unauthenticated public file-write surface.
+
+Build a disposable client fixture with a tasking root, one in-root marker target, and one sibling target that contains only a random name. Replace the final file open/write operation with a recorder that always denies the syscall. Have an owned mock server return:
+
+- a lowercase 64-hex digest and a matching inert body as the positive control;
+- short, long, uppercase, and non-hex identifiers;
+- relative dot segments, absolute paths, mixed separators, and encoded separators; and
+- a syntactically valid digest whose body hash does not match, to keep identifier validation separate from content verification.
+
+Record the authenticated server identity, raw response field, decoded identifier, digest-schema result, joined path, canonical parent, write mode, and denied destination. A bounded positive is **trusted server response -> non-digest identifier is interpreted as path syntax -> canonical destination leaves the tasking root -> denied writer records only the synthetic sibling path**. Do not create the sibling file, target startup or service-manager paths, or infer host execution from destination control.
+
+Replay the same matrix against the fixed revision. The upstream patch rejects identifiers that do not match the project's SHA-256 schema before path construction. Also verify full-string matching rather than prefix acceptance, and retain containment at the write sink as defense in depth. Apply this workflow to artifact caches, malware-analysis workers, CI agents, object downloaders, and any protocol where a remote peer supplies a value named `digest`, `hash`, `key`, or `object_id` that later becomes a filename.
 
 ### Repository-controlled preferences
 
