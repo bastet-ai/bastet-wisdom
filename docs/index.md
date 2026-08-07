@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Flowise public-route whitelist, Assistants credential, and document-store operation boundaries](alerts/2026-08-04-flowise-workspace-runtime-credential-boundaries-ghsa.md#20-treat-public-route-whitelists-as-exact-route-grammars)
 - [CSS sanitizer, host-UI, clipboard, and model-context boundary testing](methodology/css-sanitizer-host-boundary-testing.md)
 - [Duplicate authority fields across HTTP/2-to-HTTP/1.1 bridges](methodology/http-desync-research-campaigns.md#duplicate-authority-fields-across-an-http2-bridge)
 - [Repository blame-report process-boundary testing](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#12-audit-repository-analysis-wrappers-at-the-final-process-sink)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Browser-equivalent URL normalization testing](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#10-normalize-urls-the-way-the-final-browser-does)
 - [Craft CMS post-transform and sibling-route authority](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#11-re-check-cms-authority-after-every-transformation)
 - [Nx remote-cache extraction and restore boundaries](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#2-treat-a-remote-build-cache-as-a-write-authority)
-- [Contao path and crawler final-authority testing](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#4-preserve-the-authorized-path-segment-through-canonicalization)
 
 
 

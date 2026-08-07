@@ -4,9 +4,9 @@ title: Flowise workspace, runtime, and credential-authority boundaries
 
 # Flowise workspace, runtime, and credential-authority boundaries
 
-Twenty-six Flowise advisories published on August 4 expose a useful low-code/agent-platform review pattern: a flow-builder permission or public prediction route is not authority over every workspace file, flow type, runtime loader, child-process environment, execution-context property, outbound destination, OAuth credential, integration history, execution record, provider-funded feature, or billing object that a later component can select. Validate each edge independently with disposable objects and recorder-only sinks.
+Twenty-nine Flowise advisories published on August 4 and August 7 expose a useful low-code/agent-platform review pattern: a flow-builder permission or public prediction route is not authority over every workspace file, flow type, runtime loader, child-process environment, execution-context property, outbound destination, OAuth credential, integration history, document store, execution record, provider-funded feature, or billing object that a later component can select. Validate each edge independently with disposable objects and recorder-only sinks.
 
-Most records list `flowise <= 3.1.2` as affected and `3.1.3` as the first patched release. The private-chatflow TTS record instead lists `flowise <= 3.1.3` as affected and `3.1.4` as fixed. The JavaScript sandbox, MCP environment-bypass, and prompt-to-Python records also identify `flowise-components` ranges. Confirm the package-specific range in each advisory rather than assuming one release covers every server and component path.
+Most August 4 records list `flowise <= 3.1.2` as affected and `3.1.3` as the first patched release. The private-chatflow TTS record instead lists `flowise <= 3.1.3` as affected and `3.1.4` as fixed. Three August 7 records describe behavior through 3.1.4; one is explicitly a bypass of CVE-2026-41273. The JavaScript sandbox, MCP environment-bypass, and prompt-to-Python records also identify `flowise-components` ranges. Confirm the package-specific range in each advisory rather than assuming one release covers every server and component path.
 
 Primary sources:
 
@@ -34,8 +34,11 @@ Primary sources:
 - unauthenticated OAuth refresh-token response [GHSA-qgvm-j2hm-6m38 / CVE-2026-70478](https://github.com/advisories/GHSA-qgvm-j2hm-6m38);
 - CSV Agent prompt-to-Python validator bypass [GHSA-5xvg-pmgg-3mxr / CVE-2026-70477](https://github.com/advisories/GHSA-5xvg-pmgg-3mxr);
 - cross-tenant subscription selector [GHSA-gmmw-qg98-6j6p / CVE-2026-70476](https://github.com/advisories/GHSA-gmmw-qg98-6j6p);
-- unauthenticated private-chatflow TTS credential use [GHSA-8gj2-2cvc-6xx7](https://github.com/advisories/GHSA-8gj2-2cvc-6xx7); and
-- execution-update authorization gap [GHSA-fm2f-4339-4p2f / CVE-2026-70475](https://github.com/advisories/GHSA-fm2f-4339-4p2f).
+- unauthenticated private-chatflow TTS credential use [GHSA-8gj2-2cvc-6xx7](https://github.com/advisories/GHSA-8gj2-2cvc-6xx7);
+- execution-update authorization gap [GHSA-fm2f-4339-4p2f / CVE-2026-70475](https://github.com/advisories/GHSA-fm2f-4339-4p2f);
+- prefix-whitelist OAuth refresh bypass [GHSA-rm9r-9424-cccf / CVE-2026-70636](https://github.com/advisories/GHSA-rm9r-9424-cccf) and the [research record](https://github.com/Caycon/cve-advisories/blob/main/2026/Flowise/CVE-2026-70636.md);
+- OpenAI Assistants credential IDOR [GHSA-qvmw-v4w9-7c4j / CVE-2026-67622](https://github.com/advisories/GHSA-qvmw-v4w9-7c4j) and the [research record](https://github.com/Caycon/cve-advisories/blob/main/2026/Flowise/CVE-2026-67622.md); and
+- view-only document-store mutation [GHSA-7q53-9j99-gg5c / CVE-2026-67621](https://github.com/advisories/GHSA-7q53-9j99-gg5c) and the [research record](https://github.com/Caycon/cve-advisories/blob/main/2026/Flowise/CVE-2026-67621.md).
 
 !!! warning "Disposable Flowise labs and inert recorders only"
     Use affected and corrected local instances, two synthetic workspaces, fake API keys and OAuth credentials, owned HTTP listeners, package indexes, and S3-compatible buckets, synthetic flows/CSV/SQLite/history fixtures, mocked payment-provider objects, and patched file/module/process/delete/provider loaders. Never enumerate customer or credential IDs, retrieve billing records or real integration histories, capture real OAuth secrets, delete flows or files, target metadata or internal services, deserialize unknown data, install an unknown package, load unknown JavaScript, or execute a command.
@@ -68,6 +71,9 @@ Primary sources:
 | Subscription update | organization member may manage its own plan | caller-supplied subscription ID selects another tenant's provider object | synthetic B subscription reaches no-op provider under A |
 | Text-to-speech generation | public route may serve a public chatflow | arbitrary chatflow ID selects a private flow's stored provider authority | private-flow fake key reaches mocked TTS dispatch |
 | Execution update | authenticated user may access some execution operations | update route omits operation permission and accepts caller-selected execution ID | foreign-role synthetic execution reaches no-op update recorder |
+| OAuth refresh whitelist | public middleware admits one exact callback/refresh shape | prefix matching admits a longer credential-bearing route | synthetic request suffix selects B's fake credential and reaches only an owned provider recorder |
+| Assistants credential selector | workspace member may use its own OpenAI Assistants integration | caller-supplied credential UUID is not bound to the active workspace | A selects B's fake credential and reaches mocked metadata/file/vector-store operations |
+| Document-store refresh/upsert | view-only member may inspect a knowledge base | sibling mutation routes omit operation permission | viewer reaches a no-op ingestion/refresh recorder for a synthetic store |
 
 ## 1. Diff feature gates, permissions, and storage scope
 
@@ -213,6 +219,8 @@ Do not claim predictable-ID enumeration without measuring the actual identifier 
 - [ ] Generated-code evidence compares raw, normalized, validated, and parsed representations without evaluator or host-bridge execution.
 - [ ] S3 loader evidence records canonical write and cleanup targets while denying every filesystem mutation.
 - [ ] Affected-versus-3.1.3 behavior is captured with the same fixture.
+- [ ] Route-whitelist tests compare exact, prefix, suffix, delimiter, encoded, and normalized path forms before any credential lookup.
+- [ ] Assistants and document-store tests use two workspaces, marker-only objects, and no-op provider/ingestion sinks.
 
 Prefer boundary-specific report titles such as:
 
@@ -426,3 +434,48 @@ Use random, non-provider-shaped IDs and marker-only provider adapters. Do not ch
 For the execution update route, seed two synthetic execution records with marker-only state and use roles with `executions:view`, `executions:delete`, unrelated permission, and no execution permission. Replace persistence with a recorder that logs the requested ID and changed field names, then aborts.
 
 Test own and foreign-workspace IDs, omitted IDs, bulk-shaped bodies, immutable owner/workspace fields, and state/data metadata fields. The secure route must check `executions:update`, bind the object to the active workspace, and apply an explicit mutable-field schema before the update sink. A bounded positive is **role lacking update authority -> known synthetic execution ID -> no-op update recorder receives changed fields**. Never alter retained workflow history or place prompts, secrets, customer data, or executable content in the fixture.
+
+## 20. Treat public-route whitelists as exact route grammars
+
+The August 7 OAuth record describes an authentication bypass caused by prefix matching in the public-route whitelist. A route that must be anonymous for one OAuth phase should not make every longer path beginning with that string anonymous, especially when the suffix becomes a credential selector. This is a useful variant-analysis target after any route-level fix.
+
+Build two fake credentials in workspaces A and B, both pointing to an owned provider stub. Patch credential decryption and provider dispatch so they record object identity and field names, then stop before returning or updating a token. Generate requests from the router's actual grammar rather than replaying a production token:
+
+| Path class | Example shape | Secure result |
+| --- | --- | --- |
+| intended public route | exact documented callback or bootstrap path | admitted only for its public phase |
+| credential-bearing child | public prefix plus `/synthetic-id` | authentication required before lookup |
+| delimiter variants | extra slash, dot segment, semicolon, duplicate separator | canonicalized, then exact policy applied |
+| encoded variants | encoded slash/dot and mixed-case escape | raw and decoded routing decisions agree |
+| sibling prefix | same text with a longer final segment | not considered the public route |
+| query/fragment-like text | selector outside the path grammar | cannot alter route classification |
+
+Capture raw target bytes, proxy path, framework-decoded path, normalized route, matched whitelist entry, route parameters, principal, selected credential owner, and first recorder reached. A bounded positive is **no session + longer prefix-matching path -> workspace B's synthetic credential reaches the decrypt/provider recorder**. The corrected behavior denies before object resolution.
+
+Do not rely on a 200 response or an error difference alone. Search every public-route exception for `startsWith`, regexes without end anchors, string-prefix middleware, mounted routers, optional parameters, and trailing wildcard behavior. Re-test the original patch and its alternate delimiters because CVE-2026-70636 is identified as a bypass of an earlier fix.
+
+## 21. Bind Assistants operations to the credential workspace
+
+The new Assistants record complements the earlier vector-store finding: the credential UUID can select provider authority from another workspace, after which multiple sibling handlers may expose metadata or perform file/vector-store operations. Treat each provider method as a separate authorization sink; do not prove a read by uploading or deleting anything.
+
+Use workspaces A and B, each with a random credential UUID and a mocked provider containing only marker-named assistants, files, and vector stores. Give A the minimum Assistants feature permission. Replace list, metadata, upload, create, update, and delete methods with recorders; mutating recorders must return sentinels without changing state.
+
+Test A's own UUID, B's UUID, a nonexistent UUID, a malformed UUID, an omitted selector, and an object whose workspace relation is missing. Record the active workspace, requested UUID, credential row workspace, decrypt decision, provider client construction, selected operation, and recorder arguments. Stop after the first B marker.
+
+A reportable positive is **workspace A session + B credential UUID -> B's fake provider client reaches a metadata or no-op mutation recorder without a workspace comparison**. Report metadata listing, file selection, vector-store selection, and no-op mutation as separate effects. Never enumerate credential IDs, list real provider objects, upload a file, or spend a real API key.
+
+## 22. Re-check operation permissions on document-store sibling routes
+
+The document-store record shows API/UI permission drift: a member intended to view a store can call direct refresh or upsert routes that trigger ingestion, vector-database changes, and provider-funded embedding work. Hiding controls in the builder is not an authorization decision.
+
+Seed one synthetic document store per workspace with marker-only documents and replace loader, embedding, vector write, refresh, and persistence calls with no-op recorders. Use roles with view-only, explicit edit/upsert, unrelated, and no document-store permissions. Exercise both documented UI calls and direct sibling routes with the same store IDs.
+
+| Principal | Store | Operation | Secure result |
+| --- | --- | --- | --- |
+| editor A | A | no-op upsert/refresh | allowed control |
+| viewer A | A | no-op upsert/refresh | denied before ingestion |
+| viewer A | B | no-op upsert/refresh | denied before lookup or ingestion |
+| unrelated A role | A | no-op mutation | denied |
+| viewer A | A | metadata read | allowed only if view permission intends it |
+
+Capture UI capability flags, route middleware, effective permission, requested and resolved workspace/store IDs, operation type, provider-cost boundary, and first no-op sink. A bounded positive is **view-only session -> direct mutation route -> loader/embedding/vector recorder receives A's synthetic store**. Keep missing operation permission and cross-workspace object scope separate. Do not ingest retained documents, alter a vector store, or generate billable embeddings.
