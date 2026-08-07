@@ -8,6 +8,9 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Smarty nested-resource and symlink final-file authority](alerts/2026-08-07-template-passkey-webmail-authority-boundaries-ghsa.md#2-test-template-sandboxes-at-the-final-file-identity)
+- [Craft CMS passkey assertion replay and persisted credential state](alerts/2026-08-07-template-passkey-webmail-authority-boundaries-ghsa.md#3-treat-webauthn-state-as-a-one-time-server-owned-tuple)
+- [TeamDavid Webbox local-path, UNC-peer, and response authority](alerts/2026-08-07-template-passkey-webmail-authority-boundaries-ghsa.md#4-model-webmail-path-fields-as-a-shared-authority-surface)
 - [NLTK cross-package shared-namespace resource poisoning](alerts/2026-07-31-library-tenant-commerce-file-boundaries-ghsa.md#august-7-follow-up-test-nltk-package-identity-at-the-final-extracted-resource)
 - [Phoca Commander read, upload, copy, move, and delete path confinement](alerts/2026-07-08-joomla-page-builder-coldfusion-kev-boundaries.md#august-7-follow-up-bind-phoca-commander-actions-to-one-canonical-file-manager-root)
 - [WordPress payment-proof binding and Turnstile cache replay](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-7-payment-proof-and-captcha-cache-follow-up)
@@ -15,9 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Flowise public-route whitelist, Assistants credential, and document-store operation boundaries](alerts/2026-08-04-flowise-workspace-runtime-credential-boundaries-ghsa.md#20-treat-public-route-whitelists-as-exact-route-grammars)
 - [CSS sanitizer, host-UI, clipboard, and model-context boundary testing](methodology/css-sanitizer-host-boundary-testing.md)
 - [Duplicate authority fields across HTTP/2-to-HTTP/1.1 bridges](methodology/http-desync-research-campaigns.md#duplicate-authority-fields-across-an-http2-bridge)
-- [Repository blame-report process-boundary testing](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#12-audit-repository-analysis-wrappers-at-the-final-process-sink)
-- [Craft CMS preview, interpolation, class-factory, and draft-label boundaries](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#preview-route-versus-asset-visibility)
-- [Embedded PDF renderer inventory and denied-sink validation](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#8-inventory-the-renderer-actually-shipped)
 
 
 
