@@ -10,11 +10,11 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
-- [GitPython final-argv, config, submodule, and file-authority follow-up](2026-07-21-developer-agent-proxy-control-boundaries-ghsa.md#august-7-gitpython-final-argv-config-submodule-and-file-authority-follow-up)
-- [File, tenant, network-config, and redirect authority boundaries](2026-08-07-file-tenant-network-config-authority-boundaries-ghsa.md)
-- [WordPress commerce-proof, shortcode, and protected-content follow-up](2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-7-commerce-proof-shortcode-and-protected-content-follow-up)
-- [Joomla SEBLOD file selection and SP Page Builder editor rendering](2026-07-08-joomla-page-builder-coldfusion-kev-boundaries.md#august-7-follow-up-separate-joomla-file-selection-from-editor-rendering)
-- [DOMPurify `IN_PLACE` detached-subtree lifecycle follow-up](../methodology/css-sanitizer-host-boundary-testing.md#dompurify-in_place-detached-subtree-follow-up)
+- [Astro Vercel ISR edge-to-origin route authority](2026-07-18-nest-astro-route-render-fetch-boundaries-ghsa.md#august-7-follow-up-vercel-isr-path-override)
+- [API Platform relation-IRI type confusion](2026-07-10-http-client-package-cache-identity-boundaries-ghsa.md#api-platform-relation-iri-type-confusion-follow-up)
+- [go-git reference and worktree symlink final-path authority](2026-07-21-developer-agent-proxy-control-boundaries-ghsa.md#august-7-go-git-reference-and-symlink-final-path-follow-up)
+- [Craft CMS category-structure session-grant authorization](2026-05-06-craft-pyload-and-wooey-app-authorization-boundary-batch-ghsa.md#august-7-category-structure-session-grant-follow-up)
+- [Nuxt DevTools workspace metadata peer-identity check](2026-08-05-nuxt-route-payload-cache-boundaries-ghsa.md#august-7-devtools-workspace-metadata-and-peer-identity-follow-up)
 - [Sensor-proxy controller trust and CMS draft/render boundaries](2026-08-04-sensor-cms-trust-boundaries-ghsa.md)
 - [Data workflow, AI corpus, command-wrapper, and device-adoption boundaries](2026-08-03-data-workflow-device-trust-boundaries-ghsa.md)
 - [Python `cryptography` wildcard name-constraint and bounded path-cost follow-up](2026-08-03-bouncy-castle-crypto-policy-boundaries-ghsa.md#python-cryptography-name-constraint-and-path-cost-follow-up)

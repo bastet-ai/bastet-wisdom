@@ -152,6 +152,19 @@ Treat Nuxt DevTools as a developer-host control plane, not as an ordinary browse
 
 A bounded positive is **unauthenticated client reaches the DevTools RPC channel -> changes the editor-command option -> `openInEditor` sends the inert marker to the denied process-launch sink**. WebSocket reachability or option mutation alone is not command execution. Keep the exact command-bearing RPC body out of public evidence.
 
+### August 7 DevTools workspace metadata and peer-identity follow-up
+
+[GHSA-7c4v-fwgw-9rf7](https://github.com/advisories/GHSA-7c4v-fwgw-9rf7) covers Nuxt `4.4.7` through `4.5.0` and `3.21.7` through `3.21.9`, fixed in `4.5.1` and `3.21.10`. When a development server is reachable beyond loopback and default-enabled `experimental.chromeDevtoolsProjectSettings` is active, the Chrome DevTools workspace endpoint can return the absolute project root and persistent workspace UUID. The reported local-request gate trusted missing browser metadata plus a caller-selected `Host`; the fix also binds the decision to the connected TCP peer being loopback.
+
+Add this as a bounded recon check beside the RPC matrix:
+
+1. Run the disposable dev server on a lab interface with a synthetic project path and UUID. Send requests from loopback and a second lab network namespace.
+2. Vary `Host`, `Origin`, `Referer`, and `Sec-Fetch-Site` independently, including their absence. Capture the connected peer address from the socket separately from every request header.
+3. Request only `/.well-known/appspecific/com.chrome.devtools.json`; record status and whether the two synthetic metadata fields are present. Do not use a disclosed path to request source files or feed a real editor/HMR action.
+4. Compare the feature enabled/disabled, loopback/non-loopback bind and peer, affected/fixed Nuxt, and production build controls.
+
+The bounded positive is **non-loopback peer -> forged or absent request metadata is classified as local -> workspace endpoint returns only the synthetic root/UUID marker**. This is metadata disclosure, not file read, write, or execution. Keep any possible chain to the separate HMR RPC finding hypothetical unless the same authorized lab independently reaches its denied process sink.
+
 ### Follow-up evidence fields
 
 ```text
@@ -166,6 +179,8 @@ HMR bind address and WebSocket Origin:
 RPC authentication / origin decision:
 Persisted editor-option transition:
 Denied process argv recorder:
+Connected peer / request-header localness decision:
+Workspace metadata endpoint result:
 Affected-versus-fixed result:
 Strongest bounded claim and excluded execution claims:
 ```

@@ -104,3 +104,16 @@ Six newly published Astro records extend the same representation-first workflow:
 For the Node adapter case, use a lab route where redirect and authorization behavior are visible through nonces; test the raw request target through the same proxy topology as the deployment. Stop when a backslash representation makes the redirect layer and router disagree—do not retrieve protected content. For RSS, use a disposable feed and harmless namespaced/custom-element markers; XML text appearing verbatim is not impact unless it changes the parsed tree or the actual consumer's DOM. For both spread-key variants, trace attacker control of the **key**, not merely the value.
 
 Report each sink precisely: **source path pattern -> generated CDN regex**, **raw separator form -> adapter redirect/auth order -> router**, **object key -> specific renderer -> HTML attribute grammar**, **feed field -> XML grammar -> consumer DOM**, **transition directive value -> island attribute -> browser DOM**, or **pipeline composition/order -> origin-check middleware absent -> inert state change accepted**. For the Hono integration, use fake sessions and a marker-only state transition from an owned foreign origin; distinguish browser request delivery from response readability. Do not merge these into a generic Astro XSS/auth-bypass claim.
+
+## August 7 follow-up: Vercel ISR path override
+
+[GHSA-x27w-589x-frm2](https://github.com/advisories/GHSA-x27w-589x-frm2) adds a route-authority regression in `@astrojs/vercel >=10.0.3,<11.0.3`, fixed in `11.0.3`. With `isr: true`, the public `/_isr` function could take `x_astro_path` from the query string and render that route at the origin without the middleware secret. Edge path rules and split `edgeMiddleware: true` saw only `/_isr`, while the origin rendered the selected path. Classic middleware running at the origin, whole-deployment protection, and non-GET methods are separate controls; do not generalize this to every Astro deployment or to state changes.
+
+Use a disposable Vercel-adapter fixture with one public marker page and one GET-only protected marker page:
+
+1. Patch the origin renderer to record the raw request path, edge-visible path, `x_astro_path` value, rewritten origin path, middleware invocation, and selected route, then return only a random marker.
+2. Compare direct protected-route requests with `/_isr` requests selecting the public marker, protected marker, nonexistent route, encoded separators, duplicate selectors, and absolute-URL-shaped values. Do not place user, billing, session, or tenant data in either page.
+3. Test edge path rules, split edge middleware, classic origin middleware, whole-deployment authentication, ISR disabled, and `@astrojs/vercel 11.0.3+` independently.
+4. Keep cache state visible, but do not require a cache hit: the reported boundary can produce a fresh origin render. Stop at the patched route recorder rather than returning protected content.
+
+A bounded positive is **external GET reaches public `/_isr` -> client-selected path bypasses the secret-bound path channel -> edge authorizes only `/_isr` -> denied origin renderer selects the protected canary route**. Report route-selection authority and GET confidentiality separately from caching, middleware topology, or state-changing impact.

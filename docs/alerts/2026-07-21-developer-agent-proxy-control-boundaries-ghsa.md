@@ -330,6 +330,26 @@ For submodules and file operations, pre-create only synthetic roots. Patch `make
 
 Bounded positives are **wrapper candidate check passes -> final argv selects a denied option**, **caller-controlled option name -> serialized config reparses as a second inert directive**, **repository-controlled submodule name -> repository-create recorder selects a sibling path**, **caller-selected synthetic file -> its full marker reaches the intercepted Git error**, or **option-like treeish -> overwrite recorder selects a sibling canary**. Keep process selection, config injection, repository creation, file disclosure, and overwrite as separate claims. Require `3.1.58` to reject before the corresponding process or file sink.
 
+## August 7 go-git reference and symlink final-path follow-up
+
+Two reviewed go-git records extend repository authority from wrapper argv into filesystem-backed storage:
+
+- malicious reference names escaping loose-reference storage: [GHSA-qgq7-7hm3-q39j / CVE-2026-71557](https://github.com/advisories/GHSA-qgq7-7hm3-q39j); and
+- worktree writes following an existing symlink, including a symlink at the final component: [GHSA-hc8v-wwc9-vgxm / CVE-2026-71556](https://github.com/advisories/GHSA-hc8v-wwc9-vgxm).
+
+Both affect go-git v5 through `5.19.1` and v6 through `6.0.0-alpha.4`; fixes are `5.19.2` and `6.0.0-alpha.5`. Memory-backed reference storage and `go-billy/memfs` worktrees are negative controls. The reference case requires attacker-controlled names, commonly from a malicious Git peer or refspec mapping; the worktree case requires an attacker-controlled existing symlink plus an application write operation.
+
+Use an owned mock Git peer, disposable repository, sibling canary directory, and patched filesystem recorder:
+
+| Surface | Input matrix | Stop condition |
+| --- | --- | --- |
+| loose refs | ordinary branch; dot segments; encoded/lookalike separators; malicious peer name before and after refspec mapping | canonical reference write target leaves the intended reference root |
+| worktree path | ordinary file; intermediate symlink; final-component symlink; broken symlink; symlink to repository metadata; memory filesystem | no-follow recorder shows the proposed write resolves outside the worktree or into protected repository metadata |
+
+Record peer-advertised name, mapped name, lexical join, native canonical parent/final target, filesystem backend, symlink chain, operation type, and denied open/rename/remove target. Do not write `.git/config`, `HEAD`, hooks, credentials, shell files, or any outside-root file. A synthetic sibling marker path at the recorder is sufficient; do not let the syscall proceed.
+
+Report **malicious peer ref -> mapped loose-reference name -> canonical storage escape** separately from **safe-looking worktree path -> existing symlink resolution -> denied outside-worktree write**. Destination control does not itself prove command execution, and repository metadata selection does not prove a later Git operation will consume attacker-chosen executable configuration.
+
 ## Reporting checklist
 
 - [ ] Did the report prove the caller can reach the exact PKI, MCP, proxy, updater, daemon, cryptographic, or provisioning path?
@@ -346,3 +366,4 @@ Bounded positives are **wrapper candidate check passes -> final argv selects a d
 - [ ] For Wagtail, is `TableBlock` actually present, is authoring permission proven, and does the evidence stop at a harmless marker in a separate disposable viewer session?
 - [ ] For GitPython, is each API call site, final argv, canonical synthetic path, read/write direction, and 3.1.57 rejection captured independently?
 - [ ] For GitPython 3.1.58 follow-ups, are transformed argv, reparsed config fields, submodule-name paths, synthetic error content, template selection, and read-tree output targets recorded without executing helpers or touching host files?
+- [ ] For go-git, are the storage backend, peer/refspec provenance, complete symlink chain, canonical final path, and denied syscall captured separately?

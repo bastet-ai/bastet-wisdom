@@ -187,6 +187,17 @@ This API Platform issue is useful beyond one framework: it is a repeatable way t
 
 Report this as **higher-privilege request -> long-lived serializer component cache -> lower-privilege JSON:API/HAL response shape includes hidden canary property**. Do not use real sensitive properties, customer records, or production worker pinning tricks.
 
+### API Platform relation-IRI type-confusion follow-up
+
+[GHSA-9rjg-x2p2-h68h / CVE-2026-54164](https://github.com/advisories/GHSA-9rjg-x2p2-h68h) adds a different API Platform serializer boundary. Before `4.1.30`, `4.2.26`, and `4.3.12`, relation IRI resolution could omit the expected operation/type check. A writable legacy relation declared only with `@var Foo`, rather than a native PHP type, could accept an IRI resolving to an unrelated resource class. API Platform 2.x/3.x carry the path but are end-of-life; native typed properties commonly fail later in Symfony's property accessor and are an important negative control.
+
+1. Create synthetic `Parent`, expected `Foo`, and unrelated `Bar` resources in a disposable API. Give the test principal ordinary write access to the parent and only the minimum read/reference visibility needed for both canary relations.
+2. Patch persistence and downstream domain hooks. Record the submitted IRI, resolved operation/resource class, declared relation class, native PHP property type, serializer decision, and object class proposed to the denied setter/persistence sink.
+3. Compare expected `Foo` IRI, unrelated `Bar` IRI, nonexistent IRI, same numeric ID under both route families, untyped `@var` relation, native typed relation, collection/interface relation, and patched versions.
+4. Return only synthetic IDs and class names. Do not persist a wrong-typed object, invoke business workflows, or infer privilege escalation without proving a separate authorization-sensitive consumer.
+
+The bounded positive is **writable relation IRI -> resolver returns `Bar` -> expected `Foo` type check is skipped -> denied assignment sink receives the wrong resource class**. A `201` or echoed IRI alone is weak evidence; preserve the class transition. Report invariant/type confusion separately from any downstream authorization or business-logic effect.
+
 ### `morgan` `:remote-user` access-log forging
 
 Log-forging findings are strongest when the program relies on access logs as an investigation, billing, abuse, or rate-limit evidence source. Keep the proof to log integrity, not credential capture.
@@ -261,6 +272,7 @@ Lead with the failed trust boundary:
 - **malformed `Host` header -> reconstructed URL path drift -> path guard bypass**;
 - **wheel entry-point metadata -> script path join -> outside-install-root write**;
 - **privileged API request -> long-lived response-shape cache -> lower-privilege JSON:API/HAL structure leak**;
+- **writable relation IRI -> wrong resource class -> missing declared-relation type check -> denied assignment**;
 - **Basic-auth username -> unescaped access-log token -> forged request evidence**.
 - **redirect-following Excon client -> incomplete sensitive-header strip list -> fake credential relay**;
 - **untrusted `secure_headers` directive value -> CSP separator injection -> policy backstop bypass**;

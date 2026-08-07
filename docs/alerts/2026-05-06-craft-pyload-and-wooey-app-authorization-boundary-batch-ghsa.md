@@ -90,3 +90,16 @@ The July 6 GitHub Advisory Database wave adds two Craft CMS items that extend th
 - For file read, request only the synthetic marker file and a denied-control marker. Positive evidence is the canary content returned where the role should not access server files.
 - Do not read `.env`, `config/`, database backups, private keys, user uploads, license files, templates containing secrets, or production logs. Do not publish shell payloads.
 - Report crossed boundaries as **authenticated referrer/redirect state to backend execution path** or **authenticated Craft route to server-side file read**, with version, route, role, raw/normalized path or redirect state, marker evidence, and patched negative controls.
+
+## August 7 category-structure session-grant follow-up
+
+[GHSA-xxpx-f366-4xpq](https://github.com/advisories/GHSA-xxpx-f366-4xpq) adds a Craft CMS `5.x` route-family authorization drift fixed in `5.10.6`. In affected builds, rendering the category index for a user with `viewCategories` could create an `editStructure:<structureId>` session authorization because `structureEditable` was derived from view permission. `structures/move-element` then trusted that session grant without rechecking `saveCategories`, allowing view-only users to reorder or re-parent categories.
+
+Use a disposable category group with three marker-only nodes, one view-only user, one save-capable control user, and a patched mutation sink:
+
+1. Start a fresh session and call the move route before viewing the category index; record route denial and session authorization keys.
+2. Render the category index as the view-only user, record whether an edit-structure grant appears, then submit a no-op sibling-order and parent-change request to a recorder that never persists the tree.
+3. Compare `viewCategories` only, `saveCategories`, no group access, a different category group/structure ID, a fresh session, index-not-rendered state, entries versus categories, and Craft `5.10.6+`.
+4. Capture principal, group and structure IDs, permissions, session-grant provenance, route authorization result, proposed parent/sibling IDs, and denied mutation. Do not alter production taxonomy, URLs, menus, or descendant content.
+
+A bounded positive is **view-only category index -> session receives edit-structure grant -> sibling write route accepts that grant -> denied tree-mutation sink selects a marker node despite missing save permission**. Report the read-to-session-to-write authority chain; route reachability or an editable UI flag alone is not persistent modification.
