@@ -29,3 +29,22 @@ Render bugs often hide in “secondary” paths: Markdown plugins, figure option
 - Use path-aware containment (`relative_path_from`, resolved prefix plus separator, or equivalent), not string-prefix containment.
 - Dispatch only methods explicitly declared for a route surface; inherited framework helpers should not be route-callable by default.
 - Make preview/test routes fail closed outside local development and require a visible startup warning when enabled.
+
+## August 7 follow-up: Showdown metadata and generated-attribute contexts
+
+Two reviewed Showdown records reinforce that Markdown body escaping does not cover generated document or attribute contexts:
+
+- [GHSA-cr32-g25g-vxjj / CVE-2026-59711](https://github.com/advisories/GHSA-cr32-g25g-vxjj) reports that frontmatter metadata entered the HTML `<title>` without context-appropriate escaping when `completeHTMLDocument` was enabled.
+- [GHSA-22g5-r2x5-97cx / CVE-2026-59710](https://github.com/advisories/GHSA-22g5-r2x5-97cx) reports that table-header text entered a generated `id` attribute without quote escaping under the GitHub-flavor table path.
+
+The reviewed records list Showdown through 2.1.0 as affected but do not identify a patched package release. The linked upstream commits are useful fixed-code controls; verify package provenance rather than assuming a later version exists.
+
+### Parse, serialize, and host-render matrix
+
+1. Build a local harness around the exact Showdown options and extensions used by the application. Exercise fragment output and `completeHTMLDocument`, default and GitHub flavors, tables enabled/disabled, and the application's real post-render sanitizer.
+2. Use harmless context-breaking markers in frontmatter title values and table-header text. The marker may set a detached-DOM attribute or increment a local in-memory event counter; do not use credential forms, network callbacks, cookie access, or privileged actions.
+3. Capture raw Markdown, parsed metadata/header text, generated title or `id` value, serialized HTML, post-sanitizer HTML, and detached-browser DOM. This separates source parsing, output encoding, sanitizer behavior, and host-browser execution.
+4. Include positive controls with ordinary metadata and headers, plus negative controls built from the linked corrected commits. Require title text to remain text and generated IDs to remain one inert attribute after browser reparsing.
+5. The bounded positives are **frontmatter metadata -> title raw-text context break -> harmless detached-DOM event** and **table header -> generated `id` quote break -> harmless detached-DOM event**. Do not generalize to every Showdown configuration when `completeHTMLDocument`, table parsing, or the host sink is unreachable.
+
+Report persistence separately from browser execution. A stored Markdown record is not stored XSS until the affected render path, final same-origin DOM sink, and harmless execution marker are all demonstrated.

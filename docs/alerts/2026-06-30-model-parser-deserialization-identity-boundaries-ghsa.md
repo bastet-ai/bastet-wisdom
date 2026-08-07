@@ -113,8 +113,35 @@ Two reviewed Keras records add distinct **untrusted model/archive metadata -> fi
 
 For either issue, permit a real filesystem proof only inside a disposable temporary tree and only to a pre-created sibling marker path. Never target startup files, notebooks, datasets, model caches, credentials, or production training/inference workers. Do not infer code execution from path control without an independently proven executable consumer.
 
+## August 7 follow-up: Keras deserialization and external-dataset authority
+
+Four additional reviewed records widen the model-artifact matrix beyond final output paths:
+
+- [GHSA-v2w2-w228-c444 / CVE-2026-12484](https://github.com/advisories/GHSA-v2w2-w228-c444) reports that `TorchModuleWrapper.from_config()` could reach `torch.load(..., weights_only=False)` when no ambient `SafeModeScope(True)` existed.
+- [GHSA-5gwj-m78q-7pq3 / CVE-2026-12481](https://github.com/advisories/GHSA-5gwj-m78q-7pq3) reports that `Lambda.from_config()` treated an unset `safe_mode=None` differently from an explicit safe scope, allowing marshalled Lambda code through direct layer deserialization and related clone/deserialize paths.
+- [GHSA-26c4-7vv6-867j / CVE-2026-12480](https://github.com/advisories/GHSA-26c4-7vv6-867j) reports that HDF5 Virtual Datasets were not rejected before their external source files were resolved. This is adjacent to, but distinct from, the earlier `ExternalLink` record: test both object links and VDS source mappings.
+- [GHSA-58hv-7753-xmfq / CVE-2026-12482](https://github.com/advisories/GHSA-58hv-7753-xmfq) reports that Keras TAR filtering validated regular entries but did not apply equivalent destination checks to symlink entries, particularly where Python 3.10/3.11 lacked a newer interpreter backstop.
+
+The listed affected ranges for these records are Keras before 3.12.3 and 3.13.0 through 3.14.x; the corrected releases are 3.12.3 and 3.15.0. Confirm the exact branch and backport used by the assessed service.
+
+### Deserializer entry-point and ambient-policy matrix
+
+1. Use an offline disposable process with toy Keras configurations only. Replace `torch.load`, Lambda bytecode reconstruction, imports, and process/file APIs with recorders that return inert sentinel objects or raise before execution.
+2. Invoke the same synthetic layer configuration through direct `from_config()`, `keras.layers.deserialize()`, model loading, and `clone_model()` where applicable. Run each with an explicit safe scope, explicit unsafe opt-in, `safe_mode=None`, and no ambient scope.
+3. Record entry point, layer type, serialized field, caller-supplied mode, ambient scope, final loader arguments, and whether the denied reconstruction sink was reached. Do not treat one guarded top-level loader as proof that public helper and clone paths inherit the same policy.
+4. The bounded positive is **untrusted layer configuration -> unset or lost ambient policy -> denied pickle or marshalled-code reconstruction sink**. Do not execute a real pickle gadget, marshalled command, import side effect, or live model code.
+5. Repeat on 3.12.3 and 3.15.0 controls. Require default rejection at every reachable entry point while preserving an explicit, documented unsafe opt-in only in the isolated lab.
+
+### VDS, external-link, and TAR-link differential matrix
+
+1. Extend the earlier HDF5 fixture tree with a synthetic external HDF5 file containing one random dataset marker. Build separate containers using an `ExternalLink`, a Virtual Dataset source mapping, an internal dataset, a missing source, an absolute in-tree alias, and a symlink alias.
+2. Patch HDF5 open/resolver callbacks and record artifact path, object type, VDS/link metadata, raw secondary filename, canonical filename, selected object, and calling Keras entry point. Deny before reading anything outside the disposable tree.
+3. For TAR, pair regular-file, regular-directory, symlink, hard-link, symlink-then-child, and duplicate-entry fixtures that express the same canonical destination. Patch final create/link/open syscalls and deny every outside-root destination.
+4. A positive is **artifact metadata -> external HDF5 source or archive link -> denied secondary file/open/link sink** while the equivalent internal object remains functional. Report VDS resolution, external-link resolution, symlink creation, later write-through, and file disclosure as separate edges.
+5. Never reference host files, model caches, notebooks, datasets, credentials, startup files, or another tenant's artifacts. A canary read or link proof, if explicitly required, must stay inside the disposable root.
+
 ## Reporting notes
 
-- Lead with the exact boundary crossed: **untrusted molecule input to native parser**, **deserialization policy to reduce/global lookup**, **model-name substring to remote code loader**, **model/archive metadata to canonical filesystem destination**, **model metadata name to sidecar-file destination**, or **certificate subject string to authenticated username**.
+- Lead with the exact boundary crossed: **untrusted molecule input to native parser**, **deserialization policy to reduce/global lookup**, **model-name substring to remote code loader**, **unset ambient safe mode to pickle/bytecode reconstruction**, **model/archive metadata to canonical filesystem destination**, **HDF5 metadata to a secondary file resolver**, **model metadata name to sidecar-file destination**, or **certificate subject string to authenticated username**.
 - Include affected and fixed versions, the minimal canary input shape, expected denial or safe parse, observed result, and a fixed-version negative control.
 - Keep evidence scoped and inert: sanitizer traces, temp-file markers, owned model repos, fake users, lab CAs, and synthetic molecule files only.

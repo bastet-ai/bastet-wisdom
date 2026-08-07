@@ -8,16 +8,16 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Keras deserializer entry-point and ambient safe-mode matrix](alerts/2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#deserializer-entry-point-and-ambient-policy-matrix)
+- [Keras VDS, external-link, and TAR-link differential matrix](alerts/2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#vds-external-link-and-tar-link-differential-matrix)
+- [Showdown metadata and generated-attribute render contexts](alerts/2026-05-09-render-markdown-and-preview-boundary-batch-ghsa.md#parse-serialize-and-host-render-matrix)
 - [Keras archive extraction destination-vs-CWD boundary](alerts/2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#archive-extraction-destination-matrix)
 - [Keras `DiskIOStore` layer-name final-path authority](alerts/2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#diskiostore-layer-name-matrix)
 - [Django shared-cache grammar and principal isolation](alerts/2026-05-08-django-cache-upload-and-session-boundary-batch-ghsa.md#shared-cache-decision-matrix)
-- [Django signed-cookie namespace collision](alerts/2026-05-08-django-cache-upload-and-session-boundary-batch-ghsa.md#signed-cookie-namespace-collision-matrix)
 - [Nexus delegated repository and privilege authority](alerts/2026-08-07-repository-pipeline-appliance-authority-boundaries-ghsa-kev.md#1-build-a-delegated-permission-to-final-action-matrix)
 - [Nexus configuration-to-runtime interpretation boundaries](alerts/2026-08-07-repository-pipeline-appliance-authority-boundaries-ghsa-kev.md#2-separate-configuration-write-authority-from-runtime-interpretation)
 - [Nexus lifecycle, render, and outbound-helper checks](alerts/2026-08-07-repository-pipeline-appliance-authority-boundaries-ghsa-kev.md#3-test-lifecycle-render-and-outbound-helpers-with-controlled-canaries)
-- [ZenML shared-artifact deserialization provenance](alerts/2026-08-07-repository-pipeline-appliance-authority-boundaries-ghsa-kev.md#4-treat-shared-ml-artifacts-as-executable-package-inputs)
-- [Plesk, WGDashboard, and LoadMaster control-plane route authority](alerts/2026-08-07-repository-pipeline-appliance-authority-boundaries-ghsa-kev.md#5-replay-alternate-panel-and-appliance-routes-without-live-impact)
-- [CodeIgniter MIME and stored-extension upload boundary](alerts/2026-06-11-codeigniter-upload-extension-boundary-ghsa.md#1-test-validation-stored-extension-and-destination-separately)
+
 
 
 

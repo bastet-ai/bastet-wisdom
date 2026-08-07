@@ -10,6 +10,8 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Keras deserialization, HDF5 VDS, and TAR-link authority follow-up](2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-7-follow-up-keras-deserialization-and-external-dataset-authority)
+- [Showdown metadata and generated-attribute render-context follow-up](2026-05-09-render-markdown-and-preview-boundary-batch-ghsa.md#august-7-follow-up-showdown-metadata-and-generated-attribute-contexts)
 - [Keras archive and layer-name final-path follow-up](2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-7-keras-archive-and-layer-name-final-path-follow-up)
 - [Django cache grammar, signed-cookie namespace, and domain-validator follow-up](2026-05-08-django-cache-upload-and-session-boundary-batch-ghsa.md#august-7-follow-up-cache-grammar-signed-cookie-namespaces-and-domain-validation)
 - [Nexus, ZenML, Plesk, WGDashboard, and LoadMaster authority boundaries](2026-08-07-repository-pipeline-appliance-authority-boundaries-ghsa-kev.md)
