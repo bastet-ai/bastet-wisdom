@@ -8,16 +8,16 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
-- [Astro Vercel ISR edge-to-origin route authority](alerts/2026-07-18-nest-astro-route-render-fetch-boundaries-ghsa.md#august-7-follow-up-vercel-isr-path-override)
-- [API Platform relation-IRI type confusion](alerts/2026-07-10-http-client-package-cache-identity-boundaries-ghsa.md#api-platform-relation-iri-type-confusion-follow-up)
-- [go-git reference and worktree symlink final-path authority](alerts/2026-07-21-developer-agent-proxy-control-boundaries-ghsa.md#august-7-go-git-reference-and-symlink-final-path-follow-up)
-- [Craft CMS category-structure session-grant authorization](alerts/2026-05-06-craft-pyload-and-wooey-app-authorization-boundary-batch-ghsa.md#august-7-category-structure-session-grant-follow-up)
-- [Nuxt DevTools workspace metadata peer-identity check](alerts/2026-08-05-nuxt-route-payload-cache-boundaries-ghsa.md#august-7-devtools-workspace-metadata-and-peer-identity-follow-up)
-- [Smarty nested-resource and symlink final-file authority](alerts/2026-08-07-template-passkey-webmail-authority-boundaries-ghsa.md#2-test-template-sandboxes-at-the-final-file-identity)
-- [Craft CMS passkey assertion replay and persisted credential state](alerts/2026-08-07-template-passkey-webmail-authority-boundaries-ghsa.md#3-treat-webauthn-state-as-a-one-time-server-owned-tuple)
-- [TeamDavid Webbox local-path, UNC-peer, and response authority](alerts/2026-08-07-template-passkey-webmail-authority-boundaries-ghsa.md#4-model-webmail-path-fields-as-a-shared-authority-surface)
-- [NLTK cross-package shared-namespace resource poisoning](alerts/2026-07-31-library-tenant-commerce-file-boundaries-ghsa.md#august-7-follow-up-test-nltk-package-identity-at-the-final-extracted-resource)
-- [Phoca Commander read, upload, copy, move, and delete path confinement](alerts/2026-07-08-joomla-page-builder-coldfusion-kev-boundaries.md#august-7-follow-up-bind-phoca-commander-actions-to-one-canonical-file-manager-root)
+- [Nexus delegated repository and privilege authority](alerts/2026-08-07-repository-pipeline-appliance-authority-boundaries-ghsa-kev.md#1-build-a-delegated-permission-to-final-action-matrix)
+- [Nexus configuration-to-runtime interpretation boundaries](alerts/2026-08-07-repository-pipeline-appliance-authority-boundaries-ghsa-kev.md#2-separate-configuration-write-authority-from-runtime-interpretation)
+- [Nexus lifecycle, render, and outbound-helper checks](alerts/2026-08-07-repository-pipeline-appliance-authority-boundaries-ghsa-kev.md#3-test-lifecycle-render-and-outbound-helpers-with-controlled-canaries)
+- [ZenML shared-artifact deserialization provenance](alerts/2026-08-07-repository-pipeline-appliance-authority-boundaries-ghsa-kev.md#4-treat-shared-ml-artifacts-as-executable-package-inputs)
+- [Plesk, WGDashboard, and LoadMaster control-plane route authority](alerts/2026-08-07-repository-pipeline-appliance-authority-boundaries-ghsa-kev.md#5-replay-alternate-panel-and-appliance-routes-without-live-impact)
+- [CodeIgniter MIME and stored-extension upload boundary](alerts/2026-06-11-codeigniter-upload-extension-boundary-ghsa.md#1-test-validation-stored-extension-and-destination-separately)
+- [CodeIgniter upload destination final-path authority](alerts/2026-06-11-codeigniter-upload-extension-boundary-ghsa.md#1-test-validation-stored-extension-and-destination-separately)
+- [CodeIgniter `deleteBatch()` SQL-bind boundary](alerts/2026-06-11-codeigniter-upload-extension-boundary-ghsa.md#2-verify-the-deletebatch-bind-at-generated-sql)
+- [Hono SSR `memo()` cross-request output reuse](alerts/2026-05-09-hono-render-jwt-cache-and-prototype-boundary-batch-ghsa.md#replay-memo-as-a-two-principal-warm-instance-test)
+- [Hono proxy dynamic hop-by-hop response headers](alerts/2026-05-09-hono-render-jwt-cache-and-prototype-boundary-batch-ghsa.md#derive-the-proxy-removal-set-from-connection)
 
 
 

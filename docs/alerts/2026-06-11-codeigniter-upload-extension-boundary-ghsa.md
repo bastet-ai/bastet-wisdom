@@ -65,6 +65,72 @@ Lead with the crossed boundary:
 
 Keep impact conditional. Use **arbitrary file upload / dangerous extension persistence** when execution is not demonstrated. Use **remote code execution** only when the target's approved test environment executes the persisted file as code.
 
+## August 7 follow-up: CodeIgniter 4.7.4 upload, SQL, and proxy boundaries
+
+Four later CodeIgniter4 advisories add distinct final-sink checks. They are grouped here because the useful operator question is not merely whether an application uses CodeIgniter, but whether request metadata survives into a stronger filename, SQL, or transport-security decision.
+
+| Advisory | Affected boundary | Fixed control |
+| --- | --- | --- |
+| [`GHSA-mmj4-63m4-r6h5`](https://github.com/advisories/GHSA-mmj4-63m4-r6h5) / CVE-2026-63223 | `is_image` or `mime_in` accepts MIME-valid bytes while the client filename retains a disallowed extension | `codeigniter4/framework` 4.7.4 |
+| [`GHSA-hhmc-q9hp-r662`](https://github.com/advisories/GHSA-hhmc-q9hp-r662) / CVE-2026-63222 | `UploadedFile::move($targetPath)` uses a client filename as a destination path | `codeigniter4/framework` 4.7.4 sanitizes only the default filename |
+| [`GHSA-c9w5-rwh3-7pm9`](https://github.com/advisories/GHSA-c9w5-rwh3-7pm9) / CVE-2026-63221 | `where()` values lose their escape flag when `deleteBatch()` compiles SQL | `codeigniter4/framework` 4.7.4 |
+| [`GHSA-7wmf-pw8j-mc78`](https://github.com/advisories/GHSA-7wmf-pw8j-mc78) / CVE-2026-63220 | `X-Forwarded-Proto` or `Front-End-Https` marks an HTTP request secure without binding the header to a trusted proxy peer | `codeigniter4/framework` 4.7.4 |
+
+### 1. Test validation, stored extension, and destination separately
+
+The earlier `ext_in` issue and the new `is_image`/`mime_in` issue converge at the same application preconditions: MIME-valid canary bytes, a dangerous-looking client extension, filename preservation, a public destination, and an executable serving policy. Do not collapse those stages into an RCE claim.
+
+Use the benign GIF marker from the replay above and capture this tuple:
+
+```text
+submitted filename | declared MIME | detected MIME | rules passed | stored name | final path | serving behavior
+```
+
+For `move()` confinement, use a disposable upload root and a marker-only filename such as `../outside/ci-move-canary.txt`. Instrument or patch the final move sink if possible. A strong proof shows the requested name, normalized destination, and affected-versus-fixed result without writing outside the disposable fixture.
+
+The 4.7.4 patch has an important boundary: it sanitizes the client name when `move()` is called **without** a second argument. Code such as `$file->move($path, $file->getClientName())` still gives the caller-supplied second argument filename authority and needs an independent final-path confinement check.
+
+### 2. Verify the `deleteBatch()` bind at generated SQL
+
+Prioritize call sites where user-controlled filters reach this exact chain:
+
+```php
+$builder->setData($rows)
+    ->onConstraint(['id' => 'id'])
+    ->where('jobs.name', $requestValue)
+    ->deleteBatch();
+```
+
+Regular `delete()` is a negative control; the advisory concerns additional `where()` conditions on `deleteBatch()`. In a scratch database or patched query recorder, submit an inert quote-bearing marker and compare the generated statement:
+
+```text
+affected: WHERE value is substituted as SQL structure
+fixed:    WHERE value remains one quoted/escaped literal
+```
+
+Do not run destructive predicates against retained data. Seed two disposable rows, wrap execution in a rollback where supported, and report **SQL injection at batch-delete query construction** only when the compiled SQL proves structure changed. A generic error or timing difference is insufficient.
+
+### 3. Bind forwarded HTTPS claims to the immediate peer
+
+Build a decision table from two network paths: the approved reverse proxy and a direct or lab-only backend path. Send no header, `X-Forwarded-Proto: https`, and `Front-End-Https: on`; then record `REMOTE_ADDR`, configured `proxyIPs`, `isSecure()`, redirect behavior, and any security-sensitive branch.
+
+```text
+peer          | forwarded claim       | expected secure decision
+trusted proxy | https / on             | true
+untrusted peer| https / on             | false
+either peer   | absent or http / off   | false unless the transport itself is TLS
+```
+
+Header spoofing alone is not a high-impact finding. Establish a downstream effect such as bypassing an HTTPS-only route guard, changing an absolute callback scheme, or issuing a cookie with materially different attributes. Keep proofs to disposable sessions and inert routes; never collect another user's cookie or weaken a production proxy.
+
+### Follow-up evidence and report boundaries
+
+- Record the exact CodeIgniter package version and call-site method, not only a framework fingerprint.
+- Preserve submitted filename, framework-derived metadata, and the final normalized destination as separate fields.
+- For SQL, attach generated-query or query-recorder evidence with synthetic values and redact credentials.
+- For proxy trust, include the TCP peer, trusted-proxy configuration, raw headers, and final `isSecure()` decision.
+- Do not claim arbitrary file execution from path control, database compromise from a parser error, or authentication bypass from a changed secure-transport boolean without proving the next application-owned sink.
+
 ## Notes on skipped adjacent items
 
 The same scan rechecked Disclosed, PortSwigger, Trail of Bits, ProjectDiscovery, GitHub advisory published/updated feeds, and CISA KEV. The Kolibri, Hapi inert, Keycloak, Flowise, and Arc advisories were already promoted in the adjacent 2026-06-11 batch. Newly visible GitHub items that were availability-only, duplicate of existing coverage, or lacked a stronger reusable offensive validation boundary were tracked but not promoted.

@@ -27,3 +27,40 @@ Framework helpers are security boundaries. A renderer that treats CSS values as 
 - Cache policy should default to private/no-store for authenticated responses unless an explicit identity-safe key is configured.
 - JWT validation should enforce RFC data types before semantic checks; do not coerce claim values.
 - Template path setters need a denylist plus positive path grammar, object creation with null prototypes, and regression tests for prototype pollution payloads.
+
+## August 7 follow-up: SSR memo lifetime and dynamic hop-by-hop headers
+
+Hono 4.12.34 fixes two more helper boundaries:
+
+- [`GHSA-f23p-vx2j-j53r`](https://github.com/advisories/GHSA-f23p-vx2j-j53r) / CVE-2026-71850 affects `hono >=3.8.0,<4.12.34`. Server-side `memo()` retained rendered output across requests when props compared equal, even when the component read current-user data from `createContext()`/`useContext()`, `useRequestContext()`, or `getContext()`.
+- [`GHSA-79qm-7rj5-m7r9`](https://github.com/advisories/GHSA-79qm-7rj5-m7r9) / CVE-2026-71849 affects `hono >=4.7.0,<4.12.34`. `hono/proxy` removed standard hop-by-hop response headers but failed to remove extension fields named by the origin's `Connection` header.
+
+### Replay `memo()` as a two-principal warm-instance test
+
+Reachability requires all of these conditions: server-side JSX, a component wrapped in `memo()`, request-specific data read from ambient context rather than props, comparator-equal props, and two requests handled by the same warm process or isolate.
+
+Use two disposable users with unique, non-secret markers. Prime the component with user A and request the same route as user B, then reverse the order and repeat against the same instance. Capture:
+
+```text
+request order | process/instance ID | explicit props | ambient principal marker | rendered marker
+A -> B        | warm-1              | equal          | B                        | must be B
+B -> A        | warm-1              | equal          | A                        | must be A
+```
+
+Add three controls: an unwrapped component, request-specific values passed as props, and Hono 4.12.34+. The upstream fix removes server-side result reuse while preserving DOM-renderer memo metadata. A reliable finding needs deterministic marker crossover on an affected build and clean isolation on the fixed control; one stale response without instance affinity is not enough.
+
+Never place real CSRF tokens, account data, or session values in the fixture. Report **cross-request SSR output reuse** first, then describe disclosure impact only for the application fields independently shown to occupy that component.
+
+### Derive the proxy removal set from `Connection`
+
+An intermediary must remove both the well-known hop-by-hop fields and every field named by `Connection`. Test against an owned mock origin with harmless response metadata:
+
+```http
+Connection: X-Skillz-Hop
+X-Skillz-Hop: canary-only
+X-Skillz-End-To-End: keep-me
+```
+
+Record the origin response and the final client response. The affected helper forwards `X-Skillz-Hop`; the fixed helper removes it while retaining `X-Skillz-End-To-End`. Vary header case, optional whitespace, and multiple comma-separated tokens, but do not put credentials or operational internal metadata in the canary.
+
+Treat this as a transport-policy primitive, not automatic cache poisoning or authorization bypass. Escalation requires a concrete downstream consumer that trusts the leaked extension field. The strongest report includes raw origin-to-proxy and proxy-to-client header sets plus an affected-versus-fixed comparison.
