@@ -479,6 +479,11 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - AWS API MCP Server advisories/source: https://github.com/awslabs/mcp/security/advisories and https://github.com/awslabs/mcp
 - Apache Traffic Server security announcements and source: https://trafficserver.apache.org/security/ and https://github.com/apache/trafficserver
 - Koollab LMS advisory cluster: https://www.csa.gov.sg/alerts-and-advisories/alerts/al-2026-094
+- Postiz advisories/source: https://github.com/gitroomhq/postiz-app/security/advisories and https://github.com/gitroomhq/postiz-app
+- SuperTokens Core advisories/source: https://github.com/supertokens/supertokens-core/security/advisories and https://github.com/supertokens/supertokens-core
+- libvirt security/source: https://libvirt.org/securityprocess.html and https://gitlab.com/libvirt/libvirt
+- OPeNDAP Hyrax source/releases: https://github.com/OPENDAP/hyrax-docker and https://www.opendap.org/software/hyrax/
+- DOMPurify advisories/source: https://github.com/cure53/DOMPurify/security/advisories and https://github.com/cure53/DOMPurify
 
 ## Network and service discovery
 

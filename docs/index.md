@@ -8,16 +8,16 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [GitPython final-argv, config, submodule, and filesystem authority](alerts/2026-07-21-developer-agent-proxy-control-boundaries-ghsa.md#august-7-gitpython-final-argv-config-submodule-and-file-authority-follow-up)
+- [Postiz file, SuperTokens tenant, libvirt config, and redirect/browser peer authority](alerts/2026-08-07-file-tenant-network-config-authority-boundaries-ghsa.md)
+- [WordPress commerce-proof, shortcode, and protected-content boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-7-commerce-proof-shortcode-and-protected-content-follow-up)
+- [DOMPurify `IN_PLACE` detached-subtree lifecycle testing](methodology/css-sanitizer-host-boundary-testing.md#dompurify-in_place-detached-subtree-follow-up)
+- [SEBLOD path selection and SP Page Builder privileged-editor rendering](alerts/2026-07-08-joomla-page-builder-coldfusion-kev-boundaries.md#august-7-follow-up-separate-joomla-file-selection-from-editor-rendering)
 - [Smarty nested-resource and symlink final-file authority](alerts/2026-08-07-template-passkey-webmail-authority-boundaries-ghsa.md#2-test-template-sandboxes-at-the-final-file-identity)
 - [Craft CMS passkey assertion replay and persisted credential state](alerts/2026-08-07-template-passkey-webmail-authority-boundaries-ghsa.md#3-treat-webauthn-state-as-a-one-time-server-owned-tuple)
 - [TeamDavid Webbox local-path, UNC-peer, and response authority](alerts/2026-08-07-template-passkey-webmail-authority-boundaries-ghsa.md#4-model-webmail-path-fields-as-a-shared-authority-surface)
 - [NLTK cross-package shared-namespace resource poisoning](alerts/2026-07-31-library-tenant-commerce-file-boundaries-ghsa.md#august-7-follow-up-test-nltk-package-identity-at-the-final-extracted-resource)
 - [Phoca Commander read, upload, copy, move, and delete path confinement](alerts/2026-07-08-joomla-page-builder-coldfusion-kev-boundaries.md#august-7-follow-up-bind-phoca-commander-actions-to-one-canonical-file-manager-root)
-- [WordPress payment-proof binding and Turnstile cache replay](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-7-payment-proof-and-captcha-cache-follow-up)
-- [WordPress integration, commerce, identity-proof, REST-route, and plugin-sink boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-7-follow-up-bind-plugin-routes-to-server-owned-identity-object-payment-and-integration-authority)
-- [Flowise public-route whitelist, Assistants credential, and document-store operation boundaries](alerts/2026-08-04-flowise-workspace-runtime-credential-boundaries-ghsa.md#20-treat-public-route-whitelists-as-exact-route-grammars)
-- [CSS sanitizer, host-UI, clipboard, and model-context boundary testing](methodology/css-sanitizer-host-boundary-testing.md)
-- [Duplicate authority fields across HTTP/2-to-HTTP/1.1 bridges](methodology/http-desync-research-campaigns.md#duplicate-authority-fields-across-an-http2-bridge)
 
 
 

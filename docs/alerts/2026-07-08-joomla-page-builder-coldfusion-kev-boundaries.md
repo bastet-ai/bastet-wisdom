@@ -63,6 +63,17 @@ Safe positives are **authorized file-manager request -> sibling canary reaches t
 
 Require corrected behavior to resolve an existing canonical root and target, reject canonicalization failure, enforce segment-aware containment, refuse symlink escape, and re-check the final file descriptor or syscall target. For copy and move, both endpoints must satisfy policy under the same operation.
 
+## August 7 follow-up: separate Joomla file selection from editor rendering
+
+Two unreviewed records extend this page beyond upload handling:
+
+- [SEBLOD GHSA-jqjq-6rcj-5vpj / CVE-2026-66914](https://github.com/advisories/GHSA-jqjq-6rcj-5vpj) describes unauthenticated path traversal and file download before `3.30.0`, `4.7.0`, and `6.0.1`; and
+- [SP Page Builder GHSA-vcvg-2gmm-mmpg / CVE-2026-66494](https://github.com/advisories/GHSA-vcvg-2gmm-mmpg) describes unauthenticated stored markup reaching the administrator editor before `6.7.0`.
+
+For SEBLOD, use a disposable Joomla root with an expected public-download canary and a sibling synthetic canary. Patch the final file open/stream call and record raw selector, every decode, normalized path, canonical path, configured root, and denied sink. Compare dot segments, encoded separators, duplicate parameters, symlink forms, nonexistent paths, anonymous/authenticated states, and fixed releases. A safe positive is **anonymous download request -> canonical sibling canary reaches the denied read sink**; do not return file bytes or target Joomla configuration, backups, logs, keys, or customer uploads.
+
+For SP Page Builder, create an empty lab database and replace editor script/event/resource/navigation sinks with counters. Submit a harmless stored element carrying only a unique `data-*` marker through the reported public Shapes API path. Preserve route authentication, accepted schema, stored bytes, object/page binding, administrator editor retrieval, sanitizer output, and final detached DOM. Only if explicit lab scope requires an executable-sink check, replace execution with a fixed local counter and use no network or storage access. Report **anonymous API write -> synthetic marker persists -> editor renders it in the privileged origin** separately from script execution; a stored row or editor fetch alone is not XSS.
+
 ## Reporting notes
 
 - Name the crossed boundary precisely: **unauthenticated page-builder upload to executable PHP storage**, **form-builder upload field to CMS web root**, **event attachment to executable extension storage**, **extension upload policy to CMS web root**, or **ColdFusion route pathname to outside-root execution context**.

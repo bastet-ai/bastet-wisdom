@@ -1,0 +1,98 @@
+---
+title: File, tenant, network-config, and redirect authority boundaries
+---
+
+# File, tenant, network-config, and redirect authority boundaries
+
+August 7 advisory records expose five reusable operator seams: route decoding after path matching, tenant selectors detached from authenticated identity, structured network configuration serialized into a more powerful grammar, redirect checks applied only to the first peer, and device-control channels that can reach browser-only internal peers.
+
+Sources:
+
+- Postiz local-media traversal: [GHSA-2p7p-3c9x-rwxm / CVE-2026-19264](https://github.com/advisories/GHSA-2p7p-3c9x-rwxm);
+- SuperTokens Core tenant separation: [GHSA-j7vw-hh5c-2w6x / CVE-2026-37171](https://github.com/advisories/GHSA-j7vw-hh5c-2w6x);
+- libvirt virtual-network XML to dnsmasq configuration injection: [GHSA-f6jp-rhmm-v59g / CVE-2026-61477](https://github.com/advisories/GHSA-f6jp-rhmm-v59g);
+- OPeNDAP Hyrax redirect-based SSRF and Earthdata-header forwarding: [GHSA-7c9q-38r9-q62m / CVE-2026-16637](https://github.com/advisories/GHSA-7c9q-38r9-q62m); and
+- Telefunken/Vestel SmartCenter `browserseturl` internal-browser reach: [GHSA-7535-6xrw-p7v8 / CVE-2026-15570](https://github.com/advisories/GHSA-7535-6xrw-p7v8).
+
+The GitHub records were unreviewed at scan time. Confirm exact product, version, feature configuration, route or API, principal, and corrected behavior before reporting.
+
+!!! warning "Synthetic objects and denied sinks only"
+    Use disposable uploads, two-tenant identities, inert network XML, fake headers, owned no-content redirect peers, and patched file/config/process/network/browser sinks. Never read environment or credential files, forge a session, access another operational tenant, inject executable dnsmasq directives, forward real Earthdata tokens, or probe metadata, loopback, private services, or production devices.
+
+## 1. Preserve the full authority pipeline
+
+For every case record:
+
+```text
+principal and feature state
+-> raw route, tenant, XML attribute, or URL
+-> routing, decoding, parsing, and normalization
+-> canonical file/object/config/destination
+-> policy decision
+-> final denied file, tenant query, config line, process, network peer, or browser sink
+```
+
+A response code, parsed value, redirect, or generated path is not sufficient. Require a random synthetic marker at the final recorder and an affected-versus-fixed or explicit negative control.
+
+## 2. Postiz: compare router normalization with handler decoding
+
+The record describes a public local-media route where raw dot segments are collapsed before routing, but encoded separators survive route matching and become traversal only when the handler decodes and joins path segments. The reported downstream JWT and provider-secret impact depends on reading real files and is unnecessary for validation.
+
+1. Run an affected Postiz build with an empty upload root, one public media canary, and one sibling plain-text canary. Remove all real tokens, provider accounts, billing integrations, and user data.
+2. Patch the final stream/open call. Capture the raw request target, router parameters, each percent-decode, joined path, lexical normalization, native canonical path, and recorder target.
+3. Compare expected media paths, raw dot segments, encoded separators, double encoding, mixed separators, duplicate path/query selectors, nonexistent components, and in-root symlinks to the sibling canary.
+4. Exercise unauthenticated, ordinary user, feature-disabled, and fixed-build controls. Stop before opening or returning the sibling file.
+
+A bounded positive is **public route accepts encoded path representation -> handler decoding restores traversal -> denied stream recorder selects the sibling canary**. Do not request process environment, JWT material, database strings, provider secrets, or forge a session. Report file-selector authority only; downstream token impact remains source-reported, not reproduced.
+
+## 3. SuperTokens: bind tenant identity at every query and mutation
+
+Treat the sparse SuperTokens record as a hypothesis requiring a two-tenant matrix, not evidence that every endpoint crosses tenants.
+
+1. Create tenants A and B, users A1/B1, sessions SA/SB, and marker-only tenant data. Use no production recipes, users, or tokens.
+2. Capture how the SDK, HTTP path, headers, query/body fields, session payload, and database key represent tenant identity.
+3. As A1, replay each session, user, recipe, and administrative operation with the explicit tenant selector omitted, set to A, set to B, duplicated, case-changed, or represented through a sibling endpoint/version.
+4. Patch query, serializer, update, revoke, and delete sinks. For reads return only a random B marker ID; for writes record the canonical target and perform no mutation.
+5. Compare unauthenticated, A1, B1, expected tenant administrator, cross-tenant operator if the product supports one, nonexistent tenant, and corrected builds.
+
+The positive is **A-authenticated context -> caller-selected or defaulted tenant B -> B's canonical object reaches a read/mutation recorder without explicit cross-tenant authority**. A tenant ID in a response, an endpoint accepting the parameter, or shared deployment membership is insufficient. Never return session bodies, password hashes, email addresses, reset material, or real tenant records.
+
+## 4. libvirt: trace XML fields into generated dnsmasq grammar
+
+The libvirt record says newline characters in virtual-network DNS TXT values and SRV domain/target attributes can become additional dnsmasq configuration directives. The required principal must already be allowed to define virtual networks; preserve that precondition and determine whether the deployment treats that role as unprivileged relative to the host.
+
+Use an isolated host with no guest/customer networks. Replace dnsmasq launch with a recorder and use only an inert unknown directive such as a unique comment-like canary; do not name `dhcp-script`, hooks, executables, files, or shell commands.
+
+1. Submit ordinary TXT and SRV values, then newline/control-character-shaped inert markers through every accepted API representation.
+2. Capture raw XML, parsed attribute value, validation result, serialized dnsmasq bytes, line/token parse, generated argv/config path, and denied process start.
+3. Compare XML entity forms, CR/LF combinations, canonical API versus alternate import/update routes, direct file input versus management API, and fixed libvirt builds.
+4. Verify that the principal truly has network-definition permission but not host process authority; do not call this a tenant escape if the same role is intentionally a host administrator.
+
+A bounded positive is **network-definition principal -> one XML attribute -> generated dnsmasq file contains a second inert directive token -> patched dnsmasq launch selects that configuration**. This proves configuration-grammar injection and privileged process reachability, not command execution. Keep parser injection, process launch, and root impact separate.
+
+## 5. OPeNDAP: enforce destination and credential policy per redirect hop
+
+Use two owned no-content peers: A is allowlisted and redirects; B is denied and records only a random request marker plus the **names** of synthetic headers. Seed Hyrax with fake `User-Id` and `Echo-Token` values.
+
+Build a matrix for no redirect, same-authority redirect, host/scheme/port changes, multiple hops, relative `Location`, user-info, trailing dot, case, encoded delimiters, DNS changes, and loops. Capture raw URL, allowlist decision, redirect response, resolved next URL, DNS/final peer tuple, headers before and after each hop, and denied connector call.
+
+A safe positive is **initial peer A passes -> redirect selects owned denied peer B without a new policy decision**, with a separate finding if synthetic credential headers remain attached across the authority change. Never use metadata, loopback, RFC1918/ULA, third-party hosts, real Earthdata credentials, or content-bearing endpoints.
+
+## 6. SmartCenter: distinguish control-channel reach from browser navigation
+
+The device record describes a same-LAN SmartCenter command that can direct the embedded browser to destinations ordinary browser navigation cannot reach. Validate only on an owned isolated television/device or a vendor lab, with one synthetic internal HTTP service that returns an empty canary response.
+
+1. Record control-channel discovery, pairing/authentication state, sender identity, command grammar, URL parser result, and browser dispatch sink.
+2. Compare ordinary external owned URL, synthetic denied-service URL, browser-navigation control, command-channel dispatch, malformed schemes, alternate ports, and fixed firmware.
+3. Patch browser dispatch when possible; otherwise use only the isolated canary service and record one request marker. Do not target actual loopback services, settings APIs, media, credentials, or other LAN devices.
+
+A bounded positive is **unauthorized or insufficiently scoped LAN principal -> `browserseturl` -> browser dispatcher selects a synthetic service that normal navigation denies**. State the pairing/network precondition and do not generalize one canary request to arbitrary internal-service compromise.
+
+## Reporting checklist
+
+- [ ] Exact affected/fixed product versions and feature prerequisites are recorded.
+- [ ] Raw, decoded, normalized, canonical, and final-sink representations are preserved.
+- [ ] File content, tenant data, process execution, real credentials, and internal services remain out of scope.
+- [ ] Redirect destination policy and credential-forwarding policy are reported separately.
+- [ ] The libvirt principal's intended authority is documented before claiming privilege escalation.
+- [ ] Every positive has a synthetic final sink plus negative and fixed controls.

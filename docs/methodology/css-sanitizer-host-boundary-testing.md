@@ -125,6 +125,21 @@ Record focus/selection state, matching selector, animation state, geometry, hit-
 
 Do not construct password forms, per-character selectors, token brute-force corpora, realistic login overlays, or network-backed keystroke proofs. Those add sensitive collection capability without improving the boundary evidence.
 
+## DOMPurify `IN_PLACE` detached-subtree follow-up
+
+[GHSA-55q2-fjhq-7xh7](https://github.com/advisories/GHSA-55q2-fjhq-7xh7) adds a lifecycle boundary to the campaign. In DOMPurify `3.4.12`, an `IN_PLACE` element hook can remove an ancestor while a descendant resource event is already queued. The affected early-return path does not neutralize that now-detached subtree, so the returned root can look clean while the retained descendant still reaches an event sink. DOMPurify `3.4.13` adds the correction.
+
+Test this only in a detached, synthetic browser fixture:
+
+1. construct one dirty root containing a removable wrapper and a descendant resource element whose event handler increments a local counter;
+2. retain references to the root, removed wrapper, and descendant;
+3. compare ordinary sanitizer removal with `beforeSanitizeElements` and `uponSanitizeElement` hooks that remove the wrapper;
+4. capture hook order, connection state, returned DOM, `DOMPurify.removed`, descendant attributes, queued-event timeline, and patched event-sink decision;
+5. compare `IN_PLACE` on/off, hook/no-hook, already-loaded/not-yet-loaded resource states, `3.4.12`, and `3.4.13`; and
+6. use an embedded inert data resource only—no remote URL, cookie/storage read, navigation, form, or production origin.
+
+A bounded positive is **hook removes ancestor -> sanitizer returns a clean root -> detached descendant retains an event attribute -> local event counter increments after return**. Report the required non-default `IN_PLACE` plus element-removal-hook precondition. Do not generalize ordinary DOMPurify use, and do not claim stored XSS in an application until its exact sanitizer configuration and attacker-to-root input path are independently proven.
+
 ## Evidence and claim boundaries
 
 Capture:

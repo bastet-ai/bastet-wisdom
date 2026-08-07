@@ -746,6 +746,41 @@ Replace Turnstile verification with a deterministic local verifier and Forminato
 
 A safe positive is **one accepted synthetic challenge under K1 -> later token-less or invalid-token request reuses K1 -> validation cache returns success -> no-op form action increments**. This proves anti-abuse proof replay; it does not prove account creation, spam delivery, rate-limit bypass outside this integration, or compromise of Cloudflare Turnstile. Use only disposable forms and never automate submissions against a public site.
 
+## August 7 commerce-proof, shortcode, and protected-content follow-up
+
+A late unreviewed wave expands three existing matrices.
+
+### Re-derive the complete commerce tuple
+
+Sources: Easy Booking minimum duration [GHSA-c9jf-h8vc-955p / CVE-2026-14831](https://github.com/advisories/GHSA-c9jf-h8vc-955p), PhonePe transaction-to-order binding [GHSA-x972-w82m-gqc5 / CVE-2026-10599](https://github.com/advisories/GHSA-x972-w82m-gqc5), Event Booking Manager ticket price [GHSA-3qf4-97w4-w66g / CVE-2026-16067](https://github.com/advisories/GHSA-3qf4-97w4-w66g), Simple Membership merchant binding [GHSA-rx87-886c-g6fw / CVE-2026-14936](https://github.com/advisories/GHSA-rx87-886c-g6fw), WPC Name Your Price Select-mode allowlist [GHSA-fqcg-6x27-fj7j / CVE-2026-16620](https://github.com/advisories/GHSA-fqcg-6x27-fj7j), WP Hotel Booking quantity/total and notification checks [GHSA-9rjp-x5g7-g983 / CVE-2026-15149](https://github.com/advisories/GHSA-9rjp-x5g7-g983) and [GHSA-gr3g-w52p-ff6r / CVE-2026-15152](https://github.com/advisories/GHSA-gr3g-w52p-ff6r), Five Star Restaurant Reservations notification binding [GHSA-4prh-qcrv-cpfg / CVE-2026-15147](https://github.com/advisories/GHSA-4prh-qcrv-cpfg), Events Made Easy token-to-payment binding [GHSA-655w-h872-387j / CVE-2026-14842](https://github.com/advisories/GHSA-655w-h872-387j), RegistrationMagic capture binding and replay [GHSA-x5h9-fc29-gm85 / CVE-2026-15208](https://github.com/advisories/GHSA-x5h9-fc29-gm85), Formidable Forms subscription status [GHSA-ww4h-86qv-rmr8 / CVE-2026-11361](https://github.com/advisories/GHSA-ww4h-86qv-rmr8), WP Travel Engine merchant/amount checks [GHSA-v4gx-m8c5-cqwv / CVE-2026-12501](https://github.com/advisories/GHSA-v4gx-m8c5-cqwv), CoCart public price authority [GHSA-2xcr-jvj8-gv2p / CVE-2026-10524](https://github.com/advisories/GHSA-2xcr-jvj8-gv2p), GetPaid Worldpay notification authenticity [GHSA-w426-cmgx-r837 / CVE-2026-12901](https://github.com/advisories/GHSA-w426-cmgx-r837), and Payment Plugins for PayPal route authorization [GHSA-frpp-mq58-xvp7 / CVE-2026-13399](https://github.com/advisories/GHSA-frpp-mq58-xvp7).
+
+Use one disconnected WooCommerce lab, local provider adapter, two synthetic orders/bookings A/B, cheap/expensive catalog fixtures, merchants M1/M2, currencies C1/C2, and no-op paid/fulfillment/ticket/membership sinks. Test these dimensions independently:
+
+| Dimension | Controls |
+| --- | --- |
+| catalog arithmetic | configured/minimum duration, allowed price set, quantity sign/range, unit price, discounts, computed total |
+| local object | order, booking, registration, invoice, membership, subscription, owner, current lifecycle state |
+| provider proof | authenticity, provider transaction/capture/token, merchant/payee, amount, currency, status, purpose, expiry |
+| consumption | first use, replay against A, crossover to B, concurrent reuse, already-paid/refunded/cancelled state |
+
+Patch gateway HTTP, persistence, inventory, email, ticket, download, membership, and paid-state operations. Capture browser fields, normalized numeric values, server-derived catalog tuple, local provider response, canonical object tuple, proof-consumption state, and no-op transition. Exercise zero, negative, fractional, omitted, duplicate, oversized, below-minimum, cheap-proof/expensive-object, wrong-merchant, wrong-currency, pending/failed, replayed, and corrected-build cases.
+
+The positive is **caller-selected commerce value or authentic proof valid only for tuple A -> server does not re-derive/bind the complete tuple -> mismatched synthetic object reaches a no-op paid/confirmed/fulfillment sink**. Never contact a gateway, create a scannable ticket, activate a real membership, reserve inventory, or claim financial loss from arithmetic alone.
+
+### Treat shortcode parsing as a whole-input grammar
+
+[Easy Appointments GHSA-m9g2-wqhj-c2j4 / CVE-2026-14225](https://github.com/advisories/GHSA-m9g2-wqhj-c2j4) and [Ninja Forms GHSA-2xwp-m9v6-767p / CVE-2026-15256](https://github.com/advisories/GHSA-2xwp-m9v6-767p) describe two routes into WordPress shortcode execution: a contributor-controlled block action that checks only the first tag while rendering the entire string, and anonymous query-string prefill interpreted as a shortcode when a public form uses that value as a default.
+
+Register one lab-only shortcode that increments a recorder and returns a plain random marker. It must not read files/options/users, call the network, mutate state, or execute code. For Easy Appointments compare one approved shortcode, approved-plus-second-canary, denied-first-plus-approved, nested/escaped forms, contributor/administrator, and fixed builds. Preserve raw string, first-tag validator result, full parser token list, and recorder calls. For Ninja Forms compare literal defaults, query prefill disabled/enabled, missing/random/form nonce states, URL encoding, duplicate fields, anonymous/authenticated callers, and fixed builds.
+
+Safe positives are **validator approves first tag -> a second caller-controlled canary shortcode reaches the renderer**, or **anonymous query value -> configured public default-value path -> canary shortcode recorder increments**. Do not invoke installed operational shortcodes or infer command/file/database impact from generic shortcode reachability.
+
+### Bind protected content to the selected course or route family
+
+[Tutor LMS GHSA-6p9h-wm5r-xwmr / CVE-2026-14306](https://github.com/advisories/GHSA-6p9h-wm5r-xwmr) describes enrollment in one course satisfying access checks for another course's lesson, quiz, or assignment. [Passster GHSA-wqxf-2hrv-jrwq / CVE-2025-15674](https://github.com/advisories/GHSA-wqxf-2hrv-jrwq) describes low-role core REST access to globally protected content.
+
+Create public course/post A and protected course/post B containing only random markers. Give one subscriber enrollment/access to A only. Cross current user, enrollment, parent course, lesson/quiz/assignment ID, post ID, frontend route, core REST detail/collection/search/embed route, and plugin protection mode one field at a time. Patch serializers to return only marker IDs. A positive requires **A-scoped enrollment or low-role content capability -> alternate B selector/route -> B marker reaches the serializer without B-specific enrollment/protection authorization**. Never return paid lessons, quiz answers, assignments, real protected posts, author details, or user data.
+
 ## Reporting checklist
 
 Include:

@@ -298,6 +298,38 @@ Bounded positives are **caller-controlled archive kwargs -> outside-repository s
 
 Report **untrusted option dictionary -> `Commit.count()` omits sibling unsafe-option guard -> `git rev-list --output` selects and truncates a disposable canary**. Do not describe it as arbitrary-content write, attacker-controlled revision execution, or command execution.
 
+## August 7 GitPython final-argv, config, submodule, and file-authority follow-up
+
+Six reviewed advisories fixed in GitPython `3.1.58` extend the same wrapper-authority campaign:
+
+- short-option token smuggling when `split_single_char_options=False`: [GHSA-wvpp-8hx9-p66j](https://github.com/advisories/GHSA-wvpp-8hx9-p66j);
+- option-name injection into Git config: [GHSA-jm78-9fvv-mhgr](https://github.com/advisories/GHSA-jm78-9fvv-mhgr);
+- traversal in `.gitmodules` submodule names used below `.git/modules`: [GHSA-hmq2-w58f-27jc](https://github.com/advisories/GHSA-hmq2-w58f-27jc);
+- `--pathspec-from-file` plus NUL-delimited parsing disclosing a selected file through Git errors: [GHSA-hh9p-6wh2-4mfc](https://github.com/advisories/GHSA-hh9p-6wh2-4mfc);
+- unguarded `Repo.init(template=...)`: [GHSA-9rj7-rf2p-w77r](https://github.com/advisories/GHSA-9rj7-rf2p-w77r); and
+- option-like treeish values reaching `git read-tree --index-output`: [GHSA-4gmw-gg2m-w46p](https://github.com/advisories/GHSA-4gmw-gg2m-w46p).
+
+These records reinforce one rule: validate the **fully transformed argv, serialized config, and canonical final path**, not a reconstructed option name or wrapper-level field. First prove that the embedding application forwards untrusted dictionaries, config names, repository content, or treeish values into the named API. A package version alone is not reachability.
+
+### Denied-sink validation matrix
+
+Use GitPython `3.1.57` and `3.1.58` in disposable repositories with an empty temporary home, no credentials/remotes, no executable hooks, and a patched process/file sink.
+
+| Surface | Harmless affected-build probe | Required evidence |
+| --- | --- | --- |
+| transformed kwargs | one joined short-option-shaped marker with `split_single_char_options=False` | raw kwargs, candidate list, final argv, and denied process selection |
+| config option name | inert option-name delimiters whose parsed value is `skillz.canary=true` | submitted name, serialized config line, and native `git config` parse result |
+| submodule name | traversal-shaped name targeting a disposable sibling directory | `.gitmodules` name, joined path, canonical path, and denied repository-create sink |
+| pathspec file | synthetic three-line canary selected through both pathspec flags | final argv and intercepted stderr containing only the random canary lines |
+| repository template | empty template directory containing no hooks | `Repo.init` final argv and proposed canonical template directory; do not stage a hook |
+| read-tree output | disposable sibling canary path | option-like treeish, final argv, and denied overwrite target |
+
+For option-smuggling, compare the wrapper's pre-transform candidate list with the exact argv token passed to Git. Patch process creation and stop when the final token would select a dangerous Git option; do not execute a helper command. For config, use only an inert custom key and compare GitPython's intended field boundaries with native Git's parsed section/name/value tuple. Do not set `core.sshCommand`, `hooksPath`, aliases, or any executable directive.
+
+For submodules and file operations, pre-create only synthetic roots. Patch `makedirs`, repository initialization, file open, and output writes so the recorder receives canonical paths but performs no outside-root operation. The pathspec workflow may return the contents of the synthetic canary only; never select host configuration, keys, environment files, or credentials. For `Repo.init`, proving caller-controlled template selection is sufficient—do not create or trigger a hook.
+
+Bounded positives are **wrapper candidate check passes -> final argv selects a denied option**, **caller-controlled option name -> serialized config reparses as a second inert directive**, **repository-controlled submodule name -> repository-create recorder selects a sibling path**, **caller-selected synthetic file -> its full marker reaches the intercepted Git error**, or **option-like treeish -> overwrite recorder selects a sibling canary**. Keep process selection, config injection, repository creation, file disclosure, and overwrite as separate claims. Require `3.1.58` to reject before the corresponding process or file sink.
+
 ## Reporting checklist
 
 - [ ] Did the report prove the caller can reach the exact PKI, MCP, proxy, updater, daemon, cryptographic, or provisioning path?
@@ -313,3 +345,4 @@ Report **untrusted option dictionary -> `Commit.count()` omits sibling unsafe-op
 - [ ] For the final URL/schema/sanitizer/policy wave, are raw and normalized hosts, expanded fake variables, generated source, browser DOM properties, active views, and translated xDS matchers captured independently?
 - [ ] For Wagtail, is `TableBlock` actually present, is authoring permission proven, and does the evidence stop at a harmless marker in a separate disposable viewer session?
 - [ ] For GitPython, is each API call site, final argv, canonical synthetic path, read/write direction, and 3.1.57 rejection captured independently?
+- [ ] For GitPython 3.1.58 follow-ups, are transformed argv, reparsed config fields, submodule-name paths, synthetic error content, template selection, and read-tree output targets recorded without executing helpers or touching host files?
