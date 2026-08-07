@@ -40,6 +40,29 @@ The July 10 KEV additions expand the same boundary beyond page builders: form bu
 4. **Stop before unsafe writes or execution.** Positive evidence can be a canary read, route dispatch to a marker template in a disposable lab, or a decision table showing traversal escaping the intended directory. Do not publish payloads that overwrite CFML, deploy web shells, or trigger production code execution.
 5. **Capture proxy/origin differentials.** Include raw request path, proxy-normalized path, ColdFusion-observed path if logged, response marker, and patched-version behavior.
 
+## August 7 follow-up: bind Phoca Commander actions to one canonical file-manager root
+
+Three unreviewed GitHub records add a reusable Joomla file-manager workflow for Phoca Commander 1.0.0 through 6.1.3:
+
+- [GHSA-fcf9-29pq-pgc6 / CVE-2026-66493](https://github.com/advisories/GHSA-fcf9-29pq-pgc6) reports path traversal in delete, copy, and move actions;
+- [GHSA-xj92-38c4-rf5r / CVE-2026-66491](https://github.com/advisories/GHSA-xj92-38c4-rf5r) reports arbitrary file selection in `getSource`; and
+- [GHSA-7c99-cx95-2fcq / CVE-2026-66492](https://github.com/advisories/GHSA-7c99-cx95-2fcq) reports traversal in the upload action.
+
+Confirm the exact extension package, route names, authentication/role precondition, configured root, affected version, and corrected behavior. Do not infer anonymous reachability from the file-path flaw alone.
+
+### Multi-action path matrix
+
+1. Use a disposable Joomla site with a dedicated Phoca Commander root, an in-root source and destination, and a sibling directory containing only synthetic read, write, and delete markers.
+2. Capture normal `getSource`, upload, copy, move, and delete requests through the UI. Record route/action, method, principal, CSRF proof provenance, raw source/destination selectors, and the server's configured root.
+3. Replace file read, upload-finalize, copy, rename, and unlink helpers with recorders that canonicalize the proposed path and deny any outside-root operation. Keep source and destination authorization decisions distinct for two-path actions.
+4. For every action, compare ordinary in-root paths with dot segments, encoded separators, platform-relevant mixed separators, absolute forms, duplicate parameters, nonexistent components, and in-root symlinks pointing to the disposable sibling markers.
+5. For copy and move, cross in-root/out-of-root source and destination independently. For upload, test both caller filename metadata and any explicit destination selector. For `getSource`, stop when the recorder selects the sibling marker; do not return its bytes.
+6. Exercise anonymous, lowest extension-capable role, expected manager, invalid/stale CSRF proof, read-only root, feature-disabled, and fixed-build controls. Restore all markers between cases.
+
+Safe positives are **authorized file-manager request -> sibling canary reaches the read recorder**, **upload metadata/destination -> outside-root write recorder**, or **copy/move/delete selector -> outside-root marker reaches the corresponding denied sink**. A normalized path string or successful response without final sink reachability is insufficient. Never select Joomla configuration, credentials, logs, backups, extensions, templates, customer uploads, home directories, or operating-system paths.
+
+Require corrected behavior to resolve an existing canonical root and target, reject canonicalization failure, enforce segment-aware containment, refuse symlink escape, and re-check the final file descriptor or syscall target. For copy and move, both endpoints must satisfy policy under the same operation.
+
 ## Reporting notes
 
 - Name the crossed boundary precisely: **unauthenticated page-builder upload to executable PHP storage**, **form-builder upload field to CMS web root**, **event attachment to executable extension storage**, **extension upload policy to CMS web root**, or **ColdFusion route pathname to outside-root execution context**.

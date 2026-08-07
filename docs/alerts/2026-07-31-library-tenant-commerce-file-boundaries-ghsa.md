@@ -204,6 +204,26 @@ Use a stock-like egg fixture where an editable environment variable is rendered 
 
 Do not request `token`, `token_id`, registry credentials, environment variables, or any real daemon field. A report should distinguish editable-variable permission, Panel substitution, Wings template evaluation, and server-file readability. The canary proves the authority transition without obtaining reusable credentials.
 
+## August 7 follow-up: test NLTK package identity at the final extracted resource
+
+[GHSA-ffj6-66c4-86gw / CVE-2026-12261](https://github.com/advisories/GHSA-ffj6-66c4-86gw) reports a different NLTK boundary through 3.9.4: `nltk.downloader` extracts archives into shared namespaces such as `corpora/` and `taggers/`, then performs integrity validation after write and extraction. A package can therefore place a member at another package's ordinary lookup path, and the poisoned resource remains active across interpreter restarts. The record was unreviewed at scan time; confirm the exact downloader build, index metadata, archive layout, and corrected behavior before reporting.
+
+Treat this as **package identity to resource identity drift**, not ordinary archive traversal. A destination can remain inside the configured NLTK data root while still overwriting a resource owned by a different package.
+
+### Disposable two-package harness
+
+1. Set `NLTK_DATA` to a new temporary directory containing no real corpora, models, credentials, or shared cache. Block outbound networking and serve package metadata plus archives from an owned local fixture.
+2. Define package A with one synthetic resource, for example `corpora/skillz_a/marker.txt`. Define package B whose declared identity is different but whose archive also contains that exact member path with a distinct inert marker.
+3. Instrument archive-member resolution, file open/write/replace operations, integrity-check timing, package-status bookkeeping, and the ordinary NLTK resource lookup. Deny writes outside the temporary root even though this hypothesis does not require root escape.
+4. Install A, hash its marker, then install B. Preserve B's declared package ID, archive member name, canonical destination, A's before/after hash, and whether any validation failure occurs before or after the write.
+5. Start a fresh interpreter and load A's resource through the normal API. A positive requires B's marker to be selected under A's canonical resource name after restart; archive acceptance or an observed path collision alone is insufficient.
+6. Add controls for disjoint package paths, duplicate members inside one archive, failed archive integrity, interrupted extraction, package removal/reinstall order, read-only existing resources, and the corrected build.
+7. Repeat with one synthetic path in each shared namespace the application actually uses. Do not substitute real `punkt`, tokenizer, tagger, corpus, or model files and do not run a model trained or configured by the fixture.
+
+The bounded result is **package B selected for installation -> B member resolves to package A's existing canonical resource -> write/replace recorder accepts the collision -> fresh interpreter loads B's inert marker through A's normal resource lookup**. Report shared-namespace overwrite and persistent resource selection; do not infer code execution, model compromise, or downstream data poisoning unless a separate authorized inert sink proves that edge.
+
+Record package identity and archive identity independently. A secure control should reject cross-package ownership collisions before extraction becomes visible, stage writes outside the active namespace, validate the complete package, and publish the package atomically without replacing another package's owned paths.
+
 ## Evidence and reporting
 
 For every workflow, preserve:

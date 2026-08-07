@@ -8,6 +8,9 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [NLTK cross-package shared-namespace resource poisoning](alerts/2026-07-31-library-tenant-commerce-file-boundaries-ghsa.md#august-7-follow-up-test-nltk-package-identity-at-the-final-extracted-resource)
+- [Phoca Commander read, upload, copy, move, and delete path confinement](alerts/2026-07-08-joomla-page-builder-coldfusion-kev-boundaries.md#august-7-follow-up-bind-phoca-commander-actions-to-one-canonical-file-manager-root)
+- [WordPress payment-proof binding and Turnstile cache replay](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-7-payment-proof-and-captcha-cache-follow-up)
 - [WordPress integration, commerce, identity-proof, REST-route, and plugin-sink boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-7-follow-up-bind-plugin-routes-to-server-owned-identity-object-payment-and-integration-authority)
 - [Flowise public-route whitelist, Assistants credential, and document-store operation boundaries](alerts/2026-08-04-flowise-workspace-runtime-credential-boundaries-ghsa.md#20-treat-public-route-whitelists-as-exact-route-grammars)
 - [CSS sanitizer, host-UI, clipboard, and model-context boundary testing](methodology/css-sanitizer-host-boundary-testing.md)
@@ -15,9 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Repository blame-report process-boundary testing](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#12-audit-repository-analysis-wrappers-at-the-final-process-sink)
 - [Craft CMS preview, interpolation, class-factory, and draft-label boundaries](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#preview-route-versus-asset-visibility)
 - [Embedded PDF renderer inventory and denied-sink validation](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#8-inventory-the-renderer-actually-shipped)
-- [Sanitizer parse-serialize-reparse differential testing](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#9-diff-sanitizer-parse-serialization-and-host-reparse)
-- [Browser-equivalent URL normalization testing](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#10-normalize-urls-the-way-the-final-browser-does)
-- [Craft CMS post-transform and sibling-route authority](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#11-re-check-cms-authority-after-every-transformation)
 
 
 

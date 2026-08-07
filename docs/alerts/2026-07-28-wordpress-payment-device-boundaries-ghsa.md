@@ -708,6 +708,44 @@ For Ajax Search Lite, identify the exact unauthenticated request field and instr
 
 Question2Answer persistent-cookie invalidation and the adjacent reflected/stored XSS, vague local-service permission, firmware hash, and availability-only records were source-tracked without a separate workflow. Password-reset session revocation is already covered by the wiki's subject/session matrices; the remaining records did not add a more specific safe sink than existing renderer, query, and local-permission guidance.
 
+## August 7 payment-proof and CAPTCHA-cache follow-up
+
+Three newly published unreviewed records extend the same server-owned tuple methodology:
+
+- [WP Events Manager GHSA-6g36-5qr8-2jpf / CVE-2026-15148](https://github.com/advisories/GHSA-6g36-5qr8-2jpf) reports that versions before 2.2.5 accept incoming payment notifications without proving the configured merchant account or matching the paid amount to the booking total, including when the selected booking belongs to another user;
+- [Subscriptions for WooCommerce GHSA-p384-7c3j-gqm7 / CVE-2026-15211](https://github.com/advisories/GHSA-p384-7c3j-gqm7) reports that versions before 2.0.1 capture a caller-supplied PayPal order token and accept `COMPLETED` without binding that token or captured amount to the local order; and
+- [Simple CAPTCHA with Cloudflare Turnstile GHSA-w6f5-3mw7-jjxq / CVE-2026-15239](https://github.com/advisories/GHSA-w6f5-3mw7-jjxq) reports that versions before 1.42.0 key Forminator's short-lived validation cache with a reusable caller-controlled request value rather than the single-use Turnstile challenge token.
+
+Confirm exact plugin slug, affected version, enabled gateway/Forminator integration, route, provider response fields, cache key derivation, and fixed behavior. Do not contact a live payment or CAPTCHA provider.
+
+### Cross payment proof, merchant, amount, and object independently
+
+Use two synthetic users, bookings/orders A and B with different totals, fake merchant identities M1/M2, and a local provider adapter. Patch capture, paid-state, fulfillment, ticket, email, and webhook sinks.
+
+| Input | Local object | Expected secure result |
+| --- | --- | --- |
+| proof for A, M1, exact amount A | A | one idempotent marker transition |
+| proof for A | B | reject before B state sink |
+| proof for M2 | A under configured M1 | reject merchant mismatch |
+| completed proof for lower amount | A | reject amount/currency mismatch |
+| already-consumed proof for A | A or B | acknowledge safely; no second transition |
+
+For WP Events Manager, vary booking ID, owner, configured merchant/receiver identity, provider transaction, amount, currency, status, and replay state one field at a time. For Subscriptions for WooCommerce, seed an approved but uncaptured fake provider order, then cross the caller-supplied token with local orders A/B and vary captured amount, currency, merchant, capture status, and token reuse. Record the tuple returned by the local adapter and the canonical local tuple immediately before the no-op paid-state sink.
+
+The bounded positives are **synthetic notification valid in isolation -> foreign booking B or wrong merchant/amount reaches B's paid-state recorder** and **caller-supplied provider token -> fake capture returns `COMPLETED` -> mismatched local order or total reaches the paid-state recorder**. Do not create goods, bookings, tickets, subscriptions, capture funds, or submit provider-approved tokens from a real account.
+
+### Treat CAPTCHA caches as consumed-proof state
+
+Replace Turnstile verification with a deterministic local verifier and Forminator submission with a no-op action recorder. Issue challenge tokens T1/T2 and caller-controlled request/cache values K1/K2.
+
+1. Submit T1 with K1 once and confirm the synthetic verifier accepts it.
+2. Replay K1 with the challenge token omitted, random, expired, already consumed, or replaced by T2. A cache hit must not substitute for a valid single-use proof bound to the same form, action, browser/session where intended, and submission attempt.
+3. Cross K1 between two disposable forms and two browser sessions. Vary duplicate parameters, case/encoding normalization, expiry boundaries, and parallel requests under a deterministic barrier.
+4. Record the raw challenge hash, caller cache value hash, derived cache key, hit/miss, form/action identity, consumed state, verifier invocation, and final no-op submission decision.
+5. Repeat on 1.42.0 or another corrected build. Require replayed or token-less attempts to fail before the Forminator action sink.
+
+A safe positive is **one accepted synthetic challenge under K1 -> later token-less or invalid-token request reuses K1 -> validation cache returns success -> no-op form action increments**. This proves anti-abuse proof replay; it does not prove account creation, spam delivery, rate-limit bypass outside this integration, or compromise of Cloudflare Turnstile. Use only disposable forms and never automate submissions against a public site.
+
 ## Reporting checklist
 
 Include:
