@@ -20,6 +20,8 @@ Sources:
 - [GHSA-434r-7c99-hwf3 / CVE-2026-49138: Nanobot `web_fetch` redirect SSRF](https://github.com/advisories/GHSA-434r-7c99-hwf3)
 - [Nanobot per-hop redirect validation fix and regression fixtures](https://github.com/HKUDS/nanobot/commit/545294c62c0947da40eb5b65288aaf02b5fdf632)
 - [Nanobot 0.2.1 release](https://github.com/HKUDS/nanobot/releases/tag/v0.2.1)
+- [GHSA-g4fw-p4hw-gq39 / CVE-2026-19246: Nanobot provider-returned image URL SSRF](https://github.com/advisories/GHSA-g4fw-p4hw-gq39)
+- [Nanobot merged image-downloader fix #5095](https://github.com/HKUDS/nanobot/pull/5095)
 - [GHSA-m7cq-h27p-hwp4 / CVE-2026-57916: proCertum SmartSign CPS URI handling](https://github.com/advisories/GHSA-m7cq-h27p-hwp4)
 - [GHSA-fqfw-hf3f-2q4c / CVE-2026-57917: proCertum SmartSign preview-time XXE](https://github.com/advisories/GHSA-fqfw-hf3f-2q4c)
 - [CERT Polska coordinated disclosure for both SmartSign issues](https://cert.pl/posts/2026/07/CVE-2026-57916)
@@ -137,6 +139,19 @@ Reuse the owned redirector and synthetic local canary above, but keep the media 
 5. Separately exercise any later readability or external-reader fetch path that the deployment enables. A safe image preflight does not prove that another fetch backend applies the same policy.
 
 The positive edge is **validated public-looking URL -> automatic image-preflight redirect -> synthetic local canary receives the request**. A callback proves reachability; returning the canary nonce in tool output proves readback. Do not query metadata endpoints, arbitrary private services, or production agent sessions.
+
+### August 7 follow-up: provider-returned image URLs are a separate fetch authority
+
+GHSA-g4fw-p4hw-gq39 describes Nanobot's image-generation path accepting a URL returned by the configured model/provider and downloading it outside the hardened user-supplied fetch path. This matters even when users cannot type a URL directly: provider output, a compatible API, or a compromised upstream can still select the downloader's destination. Merged pull request #5095 routes direct downloads through the shared DNS-pinning transport, checks each redirect, ignores ambient process proxy variables, caps streamed bodies at 32 MiB, and validates image bytes. An explicitly configured provider proxy remains a distinct trusted egress boundary and owns final DNS resolution.
+
+Extend the existing two-peer fixture:
+
+1. Mock the image provider so its response contains one owned public URL; do not send a prompt to a live provider.
+2. Vary direct allowed URL, hostname resolving to the local canary, allowed-to-local redirect, mixed DNS answers, oversized body, non-image bytes, and process-wide proxy environment variables.
+3. Run a second matrix with an explicitly configured test proxy and capture initial URL policy, redirect checks, proxy selection, final peer, byte count, and image validation.
+4. Compare user-supplied `web_fetch`, image preflight, and provider-returned image download traces. Passing one route is not evidence that its siblings share policy.
+
+A bounded positive is **mock provider response -> unchecked returned URL -> downloader selects the owned denied peer**. Treat an explicitly configured proxy as an operator-selected trust boundary and report that precondition; never target metadata or private services, and never return downloaded bytes to a live model.
 
 ## SmartSign: signed metadata is still untrusted input
 

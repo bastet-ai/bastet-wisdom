@@ -10,6 +10,10 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Consul file, transaction-session, and custom-listener authority boundaries](2026-08-07-consul-file-session-listener-authority-boundaries-ghsa.md)
+- [Nanobot shell allow-list, login environment, and MCP capability-scope follow-up](2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#compare-curated-environments-with-the-shells-reconstructed-environment)
+- [Nanobot provider-returned image URL fetch-authority follow-up](2026-07-27-directory-cluster-agent-document-boundaries-ghsa.md#august-7-follow-up-provider-returned-image-urls-are-a-separate-fetch-authority)
+- [Grav webhook and TestLink attachment-object authorization follow-up](2026-05-13-cms-identity-and-permission-boundary-batch-ghsa.md#august-7-follow-up-fail-closed-webhook-and-attachment-object-matrices)
 - [Keras deserialization, HDF5 VDS, and TAR-link authority follow-up](2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-7-follow-up-keras-deserialization-and-external-dataset-authority)
 - [Showdown metadata and generated-attribute render-context follow-up](2026-05-09-render-markdown-and-preview-boundary-batch-ghsa.md#august-7-follow-up-showdown-metadata-and-generated-attribute-contexts)
 - [Keras archive and layer-name final-path follow-up](2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-7-keras-archive-and-layer-name-final-path-follow-up)

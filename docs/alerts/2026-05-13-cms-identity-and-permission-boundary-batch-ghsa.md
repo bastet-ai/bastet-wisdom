@@ -14,6 +14,8 @@ This batch is durable because the advisories repeat the same failure mode across
 - **Sentry SAML identity linking** — [GHSA-rcmw-7mc7-3rj7](https://github.com/advisories/GHSA-rcmw-7mc7-3rj7): improper SAML SSO authentication could link identities incorrectly. Fixed in `26.4.1`.
 - **openvpn-auth-oauth2 fail-open client deny** — [GHSA-246w-jgmq-88fg](https://github.com/advisories/GHSA-246w-jgmq-88fg): returning `FUNC_SUCCESS` on `client-deny` allowed unauthenticated VPN access. Fixed in `1.27.3`.
 - **Grafana public-dashboard datasource disclosure** — [GHSA-3q27-7qjq-p9c5](https://github.com/advisories/GHSA-3q27-7qjq-p9c5): public dashboards disclosed direct-mode datasources.
+- **Grav scheduler-webhook missing-token bypass** — [GHSA-3m6r-m23g-m2w9 / CVE-2026-11430](https://github.com/advisories/GHSA-3m6r-m23g-m2w9), the [project advisory](https://github.com/getgrav/grav/security/advisories/GHSA-xwv3-2mv2-w33x), and [fix commit](https://github.com/getgrav/grav/commit/694f1dae06d9061bbf0669c4291e3b206f998d71): an enabled scheduler webhook with no configured token could trigger already-configured jobs. The primitive controls job selection/timing, not job content.
+- **TestLink attachment object scope** — [GHSA-wmvr-m7cj-9g8w / CVE-2026-70561](https://github.com/advisories/GHSA-wmvr-m7cj-9g8w): the mirror reports that authenticated users could select sequential attachment IDs without project/role authorization. Confirm the handler and deployed revision because the cited record does not identify a fixed release.
 
 ## Operator triage
 
@@ -28,3 +30,17 @@ This batch is durable because the advisories repeat the same failure mode across
 - Treat `Host` and proxy headers as untrusted unless set by a trusted reverse proxy and validated against a configured external URL.
 - File upload and plugin install paths need allowlisted extensions, archive root checks, symlink rejection, and execution disabled unless explicitly intended.
 - Identity providers should fail closed: a deny result, missing group, failed reverification, or unrecognized SAML assertion must stop the request, not continue with partial success.
+
+## August 7 follow-up: fail-closed webhook and attachment-object matrices
+
+### Missing webhook proof must not mean anonymous success
+
+Use only a disposable Grav instance with the separate scheduler-webhook plugin installed and synthetic jobs whose handlers increment an in-memory counter. Test webhook disabled/enabled against token absent, empty, wrong, and matching, and vary no `job`, a known canary job, and an unknown job. Record route match, effective configuration, supplied proof state, selected job IDs, and the patched scheduler sink.
+
+A bounded positive is **webhook enabled + token absent -> anonymous request reaches the canary job sink**, while a wrong token is denied when a token exists. Do not configure shell jobs, trigger backups or maintenance, or call this attacker-chosen RCE: the caller chooses timing and possibly an existing job identifier, while the operator chose the job body. Stock Grav without the plugin, or with the webhook disabled, is not exposed by this route.
+
+### Attachment IDs need parent-project authorization at the download sink
+
+Create two TestLink projects and two synthetic users: one member of project A and one guest or non-member for project B. Upload marker-only text attachments, capture their IDs through each user's legitimate UI, then replay the download handler with same-project ID, other-project ID, nonexistent ID, malformed ID, and a role lacking attachment access. Patch or proxy the final file response so it returns only marker identity and byte count.
+
+The decisive result is **authenticated project-A principal + project-B attachment ID -> project-B marker reaches the response recorder without project-B membership**. Do not enumerate production IDs or retrieve test plans, evidence, requirements, or user uploads. State whether IDs are sequential as a recon aid separately from the missing parent-object check; predictability is not the authorization flaw.

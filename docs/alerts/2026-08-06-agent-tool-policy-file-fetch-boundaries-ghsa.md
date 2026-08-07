@@ -4,7 +4,7 @@ title: Agent control-plane, tool-policy, file, and fetch authority boundaries
 
 # Agent control-plane, tool-policy, file, and fetch authority boundaries
 
-Twenty-two August 6 records expose a reusable agent-platform testing pattern: an early mode, deny-list, approval, path, or URL decision is not authoritative when a later route, tool injector, alternate command handler, shell, file sink, or connector sees richer input.
+Twenty-two August 6 records plus three August 7 Nanobot follow-ups expose a reusable agent-platform testing pattern: an early mode, deny-list, approval, path, environment, or URL decision is not authoritative when a later route, capability wrapper, alternate command handler, login shell, file sink, or connector sees richer input.
 
 Source records:
 
@@ -24,8 +24,9 @@ Source records:
 - OpenChamber default-auth, command-route, and workspace-read boundaries: [GHSA-xj9x-9j3p-fff9 / CVE-2026-53975](https://github.com/advisories/GHSA-xj9x-9j3p-fff9), [GHSA-9wgq-4cmq-jhvv / CVE-2026-53976](https://github.com/advisories/GHSA-9wgq-4cmq-jhvv), and the [project correction](https://github.com/openchamber/openchamber/commit/f1b9506132faf6c564a2694c7f33b94421a49b4a); and
 - LudusMCP credential-dialog description-to-command boundary: [GHSA-5ccg-4qw3-g338 / CVE-2026-19045](https://github.com/advisories/GHSA-5ccg-4qw3-g338) and [project issue #2](https://github.com/NocteDefensor/LudusMCP/issues/2); and
 - LudusMCP direct CLI-wrapper and guide-path boundaries: [GHSA-grhp-mc55-jxg8 / CVE-2026-19047](https://github.com/advisories/GHSA-grhp-mc55-jxg8), [project issue #3](https://github.com/NocteDefensor/LudusMCP/issues/3), [GHSA-6j8j-xrrf-px36 / CVE-2026-19046](https://github.com/advisories/GHSA-6j8j-xrrf-px36), and [project issue #4](https://github.com/NocteDefensor/LudusMCP/issues/4).
+- Nanobot shell allow-list, login-shell environment, and MCP capability-scope boundaries: [GHSA-m259-67hc-p7v5 / CVE-2026-19243](https://github.com/advisories/GHSA-m259-67hc-p7v5), [issue #4521](https://github.com/HKUDS/nanobot/issues/4521), [merged fix #4562](https://github.com/HKUDS/nanobot/pull/4562), [GHSA-hfxr-wggc-4cr6 / CVE-2026-19245](https://github.com/advisories/GHSA-hfxr-wggc-4cr6), [issue #4518](https://github.com/HKUDS/nanobot/issues/4518), [GHSA-qwp6-wxvx-2jc8 / CVE-2026-19244](https://github.com/advisories/GHSA-qwp6-wxvx-2jc8), [issue #4435](https://github.com/HKUDS/nanobot/issues/4435), and [merged fix #4436](https://github.com/HKUDS/nanobot/pull/4436).
 
-The GHSA entries are unreviewed mirrors. The NanoClaw, TinyAGI, `openclaw-cn`, Hermes, Mercury, LobsterAI, and LudusMCP project issues remain open in the cited records; the CowAgent and JeecgBoot issues are closed without a fixed release identified in the mirror; the IronClaw and OpenChamber corrections are committed; and the LettaBot and super-agent-party evidence is researcher-published rather than a vendor advisory. Treat all stated release ranges as validation seeds and confirm the deployed commit, route exposure, configuration, and current project status before reporting.
+The GHSA entries are unreviewed mirrors. The NanoClaw, TinyAGI, `openclaw-cn`, Hermes, Mercury, LobsterAI, and LudusMCP project issues remain open in the cited records; the CowAgent and JeecgBoot issues are closed without a fixed release identified in the mirror; the IronClaw and OpenChamber corrections are committed; and the LettaBot and super-agent-party evidence is researcher-published rather than a vendor advisory. Nanobot's cited corrections are merged, and the mirrors identify `0.3.0` as containing the shell and MCP fixes. Treat all release ranges as validation seeds and confirm the deployed commit, route exposure, configuration, and current project status before reporting.
 
 !!! warning "Denied sinks and synthetic data only"
     Use disposable agent instances, fake status objects, synthetic memory rows, temporary canary roots, owned no-content HTTP peers, and patched tool/file/network/process sinks. Never read host files, persist real conversation content, execute commands, probe internal services, or relay credentials or responses.
@@ -86,6 +87,8 @@ The Mercury and CowAgent records add two useful variants. Mercury accepts `allow
 
 Add delegated and background agents to the policy matrix. Create two inert child agents and one fake MCP tool whose handler only records a marker. Compare the declared child allow-list, construction-time tools, final model-visible schemas, dispatcher-valid names, target-object ownership, and patched handler result. A bounded positive is **restricted child/reviewer starts without a capability -> runtime registry or MCP reconciliation restores it -> denied tool recorder receives the marker**. For orchestration tools, patch halt/delete operations and record the synthetic target agent ID; do not interrupt real work.
 
+Nanobot adds a capability-*class* variant. In affected builds, `enabledTools` filtered `list_tools()` results but resource and prompt wrappers were registered separately. Build a fake MCP server with one inert tool, resource, and prompt; set `enabledTools: []`; and capture the model-visible schemas plus the final `read_resource`, `get_prompt`, and tool dispatch decisions. The bounded positive is **deny-all blocks the ordinary tool -> resource or prompt wrapper still appears -> patched wrapper receives the marker**. Also test a specific tool list and `*`; the merged correction allows resource/prompt registration only for the wildcard policy. Do not return real resource content or submit the prompt to a live model.
+
 NanoClaw adds a construction-time identity variant. Patch child-agent creation and configuration persistence, then compare the parent caller's identity and policy with the child owner, workspace, tool allow-list, environment, and channel bindings. A bounded positive is **ordinary parent reaches child creation -> caller-controlled fields select a stronger child mode or inherited authority -> patched creator records the elevated configuration**. Child creation alone is not privilege escalation; preserve the exact authority delta and deny every real tool action.
 
 ## 4. Differential-test approval parsing against execution parsing
@@ -100,6 +103,19 @@ Replace process creation with an argv/script recorder. Compare semantically equi
 - ask-each-time versus remembered/session auto-approval.
 
 For every case, record raw text, classifier tokens, risk level, approval decision, final interpreter/argv tuple, and whether the recorder would dispatch one or multiple commands. The bounded positive is **control encoding pauses -> equivalent alternate encoding inherits approval -> final parser trace contains a second command**. Never execute either command. Keep parser disagreement, approval inheritance, and command execution as separate claims.
+
+Nanobot's `exec.allowPatterns` follow-up applies the same principle even without remembered approval. The affected guard used `re.search()` on the complete raw command while the sink passed that string to `bash -c`; one matching prefix could therefore authorize additional shell segments. Use a denied spawn recorder and compare one allowed marker with semantically inert chains separated by `&&`, `||`, `;`, pipe, newline, comments, quotes, escapes, and nested parentheses. Record which segments the guard recognizes and the final shell parse. A positive is **one segment matches -> a non-matching second segment survives the guard -> denied sink records both operations**. The merged fix splits top-level `&&`, `||`, `;`, and pipe operators while respecting quotes, escapes, and parentheses, so newline/comment and wrapper variants remain important independent controls rather than assumed coverage.
+
+### Compare curated environments with the shell's reconstructed environment
+
+A reduced `env` map is not authoritative when the process starts a login shell. The Nanobot record says affected `exec` calls defaulted to `bash -l -c` or `zsh -l -c` while forwarding `HOME`, allowing startup files to reintroduce variables that the curated environment omitted.
+
+1. Create a temporary `HOME` containing a synthetic startup file that exports only a random canary variable.
+2. Patch process creation or use a no-command shell harness that records argv and the post-startup environment without exposing host variables.
+3. Compare omitted `login`, `login=false`, and `login=true` across Bash, Zsh, a non-login shell, absent startup files, and a different temporary `HOME`.
+4. Capture the curated environment, shell argv, startup files consulted, and whether the canary appears after shell initialization.
+
+The bounded positive is **canary absent from the child environment supplied by the agent -> default `-l` shell reads the temporary profile -> canary appears at the recorder**. Never inspect the real home directory, shell startup files, or process environment. Report ambient-policy reconstruction, not generic secret theft.
 
 Mercury contributes two controls that should be standard in this harness:
 
@@ -170,7 +186,9 @@ For AI chat attachments, trace one step further. The JeecgBoot record describes 
 - Include positive and negative mode/auth controls for management routes.
 - Diff requested policy against both model-visible and dispatcher-valid tool sets.
 - Diff construction-time and final runtime tool surfaces for child, review, plugin, provider, and MCP injection paths.
+- Apply allow/deny policy to every MCP capability class, including tools, resources, and prompts.
 - Prove shell parser or alternate-route disagreement with a denied spawn recorder, not command side effects.
+- Record shell startup mode and post-startup environment separately from the environment supplied at process creation.
 - Prove filesystem escape with a temporary synthetic path and denied sink, not file contents.
 - Bind passive artifact parsing to the final IPC/file syscall before claiming a local-file-read path.
 - Prove SSRF at final peer selection using an owned fixture; a warning log alone is insufficient.
