@@ -89,8 +89,32 @@ The bounded positive is **untrusted repository metadata -> named chat-template k
 
 This generalizes beyond model deserialization: enumerate attacker-controlled names that become sidecar files during model, tokenizer, processor, adapter, dataset, or checkpoint export. Loading policy, `trust_remote_code`, artifact signatures, and revision pins do not replace canonical destination confinement when trusted software later materializes repository metadata as filenames.
 
+## August 7 Keras archive and layer-name final-path follow-up
+
+Two reviewed Keras records add distinct **untrusted model/archive metadata -> filesystem destination** checks:
+
+- [GHSA-hqp4-2352-xf5r / CVE-2026-11816](https://github.com/advisories/GHSA-hqp4-2352-xf5r) reports that Keras before 3.14.0 validated TAR and ZIP members against the process current working directory rather than the requested extraction destination. A process whose CWD is `/` therefore turns a narrow extraction root into a root-wide comparison boundary. The record also notes a blocked-ZIP-entry `AttributeError` and that Python 3.11 lacks the newer TAR `filter="data"` backstop.
+- [GHSA-gh82-f9x8-5frx / CVE-2026-12479](https://github.com/advisories/GHSA-gh82-f9x8-5frx) reports that crafted layer names could reach `DiskIOStore.make()` as directory components. Affected ranges are Keras before 3.12.3 and 3.13.0 through 3.14.x; corrected releases listed by the record are 3.12.3 and 3.15.0.
+
+### Archive extraction destination matrix
+
+1. Use a disposable container with an empty credential-free filesystem view, affected and corrected Keras builds, Python 3.11 plus one newer supported interpreter, and temporary `cwd/`, `extract/`, and `sibling-canary/` directories. Never run the affected harness with host directories mounted.
+2. Build local TAR and ZIP fixtures containing a normal file, nested file, parent traversal, absolute-path-like member, mixed separator, dot segment, duplicate name, directory symlink followed by child, and a sibling-prefix destination. Every file body should be a random inert marker.
+3. Vary the process CWD independently from the extraction destination: `/`, the temporary root, `extract/`, and an unrelated sibling. Record member name, member type, raw destination, normalized destination, canonical parent, CWD, interpreter, Keras build, filter selected, and exception.
+4. Patch the final file-open, directory-create, rename, and link syscalls to record then deny any canonical destination outside `extract/`. A positive is an outside-root destination reaching a denied sink because validation used CWD; an `AttributeError` without an outside-root sink is availability behavior and should be reported separately.
+5. Repeat on Keras 3.14.0 or a build proven to contain the archive fix. Require rejection before directory or file creation for both TAR and ZIP, including Python 3.11. Do not assume the interpreter's optional TAR filter covers ZIP or application-specific destination logic.
+
+### `DiskIOStore` layer-name matrix
+
+1. Construct a toy model locally with inert layer and variable markers. Exercise the exact application save/load path that reaches `DiskIOStore.make()`; a direct helper call establishes sink behavior but not remote reachability.
+2. Test ordinary names, parent segments, dot segments, nested separators, mixed separators, absolute-path-like names, Unicode separator lookalikes, sibling-prefix names, and a symlinked intermediate directory. Preserve the serialized artifact metadata so the model-controlled provenance is explicit.
+3. Patch directory creation and file writes to capture the layer name, temporary store root, joined path, normalized path, canonical path, operation, and marker hash, then deny outside-root operations. Keep load-time and save-time traces separate.
+4. Compare the affected ranges with 3.12.3 and 3.15.0 controls. The bounded positive is **artifact-controlled layer name -> canonical `DiskIOStore` path outside its temporary root -> denied filesystem sink**. Directory creation, file write, overwrite, and later execution are separate claims.
+
+For either issue, permit a real filesystem proof only inside a disposable temporary tree and only to a pre-created sibling marker path. Never target startup files, notebooks, datasets, model caches, credentials, or production training/inference workers. Do not infer code execution from path control without an independently proven executable consumer.
+
 ## Reporting notes
 
-- Lead with the exact boundary crossed: **untrusted molecule input to native parser**, **deserialization policy to reduce/global lookup**, **model-name substring to remote code loader**, **model metadata name to sidecar-file destination**, or **certificate subject string to authenticated username**.
+- Lead with the exact boundary crossed: **untrusted molecule input to native parser**, **deserialization policy to reduce/global lookup**, **model-name substring to remote code loader**, **model/archive metadata to canonical filesystem destination**, **model metadata name to sidecar-file destination**, or **certificate subject string to authenticated username**.
 - Include affected and fixed versions, the minimal canary input shape, expected denial or safe parse, observed result, and a fixed-version negative control.
 - Keep evidence scoped and inert: sanitizer traces, temp-file markers, owned model repos, fake users, lab CAs, and synthetic molecule files only.

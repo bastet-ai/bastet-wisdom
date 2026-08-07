@@ -10,6 +10,8 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Keras archive and layer-name final-path follow-up](2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-7-keras-archive-and-layer-name-final-path-follow-up)
+- [Django cache grammar, signed-cookie namespace, and domain-validator follow-up](2026-05-08-django-cache-upload-and-session-boundary-batch-ghsa.md#august-7-follow-up-cache-grammar-signed-cookie-namespaces-and-domain-validation)
 - [Nexus, ZenML, Plesk, WGDashboard, and LoadMaster authority boundaries](2026-08-07-repository-pipeline-appliance-authority-boundaries-ghsa-kev.md)
 - [CodeIgniter 4.7.4 upload, SQL, and proxy follow-up](2026-06-11-codeigniter-upload-extension-boundary-ghsa.md#august-7-follow-up-codeigniter-474-upload-sql-and-proxy-boundaries)
 - [Hono SSR memo and dynamic hop-by-hop header follow-up](2026-05-09-hono-render-jwt-cache-and-prototype-boundary-batch-ghsa.md#august-7-follow-up-ssr-memo-lifetime-and-dynamic-hop-by-hop-headers)
