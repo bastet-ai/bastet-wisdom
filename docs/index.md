@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [WordPress integration, commerce, identity-proof, REST-route, and plugin-sink boundaries](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-7-follow-up-bind-plugin-routes-to-server-owned-identity-object-payment-and-integration-authority)
 - [Flowise public-route whitelist, Assistants credential, and document-store operation boundaries](alerts/2026-08-04-flowise-workspace-runtime-credential-boundaries-ghsa.md#20-treat-public-route-whitelists-as-exact-route-grammars)
 - [CSS sanitizer, host-UI, clipboard, and model-context boundary testing](methodology/css-sanitizer-host-boundary-testing.md)
 - [Duplicate authority fields across HTTP/2-to-HTTP/1.1 bridges](methodology/http-desync-research-campaigns.md#duplicate-authority-fields-across-an-http2-bridge)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Sanitizer parse-serialize-reparse differential testing](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#9-diff-sanitizer-parse-serialization-and-host-reparse)
 - [Browser-equivalent URL normalization testing](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#10-normalize-urls-the-way-the-final-browser-does)
 - [Craft CMS post-transform and sibling-route authority](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#11-re-check-cms-authority-after-every-transformation)
-- [Nx remote-cache extraction and restore boundaries](alerts/2026-08-06-build-cms-render-authority-boundaries-ghsa.md#2-treat-a-remote-build-cache-as-a-write-authority)
+
 
 
 

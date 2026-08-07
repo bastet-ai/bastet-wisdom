@@ -644,6 +644,70 @@ LogMyTrip cookie-to-query ([GHSA-q8gv-w79g-jw6j / CVE-2026-16572](https://github
 
 The adjacent generic stored-XSS, low-impact group-membership metadata, administrator-only object injection, and brute-force/timing records were processed without separate publication because they do not add a distinct operator workflow beyond the existing render, object, deserialization, and authentication matrices.
 
+## August 7 follow-up: bind plugin routes to server-owned identity, object, payment, and integration authority
+
+An August 7 unreviewed WordPress wave adds reusable checks for public integration replacement, transaction arithmetic, login-flow binding, object ownership, local-file selection, REST route-family drift, token cryptography, payment completion, and password-reset subject proof:
+
+- Ajax Search Lite unauthenticated deserialization: [GHSA-m7vw-4232-p79x / CVE-2026-16258](https://github.com/advisories/GHSA-m7vw-4232-p79x);
+- Templately cloud-connection replacement: [GHSA-4vxc-ggfm-6c86 / CVE-2026-15359](https://github.com/advisories/GHSA-4vxc-ggfm-6c86);
+- WP Events Manager quantity/price authority: [GHSA-xm6j-g6w8-55mf / CVE-2026-14205](https://github.com/advisories/GHSA-xm6j-g6w8-55mf);
+- Estatik social-login flow binding: [GHSA-jqr2-6x6h-fvmp / CVE-2026-16262](https://github.com/advisories/GHSA-jqr2-6x6h-fvmp);
+- Subscriptions for WooCommerce object ownership: [GHSA-qhjm-7mgh-6mhm / CVE-2026-15214](https://github.com/advisories/GHSA-qhjm-7mgh-6mhm);
+- WP Maps low-role local-file selection: [GHSA-v8wm-6qmw-j72p / CVE-2026-16263](https://github.com/advisories/GHSA-v8wm-6qmw-j72p);
+- Content Views low-role query construction: [GHSA-gp8v-vc4r-wpf4 / CVE-2026-15361](https://github.com/advisories/GHSA-gp8v-vc4r-wpf4);
+- Password Protected REST route-family regression: [GHSA-qmm8-q2c2-c4m3 / CVE-2026-14943](https://github.com/advisories/GHSA-qmm8-q2c2-c4m3);
+- MStore API vendor-order scope, review creation, phone-token verification, and payment completion: [GHSA-wgmj-93jg-87w3 / CVE-2026-16039](https://github.com/advisories/GHSA-wgmj-93jg-87w3), [GHSA-9px3-jf5v-3473 / CVE-2026-16041](https://github.com/advisories/GHSA-9px3-jf5v-3473), [GHSA-w2g6-85hw-mgcv / CVE-2026-16030](https://github.com/advisories/GHSA-w2g6-85hw-mgcv), and [GHSA-5xp8-jj53-535m / CVE-2026-16038](https://github.com/advisories/GHSA-5xp8-jj53-535m);
+- TrueBooker password-reset authorization: [GHSA-9p7q-wqgp-8mm8 / CVE-2026-14365](https://github.com/advisories/GHSA-9p7q-wqgp-8mm8) and [GHSA-g634-mqw6-9p22 / CVE-2026-14364](https://github.com/advisories/GHSA-g634-mqw6-9p22); and
+- SAML Single Sign On algorithm/key confusion: [GHSA-p847-q8vx-c3fg / CVE-2026-15013](https://github.com/advisories/GHSA-p847-q8vx-c3fg).
+
+Confirm the exact plugin slug, edition, affected version, enabled feature, route/action, and corrected behavior. These were unreviewed records at scan time. Use a disposable site, synthetic non-administrator users and objects, fake integration/token material, mocked gateways and IdPs, patched file/query/deserialization/session/password sinks, and no-op mutations. Never replace a production integration, retrieve customer orders or subscriptions, include a host PHP file, execute a POP chain, create a paid order, change a password, or mint a live session.
+
+### Treat integration replacement as a supply-chain edge
+
+For Templately, seed the plugin with a fake cloud connection and intercept option/configuration persistence. Compare anonymous, subscriber, expected administrator, missing proof, random proof, feature-disabled, and fixed-build requests. Record the authenticated principal, handler, capability and nonce decisions, old integration identity, submitted identity, and no-op write sink.
+
+After the fake replacement, use a mocked template service to determine whether template listing/import resolves through the new account. Return only an inert template ID; do not import markup or files. A bounded positive is **anonymous handler -> no authorization decision -> fake cloud identity reaches persistent connection recorder -> later template resolver selects the owned mock account**. Report connection replacement separately from attacker-controlled template ingestion or execution.
+
+### Reconstruct every commerce tuple on the server
+
+Use synthetic products, events, bookings, orders, subscriptions, reviews, and customers. Patch fulfillment, review publication, order-state, and payment-provider calls.
+
+| Surface | Attacker-selected field | Server-owned binding | Safe sink |
+| --- | --- | --- | --- |
+| WP Events Manager | quantity | event, unit price, allowed range, computed total, booking owner | arithmetic and booking-state recorder |
+| Subscriptions for WooCommerce | subscription ID | current customer owns canonical subscription | marker-only serializer |
+| MStore vendor orders | order/filter selector | vendor/customer scope on the final query | query/serializer returning canary IDs only |
+| MStore reviews | product, reviewer identity, rating | authenticated customer and verified purchase | no-op review-create recorder |
+| MStore payment completion | order ID and success/status claim | provider transaction, merchant, amount, currency, order, lifecycle | no-op paid-state recorder |
+
+Test omitted, zero, negative, fractional, duplicate, oversized, and expected quantities without creating a booking. For object scope, cross A's authenticated customer/vendor context with A and B marker objects. For payment completion, use a local provider stub and send missing, malformed, synthetic-success, wrong-order, replayed, stale, and already-completed responses. A useful result requires a canonical foreign object or state transition to reach the recorder; a `200`, guessed ID, accepted parameter, or computed zero alone is insufficient.
+
+### Bind browser login, token verification, and password reset to one subject
+
+Use browser sessions A/B, canary users A/B, a mocked OAuth/SAML provider, invalid-signature synthetic tokens/assertions, and patched session/password sinks.
+
+1. For Estatik, initiate social login independently in A and B. Cross callback code, `state`, browser cookie, provider subject, and local-account selector one field at a time. The final local session must remain bound to the browser that initiated that exact provider flow. A positive is **attacker-started flow -> victim callback/browser -> no-op session sink selects the attacker's canary account**; do not submit victim data after login.
+2. For MStore phone login, vary malformed structure, invalid signature, unknown key, wrong algorithm, wrong subject/phone, expiry, replay, and a valid synthetic control. Require cryptographic acceptance before phone-to-account lookup. Knowing a lab phone number is only a precondition, not authentication proof.
+3. For TrueBooker, cross requester, target user ID/email, reset nonce/key, purpose, expiry, and browser session. A public route or request nonce must not authorize a caller-selected subject. Stop when a no-op password recorder receives B under proof not issued for B.
+4. For SAML Single Sign On, generate an isolated RSA test key and synthetic assertions only. Compare the configured RSA signature method with an attacker-declared HMAC method while patching session creation. Record configured algorithm/key type, declared `SignatureMethod`, key-cast path, verification result, issuer/audience/recipient/time decisions, resolved canary subject, and final no-op sink. A bounded positive is **attacker-declared algorithm -> RSA public bytes are reused as HMAC key material -> forged synthetic assertion reaches B's session recorder**. Never use a production IdP certificate or target an administrator.
+
+Keep login CSRF, invalid-signature token acceptance, reset-subject drift, and signature algorithm confusion as four separate findings. An assertion parser accepting input is not authentication bypass unless the invalid proof reaches the final synthetic identity sink.
+
+### Compare canonical routes, alternate REST routes, and final sinks
+
+The Password Protected record describes a regression after a previous fix: a configuration can protect normal page routes while REST representations remain public. Seed one ordinary public post and one password-gated marker post, then enumerate detail, collection, search, embed, revisions, author/account, and alternate-version REST routes. Record the enabled option, route match, authentication/permission callback, canonical object, fields selected, and final serialized marker. A positive requires the protected synthetic marker through the alternate route; route discovery or an account-ID field alone does not establish protected-content access.
+
+Apply the same final-sink discipline to WP Maps and Content Views:
+
+- **WP Maps:** seed only an in-root inert PHP fixture whose include body increments a recorder and a sibling plain-text canary. Test subscriber versus expected manager, raw/encoded separators, absolute paths, stream-wrapper-shaped values rejected by the recorder, symlinks, nonexistent files, and fixed builds. Stop at canonical include-path selection; do not include WordPress, plugin, configuration, credential, or host files and do not execute PHP.
+- **Content Views:** send delimiter-shaped inert values to the affected AJAX parameter and intercept the final SQL before execution. Preserve raw input, sanitizer/escaping output, constructed query, parser tokens, parameter bindings, principal, and fixed-build diff. Never send extraction, timing, stacked-statement, file, or destructive payloads.
+
+### Prove deserialization separately from gadget availability
+
+For Ajax Search Lite, identify the exact unauthenticated request field and instrument `unserialize()` plus object construction. Submit an inert serialized fixture naming a harmless test class that has no magic methods. Capture route reachability, raw-input hash, allowed-class policy, selected class, and recorder event. Inventory installed plugin/theme classes and autoloaders offline, but do not instantiate a POP gadget or claim code execution merely because untrusted bytes reach deserialization. The bounded result is **anonymous request -> attacker-shaped serialized marker -> patched deserializer/object-class recorder**; gadget presence and executable impact remain separate, unproven edges.
+
+Question2Answer persistent-cookie invalidation and the adjacent reflected/stored XSS, vague local-service permission, firmware hash, and availability-only records were source-tracked without a separate workflow. Password-reset session revocation is already covered by the wiki's subject/session matrices; the remaining records did not add a more specific safe sink than existing renderer, query, and local-permission guidance.
+
 ## Reporting checklist
 
 Include:
@@ -661,6 +725,7 @@ Include:
 - browser, normalized, stored, and gateway-recorder amount representations for payment-integrity checks;
 - first-stage metadata write authority, exact inert key hash, later duplicate trigger identity, and recorded SQL token-boundary diff for second-order checks;
 - affected and fixed controls, including feature-disabled and unconfigured states;
+- configured versus submitted integration identity, commerce tuple, alternate-route permission decision, token/assertion algorithm and key type, reset subject, and final no-op sink;
 - hashes or redacted identifiers for fake connection values, payment responses, cookies, and canary files;
 - the pretix quick-setup CVE identifier discrepancy and the source attached to each identifier;
 - a bounded impact statement that distinguishes option disclosure, session creation, persistent write, DOM rendering, payment replay, event mutation, filesystem read/write, and execution.
