@@ -4,7 +4,7 @@ title: Build cache, CMS, and renderer authority boundaries
 
 # Build cache, CMS, and renderer authority boundaries
 
-Twenty-five August 6 records expose a common testing question: does an early trust decision remain bound to the final file, peer, object, identity, method, parser state, or browser context? The reusable workflows cover Nx remote-cache extraction, AWS CLI EMR SSH wrappers, Contao job/crawler boundaries, Mermaid renderer state, Statamic identity/content routes, embedded PDF engines, HTML/Markdown normalization, Craft CMS configuration and route authority, and repository-analysis wrappers.
+Twenty-six August 6–7 records expose a common testing question: does an early trust decision remain bound to the final file, peer, object, identity, method, parser state, or browser context? The reusable workflows cover Nx remote-cache extraction, AWS CLI EMR SSH wrappers, Contao job/crawler boundaries, Mermaid renderer state, Statamic identity/content routes, embedded PDF engines, HTML/Markdown normalization, Craft CMS configuration and route authority, repository-analysis wrappers, and package-manager source arguments.
 
 Source records:
 
@@ -18,7 +18,8 @@ Source records:
 - League CommonMark control-byte URL normalization: [GHSA-29pj-957v-52mc / CVE-2026-71478](https://github.com/advisories/GHSA-29pj-957v-52mc); and
 - Craft CMS generic user saves, post-cleanse condition merging, Twig sandbox class hierarchy, and sibling global-set action authorization: [GHSA-p8x7-9vfw-p7vc](https://github.com/advisories/GHSA-p8x7-9vfw-p7vc), [GHSA-265m-7826-wjqm](https://github.com/advisories/GHSA-265m-7826-wjqm), [GHSA-f5wm-88jv-g5hx](https://github.com/advisories/GHSA-f5wm-88jv-g5hx), and [GHSA-9p7c-v5x3-rfx8 / CVE-2026-14793](https://github.com/advisories/GHSA-9p7c-v5x3-rfx8);
 - Craft CMS asset-preview authorization, non-sandboxed class creation, pre-render environment interpolation, and draft-label output encoding: [GHSA-44px-qjjc-xrhq](https://github.com/advisories/GHSA-44px-qjjc-xrhq), [GHSA-957r-qf9p-67xw](https://github.com/advisories/GHSA-957r-qf9p-67xw), [GHSA-596p-6jv8-775v](https://github.com/advisories/GHSA-596p-6jv8-775v), and [GHSA-2rp4-x2j7-qmcc](https://github.com/advisories/GHSA-2rp4-x2j7-qmcc); and
-- PHP_CodeSniffer blame-report command construction: [GHSA-hmqg-cxww-wqhq](https://github.com/advisories/GHSA-hmqg-cxww-wqhq).
+- PHP_CodeSniffer blame-report command construction: [GHSA-hmqg-cxww-wqhq](https://github.com/advisories/GHSA-hmqg-cxww-wqhq); and
+- jsii-diff `npm:` package-specifier command injection: [GHSA-wcx4-wpfv-mc5c / CVE-2026-15895](https://github.com/advisories/GHSA-wcx4-wpfv-mc5c), fixed in [`v1.131.0`](https://github.com/aws/jsii/releases/tag/v1.131.0) by [commit `9f42f274`](https://github.com/aws/jsii/commit/9f42f274b23e80dd38dce51d0e8847149fcf2528).
 
 The Mermaid, League CommonMark, JS-YAML, and node-re2 resource-exhaustion records are source-tracked but not converted into availability-testing workflows. The sparse Silverstripe breadcrumb XSS and Craft registration-metrics records, Craft's theoretical path-hardening record, withdrawn duplicate Craft records, and node-re2 bounded heap-read record are also source-tracked rather than generalized beyond their stated sinks.
 
@@ -216,6 +217,27 @@ Create a disposable repository containing ordinary names plus inert metacharacte
 
 A bounded positive is **repository filename -> blame-report formatter -> shell recorder observes the marker as command grammar rather than one literal filename argument**. The non-blame report and fixed release should preserve the marker as data or avoid the process path. Never place an executable payload in a filename, run the fixture on a developer's real checkout, or treat a generated command string as execution without the final denied process trace.
 
+## 13. Trace package-manager source arguments through both shell calls
+
+The jsii-diff record applies when an actor can control a CLI argument beginning with `npm:`. Affected releases pass the remaining package specifier into shell-backed `npm show` and `npm install` command strings. This is especially relevant when CI derives the baseline or candidate package from pull-request metadata, repository configuration, workflow inputs, or an automation API. A developer typing only trusted package names does not create that boundary.
+
+Use an affected release only in a disposable workspace with no registry credentials. Put a non-executing `npm`/`npm.cmd` recorder first in a temporary `PATH`, patch Node process APIs to deny execution, and compare:
+
+```text
+npm:owned-package@1.0.0
+npm:@owned-scope/package@1.0.0
+npm:owned-package;CANARY
+npm:owned-package$(CANARY)
+npm:owned-package`CANARY`
+npm:owned-package CANARY
+```
+
+`CANARY` is a literal marker, not a command. Capture the raw CLI token, removal of the `npm:` prefix, package-existence branch, exact `npm show` and `npm install` command or argv, shell flag, platform-specific executable resolution, and denied process result. Exercise both calls: rejecting only the install path leaves the existence check exposed.
+
+A bounded positive is **untrusted package source -> final shell command parses the inert marker as command grammar rather than one package-specifier argument**. The ordinary and scoped controls should remain one data item. In `v1.131.0`, the upstream fix retains shell execution for Windows `.cmd` compatibility but rejects characters outside `a-z0-9@/:._-`; therefore, verify the fixed rejection before either shell call and do not infer a shell-free implementation.
+
+Report the external control path that supplies the `npm:` argument, the runner identity, and whether registry credentials or publish authority are actually present. Do not execute a payload, contact an unowned package registry, expose tokens, or claim remote code execution when only a trusted local operator controls the CLI.
+
 ## Evidence and reporting boundaries
 
 - Distinguish cache-server control, on-path cache tampering, and local archive control.
@@ -229,4 +251,5 @@ A bounded positive is **repository filename -> blame-report formatter -> shell r
 - Preserve raw bytes, library output, and final browser normalization before claiming a sanitizer or URL-policy bypass.
 - For configuration and template systems, re-evaluate authority after decode, merge, subclass resolution, and generic model binding.
 - For repository analyzers, distinguish report selection, command-string construction, and actual process invocation; preserve an argv-versus-shell trace.
+- For package-manager source arguments, cover every preflight and install subprocess, and distinguish allowlist rejection from shell elimination.
 - State exact affected/fixed versions from the source record and verify the deployed integration before reporting.
