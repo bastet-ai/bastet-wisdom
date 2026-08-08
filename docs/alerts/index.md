@@ -10,6 +10,7 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [WatchGuard Windows-client and Fireware WebUI authority boundaries](2026-08-08-watchguard-client-web-authority-boundaries-ghsa.md)
 - [Consul file, transaction-session, and custom-listener authority boundaries](2026-08-07-consul-file-session-listener-authority-boundaries-ghsa.md)
 - [Nanobot shell allow-list, login environment, and MCP capability-scope follow-up](2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#compare-curated-environments-with-the-shells-reconstructed-environment)
 - [Nanobot provider-returned image URL fetch-authority follow-up](2026-07-27-directory-cluster-agent-document-boundaries-ghsa.md#august-7-follow-up-provider-returned-image-urls-are-a-separate-fetch-authority)
