@@ -8,16 +8,16 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Calico tier-scoped DeleteCollection authorization](alerts/2026-08-08-calico-policy-debug-authority-boundaries-ghsa.md#2-compare-single-object-delete-with-deletecollection)
+- [Calico pprof listener reachability without body capture](alerts/2026-08-08-calico-policy-debug-authority-boundaries-ghsa.md#3-treat-pprof-paths-as-privileged-process-state-capabilities)
+- [Kiota OpenAPI install-guidance provenance testing](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md#dependency-command-trust-handoff)
+- [Calico HTTP prefix-policy normalization testing](alerts/2026-07-30-url-policy-tenant-oauth-boundaries-ghsa.md#calico-policy-to-backend-path-differential)
+- [MCP PDF and chart wrapper argument validation](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#git-and-server-command-wrappers)
 - [MCP argument-to-process wrapper validation](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#git-and-server-command-wrappers)
 - [MCP journey identifier file-capability checks](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#journey-ids-and-filenames-are-file-capabilities)
 - [WordPress file-to-provider and guest-upload authority](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#keep-local-file-selection-separate-from-provider-delivery)
 - [WordPress API-key type and workflow-authority checks](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#treat-api-keys-as-typed-exact-secrets)
 - [WatchGuard low-privilege command-boundary discovery](alerts/2026-08-08-watchguard-client-web-authority-boundaries-ghsa.md#2-mobile-vpn-discover-the-low-privilege-to-command-boundary)
-- [WatchGuard non-default installation-root ACL validation](alerts/2026-08-08-watchguard-client-web-authority-boundaries-ghsa.md#3-non-default-installation-roots-join-acl-reachability-to-a-system-consumer)
-- [WatchGuard Fireware Host-to-WebUI sink matrix](alerts/2026-08-08-watchguard-client-web-authority-boundaries-ghsa.md#4-fireware-webui-separate-host-reflection-navigation-script-and-cache-effects)
-- [Consul Vault credential-file authority matrix](alerts/2026-08-07-consul-file-session-listener-authority-boundaries-ghsa.md#vault-connect-ca-credential-file-authority)
-- [Consul session-delete route-family ACL parity](alerts/2026-08-07-consul-file-session-listener-authority-boundaries-ghsa.md#session-delete-route-family-acl-parity)
-- [Consul custom-listener L7 path normalization](alerts/2026-08-07-consul-file-session-listener-authority-boundaries-ghsa.md#custom-listener-l7-path-normalization)
 
 
 

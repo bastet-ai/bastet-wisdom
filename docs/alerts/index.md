@@ -10,6 +10,8 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Calico tier-collection and debug-listener authority boundaries](2026-08-08-calico-policy-debug-authority-boundaries-ghsa.md)
+- [mcp-pdf-vision and slidev-builder-mcp local wrapper follow-up](2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#git-and-server-command-wrappers)
 - [MCP process-wrapper and journey-path authority follow-up](2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#august-8-follow-up-trace-mcp-arguments-to-the-final-process-or-file-sink)
 - [WordPress file, API, workflow, and commerce authority follow-up](2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-8-follow-up-bind-wordpress-file-api-workflow-and-commerce-authority)
 - [WatchGuard Windows-client and Fireware WebUI authority boundaries](2026-08-08-watchguard-client-web-authority-boundaries-ghsa.md)
