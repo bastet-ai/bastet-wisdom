@@ -10,6 +10,8 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [MCP process-wrapper and journey-path authority follow-up](2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#august-8-follow-up-trace-mcp-arguments-to-the-final-process-or-file-sink)
+- [WordPress file, API, workflow, and commerce authority follow-up](2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-8-follow-up-bind-wordpress-file-api-workflow-and-commerce-authority)
 - [WatchGuard Windows-client and Fireware WebUI authority boundaries](2026-08-08-watchguard-client-web-authority-boundaries-ghsa.md)
 - [Consul file, transaction-session, and custom-listener authority boundaries](2026-08-07-consul-file-session-listener-authority-boundaries-ghsa.md)
 - [Nanobot shell allow-list, login environment, and MCP capability-scope follow-up](2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#compare-curated-environments-with-the-shells-reconstructed-environment)

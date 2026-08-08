@@ -4,7 +4,7 @@ title: Agent control-plane, tool-policy, file, and fetch authority boundaries
 
 # Agent control-plane, tool-policy, file, and fetch authority boundaries
 
-Twenty-two August 6 records plus three August 7 Nanobot follow-ups expose a reusable agent-platform testing pattern: an early mode, deny-list, approval, path, environment, or URL decision is not authoritative when a later route, capability wrapper, alternate command handler, login shell, file sink, or connector sees richer input.
+Twenty-two August 6 records, three August 7 Nanobot follow-ups, and four August 8 MCP-wrapper records expose a reusable agent-platform testing pattern: an early mode, deny-list, approval, path, environment, argument, or URL decision is not authoritative when a later route, capability wrapper, alternate command handler, login shell, file sink, process wrapper, or connector sees richer input.
 
 Source records:
 
@@ -25,8 +25,9 @@ Source records:
 - LudusMCP credential-dialog description-to-command boundary: [GHSA-5ccg-4qw3-g338 / CVE-2026-19045](https://github.com/advisories/GHSA-5ccg-4qw3-g338) and [project issue #2](https://github.com/NocteDefensor/LudusMCP/issues/2); and
 - LudusMCP direct CLI-wrapper and guide-path boundaries: [GHSA-grhp-mc55-jxg8 / CVE-2026-19047](https://github.com/advisories/GHSA-grhp-mc55-jxg8), [project issue #3](https://github.com/NocteDefensor/LudusMCP/issues/3), [GHSA-6j8j-xrrf-px36 / CVE-2026-19046](https://github.com/advisories/GHSA-6j8j-xrrf-px36), and [project issue #4](https://github.com/NocteDefensor/LudusMCP/issues/4).
 - Nanobot shell allow-list, login-shell environment, and MCP capability-scope boundaries: [GHSA-m259-67hc-p7v5 / CVE-2026-19243](https://github.com/advisories/GHSA-m259-67hc-p7v5), [issue #4521](https://github.com/HKUDS/nanobot/issues/4521), [merged fix #4562](https://github.com/HKUDS/nanobot/pull/4562), [GHSA-hfxr-wggc-4cr6 / CVE-2026-19245](https://github.com/advisories/GHSA-hfxr-wggc-4cr6), [issue #4518](https://github.com/HKUDS/nanobot/issues/4518), [GHSA-qwp6-wxvx-2jc8 / CVE-2026-19244](https://github.com/advisories/GHSA-qwp6-wxvx-2jc8), [issue #4435](https://github.com/HKUDS/nanobot/issues/4435), and [merged fix #4436](https://github.com/HKUDS/nanobot/pull/4436).
+- August 8 MCP wrapper and local journey-path records: context-engine `review-git-diff` [GHSA-fjwc-rc47-268g / CVE-2026-19266](https://github.com/advisories/GHSA-fjwc-rc47-268g), mcp-bridge-api server command/argument dispatch [GHSA-c8c4-xf97-vvc8 / CVE-2026-19263](https://github.com/advisories/GHSA-c8c4-xf97-vvc8), MCPGateway Claude usage-range handling [GHSA-8cv7-xjpc-f5hw / CVE-2026-19268](https://github.com/advisories/GHSA-8cv7-xjpc-f5hw), and mcp-ui-probe journey/usage storage [GHSA-h8jj-pqww-5m4w / CVE-2026-19270](https://github.com/advisories/GHSA-h8jj-pqww-5m4w).
 
-The GHSA entries are unreviewed mirrors. The NanoClaw, TinyAGI, `openclaw-cn`, Hermes, Mercury, LobsterAI, and LudusMCP project issues remain open in the cited records; the CowAgent and JeecgBoot issues are closed without a fixed release identified in the mirror; the IronClaw and OpenChamber corrections are committed; and the LettaBot and super-agent-party evidence is researcher-published rather than a vendor advisory. Nanobot's cited corrections are merged, and the mirrors identify `0.3.0` as containing the shell and MCP fixes. Treat all release ranges as validation seeds and confirm the deployed commit, route exposure, configuration, and current project status before reporting.
+The GHSA entries are unreviewed mirrors. The NanoClaw, TinyAGI, `openclaw-cn`, Hermes, Mercury, LobsterAI, and LudusMCP project issues remain open in the cited records; the CowAgent and JeecgBoot issues are closed without a fixed release identified in the mirror; the IronClaw and OpenChamber corrections are committed; and the LettaBot and super-agent-party evidence is researcher-published rather than a vendor advisory. Nanobot's cited corrections are merged, and the mirrors identify `0.3.0` as containing the shell and MCP fixes. The context-engine mirror names `1.9.1` and correction `e0729dcfd3a2b1682a7bff86e7174852c03419ba`; the mcp-bridge-api correction reportedly awaits acceptance, while the MCPGateway and mcp-ui-probe mirrors identify no corrected release. Treat all release ranges as validation seeds and confirm the deployed commit, route exposure, configuration, and current project status before reporting.
 
 !!! warning "Denied sinks and synthetic data only"
     Use disposable agent instances, fake status objects, synthetic memory rows, temporary canary roots, owned no-content HTTP peers, and patched tool/file/network/process sinks. Never read host files, persist real conversation content, execute commands, probe internal services, or relay credentials or responses.
@@ -181,6 +182,30 @@ A strong result is **policy classifies the target as denied or private -> execut
 
 For AI chat attachments, trace one step further. The JeecgBoot record describes an anonymous `files` URL being downloaded, parsed as an allowed document type, and inserted into model context. Use an owned no-content document server and a patched parser/model-context sink. Capture route authentication, URL policy, resolved peer, redirect chain, downloaded media/extension decision, parser invocation, and whether a random marker would enter context. A bounded positive is **anonymous attachment URL passes incomplete address policy -> connector selects the owned denied peer -> synthetic document marker reaches the patched context builder**. Never request private services or let retrieved content reach a live model.
 
+## August 8 follow-up: trace MCP arguments to the final process or file sink
+
+The four later mirrors add a compact review heuristic: a field that looks structured at the MCP schema is still untrusted grammar if a utility later joins it into shell text or treats an identifier as a filename. Do not infer network reachability from the package name. Record the actual transport, route registration, authentication, caller role, tool exposure, and deployment topology first.
+
+### Git and server-command wrappers
+
+Use disposable repositories and replace every `spawn`, `exec`, shell, Git, and wrapper constructor with a denied recorder. Exercise only inert grammar markers.
+
+| Record | Input under test | Final authority to capture |
+| --- | --- | --- |
+| context-engine `review-git-diff` | `args` supplied to `execGitCommand` | executable, argv array, repository cwd, environment, and any shell reparse |
+| mcp-bridge-api Servers endpoint | `command` and `args` | selected server/process, structured argv versus joined shell text, and denied spawn |
+| MCPGateway usage-range endpoint | `since` passed through `getUsageByDateRange` | date parser result, generated Claude command, final argv/shell text, and denied spawn |
+
+For each surface compare a normal scalar, structured list, option-looking value, whitespace, quotes, separators, line breaks, and duplicate/array/object representations. Include direct helper calls and the actual HTTP/MCP route because framework coercion may change the type before the wrapper sees it. Capture raw JSON, schema validation, coerced value, generated command representation, executable, argv, shell flag, cwd, environment, and recorder event.
+
+The bounded positive is **caller-controlled field accepted as data -> wrapper changes command grammar or executable/argument boundaries -> denied process recorder observes an additional inert operation or attacker-selected executable**. A string containing metacharacters is not sufficient. Never execute Git hooks, shell commands, package helpers, or a real Claude CLI, and do not preserve repository content in evidence.
+
+### Journey IDs and filenames are file capabilities
+
+For mcp-ui-probe, create a temporary journey root with `owned.json` and a sibling canary. Patch read, delete, analysis-load, and usage-stat filesystem calls. Exercise `journeyId` and `filename` through `get_journey`, `delete_journey`, `analyze_journey`, and `usage_stats` using plain IDs, nested paths, `..`, encoded separators, absolute paths, sibling-prefix paths, existing symlinks, dangling symlinks, and nonexistent controls.
+
+Record raw and decoded input, extension/default-name handling, configured root, lexical path, canonical target, operation, and denied syscall. Require the same final-path confinement for reads, analysis, statistics, and deletes. The bounded positive is **local or authenticated journey selector -> canonical sibling canary -> denied read/delete/stat recorder**. Do not open or remove the canary, and do not describe this as remote traversal unless the tested deployment independently exposes the route to a remote caller.
+
 ## Evidence and reporting boundaries
 
 - Include positive and negative mode/auth controls for management routes.
@@ -188,6 +213,7 @@ For AI chat attachments, trace one step further. The JeecgBoot record describes 
 - Diff construction-time and final runtime tool surfaces for child, review, plugin, provider, and MCP injection paths.
 - Apply allow/deny policy to every MCP capability class, including tools, resources, and prompts.
 - Prove shell parser or alternate-route disagreement with a denied spawn recorder, not command side effects.
+- Preserve the MCP/HTTP schema type, framework coercion, generated argv or shell text, and final denied process sink for wrapper arguments.
 - Record shell startup mode and post-startup environment separately from the environment supplied at process creation.
 - Prove filesystem escape with a temporary synthetic path and denied sink, not file contents.
 - Bind passive artifact parsing to the final IPC/file syscall before claiming a local-file-read path.

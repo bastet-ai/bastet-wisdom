@@ -781,6 +781,70 @@ Safe positives are **validator approves first tag -> a second caller-controlled 
 
 Create public course/post A and protected course/post B containing only random markers. Give one subscriber enrollment/access to A only. Cross current user, enrollment, parent course, lesson/quiz/assignment ID, post ID, frontend route, core REST detail/collection/search/embed route, and plugin protection mode one field at a time. Patch serializers to return only marker IDs. A positive requires **A-scoped enrollment or low-role content capability -> alternate B selector/route -> B marker reaches the serializer without B-specific enrollment/protection authorization**. Never return paid lessons, quiz answers, assignments, real protected posts, author details, or user data.
 
+## August 8 follow-up: bind WordPress file, API, workflow, and commerce authority
+
+An August 8 unreviewed wave adds reusable checks where a public nonce, low-role account, API key comparison, guest cookie, file path, object ID, or client price is mistaken for the final authority:
+
+- AI Engine local-file-to-provider relay [GHSA-hgr8-39c9-344p / CVE-2026-16955](https://github.com/advisories/GHSA-hgr8-39c9-344p) and guest-upload deletion binding [GHSA-rv7j-gq5m-787c / CVE-2026-16953](https://github.com/advisories/GHSA-rv7j-gq5m-787c);
+- WP Directory Kit settings/secret disclosure, contact-message scope, query construction, and unpublished user/listing scope [GHSA-jw73-w93j-56gr / CVE-2026-16594](https://github.com/advisories/GHSA-jw73-w93j-56gr), [GHSA-cgfm-pc65-3h3w / CVE-2026-16590](https://github.com/advisories/GHSA-cgfm-pc65-3h3w), [GHSA-hf26-5fpg-7r9w / CVE-2026-16589](https://github.com/advisories/GHSA-hf26-5fpg-7r9w), and [GHSA-42rf-5p25-qxgw / CVE-2026-16595](https://github.com/advisories/GHSA-42rf-5p25-qxgw);
+- Solace Extra low-role site-wide settings and imported-content mutation [GHSA-pxjh-xm4v-xwq9 / CVE-2026-16948](https://github.com/advisories/GHSA-pxjh-xm4v-xwq9);
+- Dokan cross-vendor downloadable-product grant [GHSA-9qg2-vxvm-6fvv / CVE-2026-16574](https://github.com/advisories/GHSA-9qg2-vxvm-6fvv);
+- Newsletters optional-API key type confusion and public-form deserialization [GHSA-5mfh-c59g-8688 / CVE-2026-16269](https://github.com/advisories/GHSA-5mfh-c59g-8688) and [GHSA-jxc3-pfg8-hv86 / CVE-2026-16267](https://github.com/advisories/GHSA-jxc3-pfg8-hv86);
+- AI Copilot public workflow-to-account action [GHSA-gjfv-xm8w-qq69 / CVE-2026-14526](https://github.com/advisories/GHSA-gjfv-xm8w-qq69); and
+- Appointment Hour Booking client-selected final price [GHSA-r9q4-xcm5-g5ww / CVE-2026-16282](https://github.com/advisories/GHSA-r9q4-xcm5-g5ww).
+
+Confirm the exact plugin slug, affected version, enabled optional feature, rendered shortcode/widget, route/action, role, and corrected behavior. Use a disposable site, synthetic users and objects, fake API/provider values, mocked mail/provider/gateway transports, and patched read, delete, query, workflow, account, deserialization, download-grant, and commerce sinks. Never read configuration or user messages, forward file bytes to a real AI provider, delete retained uploads, send email, create an administrator, grant access to paid files, instantiate a gadget, or complete a booking.
+
+### Keep local file selection separate from provider delivery
+
+For AI Engine, seed an approved upload-root file and a sibling canary containing only a random marker. Configure a fake provider and replace local reads plus outbound request construction with recorders. Compare administrator, subsite administrator on multisite, subscriber, anonymous, public-API enabled/disabled, expected attachment ID, relative path, absolute path, encoded separators, sibling-prefix path, and symlink controls.
+
+Capture raw selector, decoded/canonical path, site/network root, capability decision, public-API state, read-recorder argument, provider identity, outbound field name, and whether canary bytes would enter the body. A bounded positive is **low-role caller -> canonical sibling canary reaches denied reader -> mocked provider body builder selects that file**. Path reachability alone proves file-authority drift; off-host exfiltration requires the separate mocked outbound-body edge. Do not read `wp-config.php`, network configuration, keys, logs, or another tenant's upload.
+
+### Cross guest sessions and upload objects independently
+
+Create guest sessions A/B and synthetic uploads A/B. Hash all cookie/session and file references in evidence. Cross session cookie, upload owner, file reference, route nonce, expiry, and delete target one field at a time while replacing deletion with a no-op recorder.
+
+The secure tuple is **guest session + upload capability + canonical file object + owner + purpose + expiry**. The positive is **A's cookie plus caller-selected B reference -> B reaches the delete recorder without a server-side B ownership decision**. Merely obtaining both opaque values or receiving a success-shaped response is insufficient, and no file should be deleted.
+
+### Compare nonce possession with capability and object authorization
+
+Use subscriber A, vendor A, customer A, foreign vendor/product B, synthetic WP Directory Kit messages/listings/settings, imported site-builder object B, and no-op serializers/mutators.
+
+| Surface | Weak proof to vary | Required final binding | Safe evidence |
+| --- | --- | --- | --- |
+| WP Directory Kit AJAX | logged-in state or nonce | route capability plus message/listing/settings owner and field allowlist | synthetic B marker or fake credential field selected by recorder |
+| Solace Extra AJAX | nonce visible on low-role admin page | site-wide configuration/import-management capability plus canonical object | reversible marker reaches write/delete recorder |
+| Dokan download grant | authenticated vendor and order route | downloadable product belongs to vendor, order/customer is eligible, price/payment state is valid | B's synthetic download ID reaches no-op grant recorder |
+
+Test anonymous, subscriber/vendor owner, low-role non-owner, expected manager, stale/random nonce, object A/B, nonexistent object, duplicate parameters, and fixed-build controls. Preserve the canonical object and principal at both guard and sink. Never serialize API keys, contact messages, user data, unpublished listing content, paid file bytes, or customer/order details; marker IDs are enough.
+
+For the WP Directory Kit query record, intercept the final SQL before execution. Send only delimiter-shaped inert values and compare prepared/bound controls. Capture raw input, sanitization, query template, bindings, parser-token diff, role, and selected object scope. Do not run extraction, timing, stacked-statement, file, or destructive payloads.
+
+### Treat API keys as typed, exact secrets
+
+Enable the Newsletters API only in an isolated lab and seed a random fake key. Patch subscriber mutation and email delivery. Exercise absent, null, Boolean, integer, zero-like, empty string, numeric string, array/object, duplicate parameter, wrong random string, and exact-key controls through every accepted body/query/header representation.
+
+Record request decoder type, normalization, comparison operator/result, selected API action, and denied mutation/mail sink. The bounded positive is **non-string or wrong synthetic key -> loose comparison succeeds -> privileged API action reaches the no-op sink**. Do not modify subscriber rows or send messages. A route that parses the request but rejects before the privileged action is not an authentication bypass.
+
+### Prove public-form deserialization without a POP chain
+
+Instrument `unserialize()` and object construction in the Newsletters public form path. Submit only an inert serialized fixture naming a lab class with no magic methods. Record route exposure, form/nonce state, raw-input hash, allowed-class policy, selected class, and patched constructor event. The bounded result is **anonymous form field -> unrestricted class selection at the deserializer recorder**. Do not inventory production classes, instantiate a gadget, invoke magic methods, or claim code execution from deserialization reachability alone.
+
+### Public nonce is not workflow authority
+
+For AI Copilot, render the relevant shortcode or public chatbot on a disposable page and record whether ordinary frontend JavaScript publishes `WAIC_DATA.waicNonce`. Replace workflow execution, user creation, role assignment, and persistence with denied recorders. Compare missing/random/public nonce; feature absent/present; anonymous/subscriber/administrator; allowed inert workflow node; unknown node; and an account-action node whose requested role is a harmless custom canary role.
+
+Capture nonce provenance, route authentication, workflow ownership/trust state, node allowlist, action registry lookup, requested account fields/role, and denied sink. A safe positive is **logged-out visitor receives ordinary frontend nonce -> caller-supplied workflow selects an account-action node -> no-op account/role recorder receives the canary request without an administrative capability decision**. Do not submit `administrator`, create an account, execute an operational node, or call external tools. Site takeover is the advisory's claimed impact; the wiki proof stops at the denied authority sink.
+
+### Recompute booking price from the server-owned service
+
+For Appointment Hour Booking, create services A/B with different synthetic configured prices and use a local payment adapter. Patch booking persistence, payment, email, calendar, and fulfillment. Vary service ID, owner, duration, quantity, discounts, currency, and client-supplied final price independently, including omitted, zero, negative, fractional, duplicate, oversized, expected, and A-price/B-service crossover values.
+
+Record browser price, parsed numeric representation, canonical service/rate, server-derived total, currency, final persisted tuple, and no-op booking/payment sink. The positive is **caller price differs from server-derived total -> caller value becomes authoritative -> mismatched synthetic booking tuple reaches the recorder**. Do not create a booking or payment, reserve a slot, send email, or infer completed underpayment from arithmetic alone.
+
+The same wave's reflected/stored markup, SVG upload, analytics/user-list disclosure, log-inflation, and generic low-role settings records were source-tracked without separate workflows because the existing render, upload, object-scope, and mutation matrices already provide equivalent safe sinks.
+
 ## Reporting checklist
 
 Include:
@@ -799,6 +863,7 @@ Include:
 - first-stage metadata write authority, exact inert key hash, later duplicate trigger identity, and recorded SQL token-boundary diff for second-order checks;
 - affected and fixed controls, including feature-disabled and unconfigured states;
 - configured versus submitted integration identity, commerce tuple, alternate-route permission decision, token/assertion algorithm and key type, reset subject, and final no-op sink;
+- decoded/canonical AI file selector, mocked provider body decision, guest-session/upload ownership tuple, typed API-key comparison, workflow-node authorization, and server-derived booking price;
 - hashes or redacted identifiers for fake connection values, payment responses, cookies, and canary files;
 - the pretix quick-setup CVE identifier discrepancy and the source attached to each identifier;
 - a bounded impact statement that distinguishes option disclosure, session creation, persistent write, DOM rendering, payment replay, event mutation, filesystem read/write, and execution.
