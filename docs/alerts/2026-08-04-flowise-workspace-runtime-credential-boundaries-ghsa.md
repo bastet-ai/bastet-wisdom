@@ -4,9 +4,9 @@ title: Flowise workspace, runtime, and credential-authority boundaries
 
 # Flowise workspace, runtime, and credential-authority boundaries
 
-Twenty-nine Flowise advisories published on August 4 and August 7 expose a useful low-code/agent-platform review pattern: a flow-builder permission or public prediction route is not authority over every workspace file, flow type, runtime loader, child-process environment, execution-context property, outbound destination, OAuth credential, integration history, document store, execution record, provider-funded feature, or billing object that a later component can select. Validate each edge independently with disposable objects and recorder-only sinks.
+Thirty Flowise advisories published on August 4, August 7, and August 8 expose a useful low-code/agent-platform review pattern: a flow-builder permission or public prediction route is not authority over every workspace file, flow type, runtime loader, child-process environment, execution-context property, outbound destination, OAuth credential, integration history, document store, execution record, provider-funded feature, or billing object that a later component can select. Validate each edge independently with disposable objects and recorder-only sinks.
 
-Most August 4 records list `flowise <= 3.1.2` as affected and `3.1.3` as the first patched release. The private-chatflow TTS record instead lists `flowise <= 3.1.3` as affected and `3.1.4` as fixed. Three August 7 records describe behavior through 3.1.4; one is explicitly a bypass of CVE-2026-41273. The JavaScript sandbox, MCP environment-bypass, and prompt-to-Python records also identify `flowise-components` ranges. Confirm the package-specific range in each advisory rather than assuming one release covers every server and component path.
+Most August 4 records list `flowise <= 3.1.2` as affected and `3.1.3` as the first patched release. The private-chatflow TTS record instead lists `flowise <= 3.1.3` as affected and `3.1.4` as fixed. Three August 7 records and the August 8 cloud-metadata deny-list record describe behavior through 3.1.4; the OAuth route record is explicitly a bypass of CVE-2026-41273. The JavaScript sandbox, MCP environment-bypass, and prompt-to-Python records also identify `flowise-components` ranges. Confirm the package-specific range in each advisory rather than assuming one release covers every server and component path.
 
 Primary sources:
 
@@ -38,7 +38,8 @@ Primary sources:
 - execution-update authorization gap [GHSA-fm2f-4339-4p2f / CVE-2026-70475](https://github.com/advisories/GHSA-fm2f-4339-4p2f);
 - prefix-whitelist OAuth refresh bypass [GHSA-rm9r-9424-cccf / CVE-2026-70636](https://github.com/advisories/GHSA-rm9r-9424-cccf) and the [research record](https://github.com/Caycon/cve-advisories/blob/main/2026/Flowise/CVE-2026-70636.md);
 - OpenAI Assistants credential IDOR [GHSA-qvmw-v4w9-7c4j / CVE-2026-67622](https://github.com/advisories/GHSA-qvmw-v4w9-7c4j) and the [research record](https://github.com/Caycon/cve-advisories/blob/main/2026/Flowise/CVE-2026-67622.md); and
-- view-only document-store mutation [GHSA-7q53-9j99-gg5c / CVE-2026-67621](https://github.com/advisories/GHSA-7q53-9j99-gg5c) and the [research record](https://github.com/Caycon/cve-advisories/blob/main/2026/Flowise/CVE-2026-67621.md).
+- view-only document-store mutation [GHSA-7q53-9j99-gg5c / CVE-2026-67621](https://github.com/advisories/GHSA-7q53-9j99-gg5c) and the [research record](https://github.com/Caycon/cve-advisories/blob/main/2026/Flowise/CVE-2026-67621.md); and
+- cloud-metadata deny-list gaps and redirect handling [GHSA-6h53-jfj2-fh9c / CVE-2026-67620](https://github.com/advisories/GHSA-6h53-jfj2-fh9c), the [NVD record](https://nvd.nist.gov/vuln/detail/CVE-2026-67620), and the [VulnCheck record](https://www.vulncheck.com/advisories/flowise-ssrf-via-fetch-links-endpoint-incomplete-deny-list).
 
 !!! warning "Disposable Flowise labs and inert recorders only"
     Use affected and corrected local instances, two synthetic workspaces, fake API keys and OAuth credentials, owned HTTP listeners, package indexes, and S3-compatible buckets, synthetic flows/CSV/SQLite/history fixtures, mocked payment-provider objects, and patched file/module/process/delete/provider loaders. Never enumerate customer or credential IDs, retrieve billing records or real integration histories, capture real OAuth secrets, delete flows or files, target metadata or internal services, deserialize unknown data, install an unknown package, load unknown JavaScript, or execute a command.
@@ -74,6 +75,7 @@ Primary sources:
 | OAuth refresh whitelist | public middleware admits one exact callback/refresh shape | prefix matching admits a longer credential-bearing route | synthetic request suffix selects B's fake credential and reaches only an owned provider recorder |
 | Assistants credential selector | workspace member may use its own OpenAI Assistants integration | caller-supplied credential UUID is not bound to the active workspace | A selects B's fake credential and reaches mocked metadata/file/vector-store operations |
 | Document-store refresh/upsert | view-only member may inspect a knowledge base | sibling mutation routes omit operation permission | viewer reaches a no-op ingestion/refresh recorder for a synthetic store |
+| Fetch-links and URL-loading nodes | caller may submit a URL to an enabled flow | incomplete provider-address deny lists or redirects change the final peer after the initial decision | owned redirector reaches only an isolated synthetic destination and records the policy/peer mismatch |
 
 ## 1. Diff feature gates, permissions, and storage scope
 
@@ -221,6 +223,7 @@ Do not claim predictable-ID enumeration without measuring the actual identifier 
 - [ ] Affected-versus-3.1.3 behavior is captured with the same fixture.
 - [ ] Route-whitelist tests compare exact, prefix, suffix, delimiter, encoded, and normalized path forms before any credential lookup.
 - [ ] Assistants and document-store tests use two workspaces, marker-only objects, and no-op provider/ingestion sinks.
+- [ ] URL-fetch evidence records every resolution, redirect hop, canonical address, and final peer using owned no-content services only.
 
 Prefer boundary-specific report titles such as:
 
@@ -229,6 +232,7 @@ Prefer boundary-specific report titles such as:
 - **“Flowise agent-tool URL changes generated JavaScript structure before sandbox evaluation.”**
 - **“Public Flowise refresh route spends a stored OAuth credential against its configured authority.”**
 - **“Flowise customer-source route resolves a provider object not owned by the active organization.”**
+- **“Flowise URL policy accepts an owned destination class that the final transport should deny.”**
 
 Do not lead with remote code execution, secret exfiltration, or cross-customer disclosure unless the corresponding final edge is independently demonstrated under the safe boundaries above.
 
@@ -479,3 +483,32 @@ Seed one synthetic document store per workspace with marker-only documents and r
 | viewer A | A | metadata read | allowed only if view permission intends it |
 
 Capture UI capability flags, route middleware, effective permission, requested and resolved workspace/store IDs, operation type, provider-cost boundary, and first no-op sink. A bounded positive is **view-only session -> direct mutation route -> loader/embedding/vector recorder receives A's synthetic store**. Keep missing operation permission and cross-workspace object scope separate. Do not ingest retained documents, alter a vector store, or generate billable embeddings.
+
+## 23. Validate destination classes and redirects at the final peer
+
+The August 8 record adds a second SSRF-policy failure mode to the IPv4-mapped IPv6 issue: a static deny list can omit provider-specific address space altogether. The advisory identifies Oracle Cloud Infrastructure's `192.0.0.192` and Alibaba Cloud's `100.100.100.200` metadata destinations, and says affected fetch-links paths could also retain reachability through redirects. Do **not** contact either metadata service. Use the addresses only as taxonomy seeds for reviewing how the policy represents destination classes.
+
+### Isolated final-peer harness
+
+Prerequisites are an affected local Flowise instance, a public chatflow only if anonymous reachability is in scope, an isolated network namespace, an owned redirector, and two no-content canary listeners bound only inside that namespace. Replace the transport connector where possible so it records the chosen peer and aborts before sending a request body.
+
+Exercise this matrix with synthetic addresses assigned to the canary namespace rather than real cloud endpoints:
+
+| Input class | Redirect behavior | Secure result |
+| --- | --- | --- |
+| ordinary owned HTTPS URL | none | allowed control reaches the owned listener |
+| hostname resolving to a policy-denied synthetic subnet | none | denied after resolution and before connect |
+| allowed owned URL | redirects to denied synthetic subnet | redirect rejected before the second connect |
+| allowed owned URL | redirects across hostname, address family, or port | every hop is canonicalized and re-authorized |
+| hostname with multiple answers | connector selects a later denied answer | selected peer is checked, not only the first DNS answer |
+| public chatflow URL node | same owned fixtures | anonymous route authority does not weaken destination policy |
+
+For each attempt, capture the route and authentication state, URL source, raw and parsed URL, DNS answer set, canonical address, matched policy class, redirect status and `Location`, selected socket peer, and first denied connector event. Keep the listener responses empty except for random status markers. The bounded positive is **initial URL passes -> owned redirect or alternate answer selects the denied synthetic destination -> affected build reaches the connector recorder -> corrected policy rejects before connect**.
+
+This workflow distinguishes three findings that should not be collapsed:
+
+1. **coverage gap:** a destination class is absent from policy;
+2. **redirect gap:** only the initial URL is authorized; and
+3. **connect gap:** DNS is checked, but the actual selected peer is not rebound to the decision.
+
+A static list containing well-known metadata IPs is not proof of complete SSRF control. Inventory cloud-specific IPv4, IPv6, link-local, alias-hostname, and provider-proxy classes from current provider documentation, but perform validation only with synthetic equivalents. Reapply the same canonical policy after each redirect and immediately before every connection. Never query a real metadata path, request an identity document, retrieve a role credential, or probe an internal service.
