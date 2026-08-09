@@ -845,6 +845,48 @@ Record browser price, parsed numeric representation, canonical service/rate, ser
 
 The same wave's reflected/stored markup, SVG upload, analytics/user-list disclosure, log-inflation, and generic low-role settings records were source-tracked without separate workflows because the existing render, upload, object-scope, and mutation matrices already provide equivalent safe sinks.
 
+## August 9 follow-up: bind alternate routes, remote-management proofs, and selectors to final authority
+
+Five newly published unreviewed records extend the existing WordPress matrices:
+
+- Create public REST render/publish routes [GHSA-m73c-99g6-hrp8 / CVE-2026-18037](https://github.com/advisories/GHSA-m73c-99g6-hrp8) and [GHSA-66mx-cjh4-m7cx / CVE-2026-16992](https://github.com/advisories/GHSA-66mx-cjh4-m7cx);
+- WP MAPS PRO public AJAX file inclusion [GHSA-mcpf-p8j2-92hw / CVE-2026-18465](https://github.com/advisories/GHSA-mcpf-p8j2-92hw);
+- WP Data Access front-end form column selection [GHSA-chrp-6wq4-c4qg / CVE-2026-18032](https://github.com/advisories/GHSA-chrp-6wq4-c4qg);
+- InfiniteWP Client multisite connection binding [GHSA-5r79-75x7-rrwq / CVE-2026-15038](https://github.com/advisories/GHSA-5r79-75x7-rrwq); and
+- PiWeb previous-order-to-cart selection [GHSA-39g4-r8qh-2jjf / CVE-2026-18603](https://github.com/advisories/GHSA-39g4-r8qh-2jjf).
+
+Confirm exact plugin slug, affected version, route/action registration, multisite/configuration preconditions, and corrected behavior. Use only disposable sites, synthetic drafts/orders/forms/users, fake management keys, and patched publish, include, query, session, and cart sinks.
+
+### Build one route-family and side-effect matrix
+
+For Create, seed public post A and private draft B with random marker IDs. Enumerate every plugin REST route that renders, returns, previews, or generates content. Cross anonymous, subscriber, author, owner, and expected manager with A/B/nonexistent IDs and GET/POST plus alternate route families. Patch content serialization and publication-status mutation separately.
+
+The bounded positive is **anonymous alternate route selects draft B -> B's marker reaches a no-content serializer -> the same request reaches a no-op publish-state sink without B-specific authorization**. Report disclosure selection and publication mutation as separate edges. Never return draft bodies or make retained content public.
+
+### Treat dispatch operation and file path as separate capabilities
+
+For WP MAPS PRO, capture the public AJAX action, operation/dispatch selector, path parameter, capability decision, canonical target, include decision, and denied include sink. Use an inert in-root PHP fixture whose body is never executed plus a sibling plain-text canary. Compare omitted/unknown/expected operations, raw and encoded separators, absolute paths, stream-wrapper-shaped values rejected before use, existing/dangling symlinks, and fixed builds.
+
+A safe positive is **anonymous action -> caller selects an include-capable operation -> canonical sibling canary reaches the denied include sink**. Do not include PHP, WordPress configuration, plugin files, logs, credentials, or host files, and do not claim code execution from path selection alone.
+
+### Preserve identifier grammar through generated SQL
+
+For WP Data Access, create a front-end form bound only to a synthetic table with public column `label` and private canary column `internal_marker`. Replace database execution with a query recorder and serializer with an ID-only result. Vary field/column selectors, aliases, expression-shaped inert delimiters, duplicates, arrays/objects, case, quoting, qualified names, nonexistent fields, table crossover, nonce scope, and fixed builds.
+
+Capture route authentication, nonce provenance and covered fields, form/table binding, raw selector, validated identifier, generated SQL, parser tokens, bindings, and selected output schema. The positive is **anonymous form proof -> caller-selected column outside the form allowlist changes query structure -> query recorder selects `internal_marker`**. Do not bind the fixture to `wp_users`, request hashes, execute extraction/timing syntax, or retain query results.
+
+### Bind remote-management enrollment to one installation and network
+
+For InfiniteWP Client, use a disposable WordPress Multisite network, fake controller identity/key material, and patched key-binding plus session-cookie setters. Compare unconnected, partially connected, and connected states; single-site versus multisite; network/site administrator targets; omitted, malformed, foreign, replayed, and correctly signed fake requests; site/network IDs; and corrected builds.
+
+Preserve **installation/network identity + controller identity + key + enrollment state + request authenticity + target principal + purpose + replay state**. A bounded positive is **unconnected or mismatched fake controller request -> attacker key reaches the binding recorder -> later fake proof reaches a network-administrator session recorder**. Do not create a usable session, install code, or retain key material; key binding and session selection are separate claims.
+
+### Keep previous-order lookup separate from cart mutation
+
+Create users A/B, orders A/B with distinct marker item IDs, and carts A/B. Patch order serialization, cart clear, and cart add operations. Cross logged-out/logged-in browser, order ID, order owner, cart/session, nonce, referrer, order state, and item visibility one field at a time. Include a crafted-link navigation control without using real customers.
+
+The bounded positives are **anonymous request selects foreign order B -> B's marker IDs reach the no-content serializer** and **cross-site navigation -> logged-in A's cart clear/add recorders receive B-derived marker items without A authorizing the transition**. Do not expose billing details, order contents, customer identities, or mutate a retained cart.
+
 ## Reporting checklist
 
 Include:
@@ -864,6 +906,7 @@ Include:
 - affected and fixed controls, including feature-disabled and unconfigured states;
 - configured versus submitted integration identity, commerce tuple, alternate-route permission decision, token/assertion algorithm and key type, reset subject, and final no-op sink;
 - decoded/canonical AI file selector, mocked provider body decision, guest-session/upload ownership tuple, typed API-key comparison, workflow-node authorization, and server-derived booking price;
+- alternate REST route and publication side effect, dispatch operation plus canonical include target, form-bound column allowlist, remote-controller enrollment tuple, and previous-order/cart ownership;
 - hashes or redacted identifiers for fake connection values, payment responses, cookies, and canary files;
 - the pretix quick-setup CVE identifier discrepancy and the source attached to each identifier;
 - a bounded impact statement that distinguishes option disclosure, session creation, persistent write, DOM rendering, payment replay, event mutation, filesystem read/write, and execution.

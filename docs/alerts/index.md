@@ -10,6 +10,8 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [MCP path, process-wrapper, webpage-fetch, and static-route authority](2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#compare-framework-normalization-with-the-final-path-parser)
+- [WordPress alternate-route, remote-management, query-selector, and cart authority](2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-9-follow-up-bind-alternate-routes-remote-management-proofs-and-selectors-to-final-authority)
 - [MCP session, workspace, memory, callback, and delete path authority](2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#map-path-authority-by-operation-not-by-parameter-name)
 - [Calico tier-collection and debug-listener authority boundaries](2026-08-08-calico-policy-debug-authority-boundaries-ghsa.md)
 - [mcp-pdf-vision and slidev-builder-mcp local wrapper follow-up](2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#git-and-server-command-wrappers)

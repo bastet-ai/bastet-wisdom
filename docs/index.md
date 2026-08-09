@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [MCP path, process-wrapper, webpage-fetch, and encoded static-route authority](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#compare-framework-normalization-with-the-final-path-parser)
+- [WordPress alternate-route, management-proof, query-selector, and cart authority](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-9-follow-up-bind-alternate-routes-remote-management-proofs-and-selectors-to-final-authority)
 - [MCP path authority by read, write, replace, and delete operation](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#map-path-authority-by-operation-not-by-parameter-name)
 - [Server-rendered text to Vue runtime-compiler boundary testing](alerts/2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md#vue-mount-boundaries-test-the-browsers-second-interpretation)
 - [MCP project-name to recursive-scan-root confinement testing](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#treat-project-names-as-recursive-scan-capabilities)
@@ -17,7 +19,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Calico tier-scoped DeleteCollection authorization](alerts/2026-08-08-calico-policy-debug-authority-boundaries-ghsa.md#2-compare-single-object-delete-with-deletecollection)
 - [Calico pprof listener reachability without body capture](alerts/2026-08-08-calico-policy-debug-authority-boundaries-ghsa.md#3-treat-pprof-paths-as-privileged-process-state-capabilities)
 - [Kiota OpenAPI install-guidance provenance testing](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md#dependency-command-trust-handoff)
-- [Calico HTTP prefix-policy normalization testing](alerts/2026-07-30-url-policy-tenant-oauth-boundaries-ghsa.md#calico-policy-to-backend-path-differential)
+
 
 
 
