@@ -4,7 +4,7 @@ title: Agent control-plane, tool-policy, file, and fetch authority boundaries
 
 # Agent control-plane, tool-policy, file, and fetch authority boundaries
 
-Twenty-two August 6 records, three August 7 Nanobot follow-ups, and eleven August 8 MCP-wrapper records expose a reusable agent-platform testing pattern: an early mode, deny-list, approval, path, environment, argument, or URL decision is not authoritative when a later route, capability wrapper, alternate command handler, login shell, file sink, process wrapper, or connector sees richer input.
+Twenty-two August 6 records, three August 7 Nanobot follow-ups, eleven August 8 MCP-wrapper records, and an August 9 React analyzer follow-up expose a reusable agent-platform testing pattern: an early mode, deny-list, approval, path, environment, argument, or URL decision is not authoritative when a later route, capability wrapper, alternate command handler, recursive scanner, login shell, file sink, process wrapper, or connector sees richer input.
 
 Source records:
 
@@ -29,8 +29,9 @@ Source records:
 - August 8 local MCP tool follow-ups: mcp-pdf-vision `load_pdf` `pdfPath`/`sessionId` handling [GHSA-jgc6-5vgc-hvqg / CVE-2026-19279](https://github.com/advisories/GHSA-jgc6-5vgc-hvqg) and slidev-builder-mcp `generateChart` `outputDir` handling [GHSA-wgq9-x672-9734 / CVE-2026-19281](https://github.com/advisories/GHSA-wgq9-x672-9734).
 - August 8 MCP memory/history/manifest path follow-ups: memory-graph domain storage [GHSA-4297-h6wq-2qm5 / CVE-2026-19285](https://github.com/advisories/GHSA-4297-h6wq-2qm5) and [issue #14](https://github.com/aaronsb/memory-graph/issues/14), mindpilot-mcp history storage [GHSA-6cmv-x2ph-3gc2 / CVE-2026-19287](https://github.com/advisories/GHSA-6cmv-x2ph-3gc2) and [issue #24](https://github.com/abrinsmead/mindpilot-mcp/issues/24), and rive-mcp-server-core library manifests [GHSA-4p6x-rj5h-hg93 / CVE-2026-19288](https://github.com/advisories/GHSA-4p6x-rj5h-hg93) and [issue #2](https://github.com/astralisone/rive-mcp-server-core/issues/2); and
 - August 8 project/Git wrapper follow-ups: coder-api project creation [GHSA-745r-gxf5-fh45 / CVE-2026-19284](https://github.com/advisories/GHSA-745r-gxf5-fh45) and [issue #9](https://github.com/MauricioMilano/coder-api/issues/9), plus llm_memory_mcp `auto.capture` [GHSA-rrf2-j3h9-99wg / CVE-2026-19282](https://github.com/advisories/GHSA-rrf2-j3h9-99wg) and [issue #21](https://github.com/andreahaku/llm_memory_mcp/issues/21).
+- August 9 `react-analyzer-mcp` project-root traversal: [GHSA-g23h-49jw-gw6q / CVE-2026-19323](https://github.com/advisories/GHSA-g23h-49jw-gw6q) and [project issue #3](https://github.com/azer/react-analyzer-mcp/issues/3).
 
-The GHSA entries are unreviewed mirrors except where a source record says otherwise. The NanoClaw, TinyAGI, `openclaw-cn`, Hermes, Mercury, LobsterAI, LudusMCP, mcp-pdf-vision, slidev-builder-mcp, memory-graph, mindpilot-mcp, rive-mcp-server-core, coder-api, and llm_memory_mcp project issues remain open in the cited records; the CowAgent and JeecgBoot issues are closed without a fixed release identified in the mirror; the IronClaw and OpenChamber corrections are committed; and the LettaBot and super-agent-party evidence is researcher-published rather than a vendor advisory. Nanobot's cited corrections are merged, and the mirrors identify `0.3.0` as containing the shell and MCP fixes. The context-engine mirror names `1.9.1` and correction `e0729dcfd3a2b1682a7bff86e7174852c03419ba`; the mcp-bridge-api correction reportedly awaits acceptance, while the remaining August 8 MCP mirrors identify no corrected release. Treat all release ranges as validation seeds and confirm the deployed commit, route exposure, configuration, and current project status before reporting.
+The GHSA entries are unreviewed mirrors except where a source record says otherwise. The NanoClaw, TinyAGI, `openclaw-cn`, Hermes, Mercury, LobsterAI, LudusMCP, mcp-pdf-vision, slidev-builder-mcp, memory-graph, mindpilot-mcp, rive-mcp-server-core, coder-api, llm_memory_mcp, and `react-analyzer-mcp` project issues remain open in the cited records; the CowAgent and JeecgBoot issues are closed without a fixed release identified in the mirror; the IronClaw and OpenChamber corrections are committed; and the LettaBot and super-agent-party evidence is researcher-published rather than a vendor advisory. Nanobot's cited corrections are merged, and the mirrors identify `0.3.0` as containing the shell and MCP fixes. The context-engine mirror names `1.9.1` and correction `e0729dcfd3a2b1682a7bff86e7174852c03419ba`; the mcp-bridge-api correction reportedly awaits acceptance, while the remaining August 8 MCP mirrors identify no corrected release. The React analyzer issue names `0.1.0` and no corrected release. Treat all release ranges as validation seeds and confirm the deployed commit, route exposure, configuration, and current project status before reporting.
 
 !!! warning "Denied sinks and synthetic data only"
     Use disposable agent instances, fake status objects, synthetic memory rows, temporary canary roots, owned no-content HTTP peers, and patched tool/file/network/process sinks. Never read host files, persist real conversation content, execute commands, probe internal services, or relay credentials or responses.
@@ -229,6 +230,21 @@ Compare plain IDs, nested names, `..`, absolute paths, encoded separators at the
 
 A bounded positive is **caller-controlled identifier -> generated filename canonicalizes outside the temporary root -> one or more denied lifecycle sinks receive the sibling canary path**. Report the exact proven operations separately; a write-path result does not imply read or delete authority. Never open, overwrite, or remove the canary, and do not infer remote exploitability from an MCP package or HTTP route without independently proving listener and authentication state.
 
+### Treat project names as recursive-scan capabilities
+
+The `react-analyzer-mcp` issue describes the `analyze-project` tool passing caller-controlled `projectName` into `path.join(PROJECT_ROOT, subFolder)`, recursively enumerating the result, and reading discovered `.jsx` and `.tsx` files. The durable boundary is **identifier -> scan root -> recursive enumeration -> extension filter -> file read -> tool result**, not just a string containing `..`.
+
+Create a disposable project root with one synthetic React file, a sibling directory with a second marker-only React file, and non-React controls in both directories. Patch directory enumeration and `readFileSync` so they record canonical paths and deny access before returning content. Exercise the actual MCP schema and direct helper with:
+
+- a normal project identifier and nested in-root project;
+- `..`, absolute paths, encoded separators at the transport layer, sibling-prefix names, and repeated separators;
+- existing directory symlinks, a symlinked React file, and broken-link controls; and
+- case and separator variants appropriate to the deployed operating system.
+
+Capture the raw JSON value, schema/coercion result, `PROJECT_ROOT`, joined path, canonical scan root, every visited directory, every candidate extension decision, and denied file sink. A bounded positive is **caller-selected project name -> canonical scan root outside the temporary project root -> sibling `.jsx`/`.tsx` canary reaches the denied reader**. Do not return source content, traverse home or repository directories, or call this remote arbitrary-file read unless the tested MCP transport and authentication independently establish remote caller access.
+
+Repeat on any corrected revision and require confinement before recursive traversal begins. A basename-only rejection is insufficient if absolute paths or symlinks still select a sibling root. Also verify that the same canonical root is retained through documentation generation and response serialization; do not assume the first join is the only path decision.
+
 ## Evidence and reporting boundaries
 
 - Include positive and negative mode/auth controls for management routes.
@@ -240,6 +256,7 @@ A bounded positive is **caller-controlled identifier -> generated filename canon
 - Trace stored identifiers across create, read, update, save, import, and delete operations; report only the lifecycle sinks actually reached.
 - Record shell startup mode and post-startup environment separately from the environment supplied at process creation.
 - Prove filesystem escape with a temporary synthetic path and denied sink, not file contents.
+- For recursive scanners, preserve the selected root, visited-directory trace, extension filter, and denied reader; do not infer broad file disclosure from a path-join differential alone.
 - Bind passive artifact parsing to the final IPC/file syscall before claiming a local-file-read path.
 - Prove SSRF at final peer selection using an owned fixture; a warning log alone is insufficient.
 - State whether evidence comes from a vendor/project record, merged fix, open issue, researcher disclosure, or unreviewed mirror.

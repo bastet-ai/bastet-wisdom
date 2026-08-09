@@ -2,26 +2,31 @@
 
 Source: hourly offensive-security scan of the GitHub Security Advisory feed on 2026-08-03. These records were unreviewed when this page was written; confirm the exact product version, reachable content field, render path, updater behavior, and fixed behavior before reporting.
 
-This wave yields two durable operator patterns:
+This wave and an August 9 CTI-Transmute follow-up yield three durable operator patterns:
 
 - rich-text content can become a server-side URL or file selector when a report renderer resolves embedded resources; and
-- TLS does not authenticate a software update when the client accepts every certificate and then executes an unsigned, unhashed installer.
+- TLS does not authenticate a software update when the client accepts every certificate and then executes an unsigned, unhashed installer; and
+- server-side HTML escaping is not authoritative when a client framework recompiles the parsed DOM as template source.
 
 Sources:
 
 - [GHSA-7gc9-2qrw-frvj / CVE-2026-69078: CTI-Transmute evaluation-report SSRF and local-file fetch](https://github.com/advisories/GHSA-7gc9-2qrw-frvj)
 - [CTI-Transmute restrictive WeasyPrint fetcher fix](https://github.com/MISP/cti-transmute/commit/20f35307bcb706c8dd8ca3884a88fb36b05b5244)
+- [GHSA-6x7q-w685-49vg / CVE-2026-71502: CTI-Transmute stored Vue template injection](https://github.com/advisories/GHSA-6x7q-w685-49vg)
+- [CTI-Transmute global delimiter-neutralization fix](https://github.com/MISP/cti-transmute/commit/ecfdaef63860a071c6f07afd30156ca77a77ad2b)
+- [CTI-Transmute mounted-region `v-pre` fixes](https://github.com/MISP/cti-transmute/commit/522fa8ff8223b12a6128ea3fc2344a77b7b9108d)
 - [GHSA-gw22-gf8m-29g5 / CVE-2026-0392: eParakstītājs 3.0 unauthenticated update chain](https://github.com/advisories/GHSA-gw22-gf8m-29g5)
 - [CERT.LV vulnerability record](https://cvd.cert.lv/inbox/view/vuln-all-1689187061)
 
 !!! warning "Authorized validation only"
-    Use a disposable CTI-Transmute instance, synthetic report content, an owned callback service, a fake local canary service, an isolated Windows VM, a locally controlled update endpoint, and a harmless installer recorder. Never target metadata or internal production services, read host files, intercept real update traffic, redirect vendor domains outside an isolated lab, or execute an untrusted installer.
+    Use a disposable CTI-Transmute instance, synthetic report content, a detached or script-disabled DOM harness, an owned callback service, a fake local canary service, an isolated Windows VM, a locally controlled update endpoint, and harmless compiler/process recorders. Never execute JavaScript in a privileged origin, target metadata or internal production services, read host files, intercept real update traffic, redirect vendor domains outside an isolated lab, or execute an untrusted installer.
 
 ## Preconditions and trust map
 
 | Workflow | Attacker-controlled input | Privileged interpreter | Required precondition | Bounded positive |
 | --- | --- | --- | --- | --- |
 | CTI-Transmute report | conversion name, description, or comment rendered from Markdown | HTML conversion followed by WeasyPrint resource fetching | attacker content reaches evaluation-report PDF generation | owned HTTP canary or synthetic local-service marker reaches a no-content fetch recorder |
+| CTI-Transmute web UI | conversion/profile/flash text containing configured Vue delimiters | browser parse followed by Vue runtime compilation of a mounted region | low-privilege or public stored text is rendered inside a Vue mount root | patched compiler records a harmless marker expression while an equivalent `v-pre` or unmounted control stays inert |
 | eParakstītājs updater | update descriptor and installer response | permissive TLS client followed by updater execution | approved lab can redirect or interpose the updater's vendor authority | fake certificate is accepted, descriptor chooses an owned URL, and inert installer reaches a process-start recorder |
 
 Keep each transition separate. A Markdown preview, a URL-shaped string in a PDF, an update request, or acceptance of a test certificate does not by itself prove the final privileged sink.
@@ -58,6 +63,27 @@ Apply the same matrix to:
 
 For each pipeline, preserve the representations before and after Markdown parsing, HTML sanitization, URL normalization, redirect handling, and final fetch. A sanitizer that blocks scripts may still preserve resource-loading primitives.
 
+## Vue mount boundaries: test the browser's second interpretation
+
+The August 9 CTI-Transmute record describes stored conversion names/descriptions and profile names crossing two interpreters. Jinja escaped the value as HTML, but the browser reconstructed text inside a region that Vue later used as template source. CTI-Transmute configures `[[ ... ]]` delimiters, and its runtime compiler requires the CSP's `unsafe-eval` exception. The reusable question is not merely whether server output is escaped; it is **whether any later framework compiles the resulting DOM, including user-controlled text, as trusted template markup**.
+
+### Mounted-region decision matrix
+
+1. Use an affected CTI-Transmute revision in a disposable instance with one low-privilege author and one viewer. Store only a random inert marker in a synthetic conversion name, description, flash-message source, or profile field.
+2. Replace or instrument Vue's compile/evaluation boundary so it records expression text and returns inert text. Do not invoke the JavaScript `Function` constructor or run an action-bearing expression.
+3. Preserve four representations separately: stored value, Jinja output, browser-parsed DOM text, and the exact subtree supplied to Vue's mount/compiler path.
+4. Place a marker shaped for the configured delimiters in each candidate field. Compare:
+   - inside and outside the mounted element;
+   - ordinary descendants and `v-pre` descendants;
+   - server-rendered text and a non-executable JSON data island;
+   - default and application-configured delimiters; and
+   - overlapping delimiter runs and delimiters assembled across adjacent rendered values.
+5. A bounded positive is **low-privilege stored text -> HTML-escaped response -> browser reconstructs configured delimiters inside the mount root -> patched Vue compiler receives the marker**. A reflected bracket sequence or CSP containing `unsafe-eval` is not enough.
+6. Repeat against the fixed revision. The cited fixes add `v-pre` to known static regions and a Jinja `finalize` hook that inserts an invisible word joiner at every configured delimiter seam. Require the parsed DOM to contain no live delimiter while ordinary bracket text still displays correctly.
+7. Add regression controls for values already marked as HTML/JSON, macros, adjacent values whose boundaries could reassemble a delimiter, and new templates added after the fix. The global hook must not corrupt JSON data islands, while the mounted-region inventory should fail when a future unprotected server expression enters a Vue root.
+
+Apply this workflow to Alpine, AngularJS, Vue runtime compilation, client-side Handlebars, and any hydration/bootstrap layer that reads `innerHTML` or DOM text as template input. Report **server-rendered value -> browser normalization -> client compiler authority**, not generic stored XSS, until the final compiler/evaluator sink is demonstrated with the inert recorder.
+
 ## Desktop updating: verify every binding before process start
 
 The eParakstītājs record describes a compound failure: the XML descriptor was fetched over TLS while a permissive `TrustManager` and always-true hostname verifier accepted any certificate; the descriptor was not signed; and the selected installer was executed without an Authenticode or checksum decision. Prove these as separate links rather than collapsing them into “updater RCE.”
@@ -86,6 +112,8 @@ The bounded chain is **local network/DNS redirection in an approved lab -> unaut
 
 - [ ] Exact affected and fixed product versions are recorded.
 - [ ] Report author, report generator, field, representation, and final renderer dispatch are shown separately.
+- [ ] Stored value, escaped response, parsed DOM, Vue mount root, configured delimiters, and patched compiler decision are preserved separately.
+- [ ] Client-template proof uses an inert compiler recorder plus `v-pre`, unmounted, and fixed-revision controls rather than executing JavaScript.
 - [ ] SSRF proof uses owned callbacks, a synthetic local service, and a patched file opener rather than production/internal targets or real files.
 - [ ] Redirect behavior records both initial and final authorities.
 - [ ] Updater evidence separates certificate-chain, hostname, descriptor authenticity, installer checksum/signature, and process-start decisions.

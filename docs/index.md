@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Server-rendered text to Vue runtime-compiler boundary testing](alerts/2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md#vue-mount-boundaries-test-the-browsers-second-interpretation)
+- [MCP project-name to recursive-scan-root confinement testing](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#treat-project-names-as-recursive-scan-capabilities)
 - [Flowise final-peer SSRF destination and redirect testing](alerts/2026-08-04-flowise-workspace-runtime-credential-boundaries-ghsa.md#23-validate-destination-classes-and-redirects-at-the-final-peer)
 - [MCP identifier lifecycle path-confinement testing](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#trace-one-identifier-across-every-file-lifecycle-operation)
 - [MCP project and Git wrapper process-boundary testing](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#git-and-server-command-wrappers)
@@ -16,8 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Kiota OpenAPI install-guidance provenance testing](alerts/2026-07-24-kiota-codegen-deserialization-boundaries-ghsa.md#dependency-command-trust-handoff)
 - [Calico HTTP prefix-policy normalization testing](alerts/2026-07-30-url-policy-tenant-oauth-boundaries-ghsa.md#calico-policy-to-backend-path-differential)
 - [MCP PDF and chart wrapper argument validation](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#git-and-server-command-wrappers)
-- [MCP argument-to-process wrapper validation](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#git-and-server-command-wrappers)
-- [MCP journey identifier file-capability checks](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#journey-ids-and-filenames-are-file-capabilities)
+
 
 
 
