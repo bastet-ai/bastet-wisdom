@@ -10,6 +10,7 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [MCP session, workspace, memory, callback, and delete path authority](2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#map-path-authority-by-operation-not-by-parameter-name)
 - [Calico tier-collection and debug-listener authority boundaries](2026-08-08-calico-policy-debug-authority-boundaries-ghsa.md)
 - [mcp-pdf-vision and slidev-builder-mcp local wrapper follow-up](2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#git-and-server-command-wrappers)
 - [MCP process-wrapper and journey-path authority follow-up](2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#august-8-follow-up-trace-mcp-arguments-to-the-final-process-or-file-sink)
