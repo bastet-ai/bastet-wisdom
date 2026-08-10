@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [WordPress authentication, reset, fetch, file, booking, and commerce authority](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-10-follow-up-bind-authentication-fetch-file-and-commerce-authority-at-the-final-sink)
 - [MCP article/model/proxy final-peer and document/session path authority](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#apply-final-peer-enforcement-to-mcp-url-and-uri-capabilities)
 - [NLTK RFC 6598 strict-mode SSRF destination testing](alerts/2026-07-31-library-tenant-commerce-file-boundaries-ghsa.md#nltk-special-use-destination-matrix)
 - [WordPress alternate-route, management-proof, query-selector, and cart authority](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-9-follow-up-bind-alternate-routes-remote-management-proofs-and-selectors-to-final-authority)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Flowise final-peer SSRF destination and redirect testing](alerts/2026-08-04-flowise-workspace-runtime-credential-boundaries-ghsa.md#23-validate-destination-classes-and-redirects-at-the-final-peer)
 - [MCP identifier lifecycle path-confinement testing](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#trace-one-identifier-across-every-file-lifecycle-operation)
 - [MCP project and Git wrapper process-boundary testing](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#git-and-server-command-wrappers)
-- [Calico tier-scoped DeleteCollection authorization](alerts/2026-08-08-calico-policy-debug-authority-boundaries-ghsa.md#2-compare-single-object-delete-with-deletecollection)
 
 
 

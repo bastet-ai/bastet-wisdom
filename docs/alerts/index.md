@@ -10,6 +10,7 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [WordPress authentication, reset, fetch, file, booking, and commerce authority](2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-10-follow-up-bind-authentication-fetch-file-and-commerce-authority-at-the-final-sink)
 - [MCP article/model/proxy final-peer and document/session path authority](2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#apply-final-peer-enforcement-to-mcp-url-and-uri-capabilities)
 - [NLTK RFC 6598 strict-mode SSRF destination testing](2026-07-31-library-tenant-commerce-file-boundaries-ghsa.md#nltk-special-use-destination-matrix)
 - [WordPress alternate-route, remote-management, query-selector, and cart authority](2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-9-follow-up-bind-alternate-routes-remote-management-proofs-and-selectors-to-final-authority)

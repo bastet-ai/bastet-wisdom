@@ -887,6 +887,49 @@ Create users A/B, orders A/B with distinct marker item IDs, and carts A/B. Patch
 
 The bounded positives are **anonymous request selects foreign order B -> B's marker IDs reach the no-content serializer** and **cross-site navigation -> logged-in A's cart clear/add recorders receive B-derived marker items without A authorizing the transition**. Do not expose billing details, order contents, customer identities, or mutate a retained cart.
 
+## August 10 follow-up: bind authentication, fetch, file, and commerce authority at the final sink
+
+An August 10 unreviewed wave adds useful variants to the existing WordPress matrices:
+
+- alternate authentication and global REST-filter scope: Block User Account application-password access [GHSA-c64r-rhpr-pqr5 / CVE-2026-18960](https://github.com/advisories/GHSA-c64r-rhpr-pqr5), CheckView URI-substring authentication suppression [GHSA-8r6g-r9rq-8jr8 / CVE-2026-18786](https://github.com/advisories/GHSA-8r6g-r9rq-8jr8), and AutoNetTV Relay scheduled-task session creation [GHSA-qvph-jjx5-pw4h / CVE-2026-13600](https://github.com/advisories/GHSA-qvph-jjx5-pw4h);
+- password-reset subject, verifier, and attempt-bucket binding: Login & Register Forms [GHSA-53xf-4rjw-hxg5 / CVE-2026-18469](https://github.com/advisories/GHSA-53xf-4rjw-hxg5), [GHSA-gxm4-76w3-xhp8 / CVE-2026-18470](https://github.com/advisories/GHSA-gxm4-76w3-xhp8), and [GHSA-77w2-vfvm-8c9g / CVE-2026-18468](https://github.com/advisories/GHSA-77w2-vfvm-8c9g), plus BricksForge form-action password change [GHSA-3w5j-v478-4p9q / CVE-2026-18030](https://github.com/advisories/GHSA-3w5j-v478-4p9q);
+- public fetch and response-relay authority: All-in-One Video Gallery download relay [GHSA-65rp-7r2j-rmm6 / CVE-2026-19075](https://github.com/advisories/GHSA-65rp-7r2j-rmm6) and Podcast Player RSS fetch [GHSA-fx75-97x2-v9j2 / CVE-2026-14860](https://github.com/advisories/GHSA-fx75-97x2-v9j2);
+- file and upload authority: Product Input Fields empty accepted-type policy [GHSA-76cm-vw34-ffw7 / CVE-2026-19089](https://github.com/advisories/GHSA-76cm-vw34-ffw7), Contact Form to Any API predictable public copy [GHSA-qp64-vw92-jr32 / CVE-2026-18946](https://github.com/advisories/GHSA-qp64-vw92-jr32), and File Manager low-role read/delete commands [GHSA-mr78-php7-96p9 / CVE-2026-17540](https://github.com/advisories/GHSA-mr78-php7-96p9);
+- booking, OAuth, and payment object binding: Salon Booking System booking read/callback/mutation records [GHSA-pf8j-pw7h-gqgp / CVE-2026-17020](https://github.com/advisories/GHSA-pf8j-pw7h-gqgp), [GHSA-3hmc-2cg9-g3wx / CVE-2026-17023](https://github.com/advisories/GHSA-3hmc-2cg9-g3wx), [GHSA-jf35-5rcj-7rqm / CVE-2026-17021](https://github.com/advisories/GHSA-jf35-5rcj-7rqm), and [GHSA-9jp6-8vxq-2865 / CVE-2026-17022](https://github.com/advisories/GHSA-9jp6-8vxq-2865); and
+- server-owned commerce tuples: PayPal merchant and amount checks [GHSA-645w-cxcg-9mjc / CVE-2026-17012](https://github.com/advisories/GHSA-645w-cxcg-9mjc) and [GHSA-3gq9-83xc-rrc7 / CVE-2026-17016](https://github.com/advisories/GHSA-3gq9-83xc-rrc7), Pinpoint booking price [GHSA-2jwj-8g7h-f5p5 / CVE-2026-15229](https://github.com/advisories/GHSA-2jwj-8g7h-f5p5), and MotoPress payment-record creation [GHSA-vqh4-pqm8-4r46 / CVE-2026-15237](https://github.com/advisories/GHSA-vqh4-pqm8-4r46).
+
+Confirm exact plugin slug, affected version, enabled feature, route/action, role, and corrected behavior. These records were unreviewed when scanned; treat them as test seeds, not independent proof of exposure. Use disposable sites, two-user synthetic objects, owned no-content peers, fake provider/payment values, and patched session, password, network, response, file, booking, and paid-state sinks.
+
+### Compare every authentication path after account state changes
+
+Create synthetic user A with password, application password, cookie, and any plugin-specific authentication route. Block or revoke A through the plugin while replacing session issuance and REST mutation with recorders. Compare browser login, XML-RPC if enabled, core REST, application-password REST, plugin REST, scheduled-task routes, and exact versus prefix/suffix/substring request paths. Preserve account state, credential type, route family, global authentication-filter result, canonical route, and final principal.
+
+A bounded positive is **blocked or anonymous principal -> alternate credential/route or over-broad URI match clears the authentication error -> A reaches a harmless REST mutation recorder**, or **public scheduled-task request -> administrator identity reaches a denied cookie setter**. Do not mint a usable cookie, invoke operational cron work, or change account data. A successful HTTP status without a privileged sink is not an authentication bypass.
+
+### Bind reset proof, subject, browser, and attempt budget as one tuple
+
+Create users A/B with sink-only mailboxes. Patch password writes and sessions. Vary requested account, response-selected client key, verification code, initiating browser/session, source identifier, attempt counter key, expiry, purpose, duplicate fields, and the user supplied at the final reset action. Include wrong-code exhaustion followed by caller-key rotation and A-proof/B-subject crossover.
+
+The required tuple is **subject + destination + initiating browser/session + verifier + attempt bucket + purpose + expiry + single-use state**. A safe positive is **proof or budget established for A/context A -> caller changes one selector -> B reaches the denied password sink**, or **failed attempts under one caller key -> caller rotates that key -> the same subject receives a fresh budget**. Never send mail externally, set a usable password, or create a session.
+
+### Separate fetch destination, response relay, and parser acceptance
+
+For both download and RSS-style handlers, configure only owned peers: a public no-content origin, an owned redirector, and a synthetic denied destination that returns a random marker. Patch DNS resolution, socket connect, redirect handling, body reads, XML parsing, and response streaming independently. Cross stored post metadata versus request URL, schemes, userinfo, ports, redirects, hostname case/trailing dot, address families, duplicate parameters, response types, and fixed builds.
+
+Capture initial URL, each redirect, resolved address set, connected peer, response bytes hash, parser decision, and downstream relay. Report the narrowest proven edge: **anonymous selector -> denied connector**, **owned redirect -> denied final peer**, or **synthetic marker -> public response recorder**. Destination control is not response disclosure, and XML acceptance is not arbitrary-byte relay. Never contact metadata, loopback, private, customer, or production services.
+
+### Trace upload and file authority to distinct final operations
+
+Use a disposable upload root with one benign image-like canary, a dangerous-looking but inert extension marker, and a sibling file whose contents are never opened. Test omitted, empty, wildcard, and explicit accepted-type settings separately from MIME, original filename, stored extension, generated name, canonical destination, and public URL. For public contact-form copies, submit two synthetic uploads with colliding or predictable names and patch copy/open/stream operations.
+
+For File Manager, build a matrix across list, metadata, read, copy, move, overwrite, and delete using owner A/B and canonical in-root/sibling paths. Replace every final filesystem operation with a denied recorder. Positives require **policy accepts caller-selected type/name -> inert file reaches a public/executable-path write recorder**, **A can predict/select B's upload -> B reaches a response recorder**, or **low-role command -> sibling target reaches a denied operation sink**. Never upload PHP, open `wp-config.php`, disclose form submissions, or delete files.
+
+### Keep booking identity, OAuth proof, and paid state separate
+
+Create customers A/B, bookings A/B, and a fake calendar/provider integration. Cross login/session, booking ID, booking ownership token, requested total, OAuth `state`, initiating browser, provider account, callback code, stored integration owner, and mutation type. Patch booking serializers, total updates, provider token exchange, and configuration writes. A reportable result is one specific edge: foreign booking marker selected, foreign booking reaches a no-op mutation, or callback proof from browser A replaces the site's fake integration without an A-bound state decision.
+
+For commerce, record **local object + merchant/payee + amount + currency + provider transaction + status + payment method + purpose + replay state**. Use only mocked provider responses and no-op payment/booking sinks. Test wrong merchant, partial/zero/negative/duplicate amount, pending/failed status, proof from order A against order B, caller-created completed records, and replay. A positive requires a mismatched tuple to reach the paid/approved recorder; never contact a gateway, reserve inventory, or create a retained payment.
+
 ## Reporting checklist
 
 Include:
@@ -907,6 +950,7 @@ Include:
 - configured versus submitted integration identity, commerce tuple, alternate-route permission decision, token/assertion algorithm and key type, reset subject, and final no-op sink;
 - decoded/canonical AI file selector, mocked provider body decision, guest-session/upload ownership tuple, typed API-key comparison, workflow-node authorization, and server-derived booking price;
 - alternate REST route and publication side effect, dispatch operation plus canonical include target, form-bound column allowlist, remote-controller enrollment tuple, and previous-order/cart ownership;
+- alternate authentication route and canonical URI match, reset subject/browser/attempt tuple, initial URL through final peer and response relay, per-operation file target, booking/OAuth ownership tuple, and complete merchant/amount/payment binding;
 - hashes or redacted identifiers for fake connection values, payment responses, cookies, and canary files;
 - the pretix quick-setup CVE identifier discrepancy and the source attached to each identifier;
 - a bounded impact statement that distinguishes option disclosure, session creation, persistent write, DOM rendering, payment replay, event mutation, filesystem read/write, and execution.
