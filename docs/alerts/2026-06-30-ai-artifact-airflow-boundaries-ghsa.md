@@ -54,8 +54,32 @@ Adjacent updated advisories [GHSA-76v6-f83q-pxvh](https://github.com/advisories/
 - Positive evidence is a connection or command attempt against a canary SSH endpoint with a mismatched key. Use inert commands such as writing a temp marker; do not capture real task payloads or credentials.
 - Negative controls: provider version with host-key verification enabled, pinned known-hosts material, explicit `RejectPolicy`-style behavior, and per-connection documentation of expected host fingerprints.
 
+## August 10 follow-up: bind secrets-backend fallback to the active team
+
+Three unreviewed records describe the same Airflow multi-team boundary across different provider backends:
+
+- Amazon Systems Manager Parameter Store and Secrets Manager: [GHSA-984p-rgj2-h89x / CVE-2026-68872](https://github.com/advisories/GHSA-984p-rgj2-h89x), with `apache-airflow-providers-amazon 9.34.0` listed as corrected;
+- Azure Key Vault: [GHSA-6hj8-q7v2-996c / CVE-2026-68870](https://github.com/advisories/GHSA-6hj8-q7v2-996c), with `apache-airflow-providers-microsoft-azure 14.1.0` listed as corrected; and
+- Yandex Lockbox: [GHSA-qmrf-jrpr-rjx6 / CVE-2026-68871](https://github.com/advisories/GHSA-qmrf-jrpr-rjx6), with `apache-airflow-providers-yandex 4.5.1` listed as corrected.
+
+The reported pattern is a scoped-lookup miss followed by a team-agnostic fallback. A caller in team A can supply a Connection or Variable ID that spells team B's namespace; if A's scoped lookup misses, the fallback may resolve B's full secret. Test the namespace resolver and backend request separately from response disclosure.
+
+Use two disposable Airflow teams, fake provider clients, and marker-only Connection/Variable objects. Patch each backend client so it records the canonical secret name and returns only a sentinel object with field names, never credential values. Exercise own-team ID, foreign-team-shaped ID, nonexistent ID, unqualified collision, already-qualified ID, malformed separator, duplicate prefix, and omitted team context.
+
+| Active team | Requested ID | Scoped lookup | Secure fallback behavior |
+| --- | --- | --- | --- |
+| A | A marker | hit | resolve A control |
+| A | unqualified missing marker | miss | generic miss, with no cross-team search |
+| A | B-qualified marker | miss | reject before team-agnostic backend lookup |
+| A | malformed or duplicate team prefix | miss | reject consistently |
+| B | B marker | hit | resolve B control |
+
+Capture authenticated principal, active team, object type, raw ID, parsed team namespace, scoped backend key, fallback key, provider operation, and response projection. A bounded positive is **team A -> B-qualified synthetic ID -> A-scoped lookup misses -> team-agnostic provider recorder selects B's marker**. Prefer stopping there; if a response check is necessary, return only a random sentinel and prove its presence, not a fake password body.
+
+Repeat the same fixture against every configured secrets backend and both Connection and Variable APIs. A corrected Amazon provider does not establish that Azure, Yandex, a custom backend, scheduler parsing, task rendering, UI test-connection, or CLI lookup uses the same resolver. Never query production vaults, enumerate IDs, retrieve credentials, or run a task with the selected Connection.
+
 ## Reporting notes
 
-- Lead with the precise crossed boundary: **LLM filename to filesystem path**, **artifact upload route to another user's model namespace**, **login field to LDAP filter**, or **orchestrator SSH hook to unverified host key**.
+- Lead with the precise crossed boundary: **LLM filename to filesystem path**, **artifact upload route to another user's model namespace**, **login field to LDAP filter**, **orchestrator SSH hook to unverified host key**, or **team-scoped secret miss to team-agnostic backend lookup**.
 - Include package versions, role/token used, lab topology, sanitized request shape, expected decision, actual decision, and patched negative control.
 - Keep artifacts synthetic: marker files, dummy model blobs, lab LDAP entries, disposable VM fingerprints, and fake credentials.

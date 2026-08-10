@@ -10,6 +10,12 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [AI feature-store and cluster control-plane tenant testing](2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md)
+- [Airflow team-scoped secrets-backend fallback testing](2026-06-30-ai-artifact-airflow-boundaries-ghsa.md#august-10-follow-up-bind-secrets-backend-fallback-to-the-active-team)
+- [Flowise anonymous private Assistants-file authority testing](2026-08-04-flowise-workspace-runtime-credential-boundaries-ghsa.md#24-bind-anonymous-download-routes-to-public-objects-and-file-ownership)
+- [Hugging Face Accelerate checkpoint-shard path testing](2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-10-follow-up-bind-sharded-checkpoint-entries-to-the-checkpoint-root)
+- [Python `unearth` archive traversal and symlink composition](../best-practices/archive-extraction-symlink-traversal.md#python-unearth-traversal-and-symlink-composition-follow-up)
+
 - [Apache Ranger connector, download, token, script, and privilege authority](2026-08-10-apache-ranger-control-plane-authority-boundaries-ghsa.md)
 - [GNU cpio absolute hard-link target validation](../best-practices/archive-extraction-symlink-traversal.md#gnu-cpio-absolute-hard-link-target-matrix)
 - [WordPress authentication, reset, fetch, file, booking, and commerce authority](2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-10-follow-up-bind-authentication-fetch-file-and-commerce-authority-at-the-final-sink)

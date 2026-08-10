@@ -140,8 +140,20 @@ The listed affected ranges for these records are Keras before 3.12.3 and 3.13.0 
 4. A positive is **artifact metadata -> external HDF5 source or archive link -> denied secondary file/open/link sink** while the equivalent internal object remains functional. Report VDS resolution, external-link resolution, symlink creation, later write-through, and file disclosure as separate edges.
 5. Never reference host files, model caches, notebooks, datasets, credentials, startup files, or another tenant's artifacts. A canary read or link proof, if explicitly required, must stay inside the disposable root.
 
+## August 10 follow-up: bind sharded checkpoint entries to the checkpoint root
+
+[GHSA-4j2p-28q2-5m79 / CVE-2026-69112](https://github.com/advisories/GHSA-4j2p-28q2-5m79) reports that Hugging Face Accelerate through 1.14.0 accepts relative parent paths or absolute paths from sharded-checkpoint `weight_map` entries in `load_checkpoint_in_model()` and `load_checkpoint_and_dispatch()`. The record also identifies named pipes as an availability sink. Treat the index as a manifest that selects secondary files; approving the top-level checkpoint directory is not authority to open every path named inside it.
+
+Use an offline disposable root with `checkpoint/`, one ordinary synthetic shard, one random sibling canary file, and a FIFO that is never opened for blocking I/O. Patch file open, `safetensors`/PyTorch shard loading, and FIFO detection so each candidate canonical path is recorded and denied before bytes are read.
+
+Test both entry points with ordinary relative shard names, nested in-root names, parent segments, absolute paths, sibling-prefix names, mixed separators, dot segments, symlinked intermediate directories, nonexistent files, duplicate tensor mappings, and FIFO-shaped entries. Record index provenance, revision pin, tensor key, raw `weight_map` value, checkpoint root, normalized and canonical shard path, file type, loader selected, and first denied open.
+
+A bounded positive is **untrusted checkpoint index -> `weight_map` entry -> canonical sibling-canary path reaches the denied shard-open sink**. For FIFO entries, evidence should stop at `lstat`/file-type and attempted loader selection; do not permit a blocking read merely to prove denial of service. Replay byte-identical fixtures against the corrected commit or release and require rejection before any outside-root or non-regular-file open.
+
+Do not point manifests at host configuration, model caches, notebooks, datasets, credentials, devices, sockets, or another tenant's model. Report path selection, readable-file reachability, FIFO handling, deserialization, and any later model execution as separate effects.
+
 ## Reporting notes
 
-- Lead with the exact boundary crossed: **untrusted molecule input to native parser**, **deserialization policy to reduce/global lookup**, **model-name substring to remote code loader**, **unset ambient safe mode to pickle/bytecode reconstruction**, **model/archive metadata to canonical filesystem destination**, **HDF5 metadata to a secondary file resolver**, **model metadata name to sidecar-file destination**, or **certificate subject string to authenticated username**.
+- Lead with the exact boundary crossed: **untrusted molecule input to native parser**, **deserialization policy to reduce/global lookup**, **model-name substring to remote code loader**, **unset ambient safe mode to pickle/bytecode reconstruction**, **model/archive metadata to canonical filesystem destination**, **checkpoint manifest to secondary shard path**, **HDF5 metadata to a secondary file resolver**, **model metadata name to sidecar-file destination**, or **certificate subject string to authenticated username**.
 - Include affected and fixed versions, the minimal canary input shape, expected denial or safe parse, observed result, and a fixed-version negative control.
 - Keep evidence scoped and inert: sanitizer traces, temp-file markers, owned model repos, fake users, lab CAs, and synthetic molecule files only.

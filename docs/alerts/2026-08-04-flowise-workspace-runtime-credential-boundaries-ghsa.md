@@ -4,7 +4,7 @@ title: Flowise workspace, runtime, and credential-authority boundaries
 
 # Flowise workspace, runtime, and credential-authority boundaries
 
-Thirty Flowise advisories published on August 4, August 7, and August 8 expose a useful low-code/agent-platform review pattern: a flow-builder permission or public prediction route is not authority over every workspace file, flow type, runtime loader, child-process environment, execution-context property, outbound destination, OAuth credential, integration history, document store, execution record, provider-funded feature, or billing object that a later component can select. Validate each edge independently with disposable objects and recorder-only sinks.
+Thirty-one Flowise advisories published on August 4, August 7, August 8, and August 10 expose a useful low-code/agent-platform review pattern: a flow-builder permission or public prediction route is not authority over every workspace file, flow type, runtime loader, child-process environment, execution-context property, outbound destination, OAuth credential, integration history, document store, execution record, provider-funded feature, or billing object that a later component can select. Validate each edge independently with disposable objects and recorder-only sinks.
 
 Most August 4 records list `flowise <= 3.1.2` as affected and `3.1.3` as the first patched release. The private-chatflow TTS record instead lists `flowise <= 3.1.3` as affected and `3.1.4` as fixed. Three August 7 records and the August 8 cloud-metadata deny-list record describe behavior through 3.1.4; the OAuth route record is explicitly a bypass of CVE-2026-41273. The JavaScript sandbox, MCP environment-bypass, and prompt-to-Python records also identify `flowise-components` ranges. Confirm the package-specific range in each advisory rather than assuming one release covers every server and component path.
 
@@ -39,7 +39,8 @@ Primary sources:
 - prefix-whitelist OAuth refresh bypass [GHSA-rm9r-9424-cccf / CVE-2026-70636](https://github.com/advisories/GHSA-rm9r-9424-cccf) and the [research record](https://github.com/Caycon/cve-advisories/blob/main/2026/Flowise/CVE-2026-70636.md);
 - OpenAI Assistants credential IDOR [GHSA-qvmw-v4w9-7c4j / CVE-2026-67622](https://github.com/advisories/GHSA-qvmw-v4w9-7c4j) and the [research record](https://github.com/Caycon/cve-advisories/blob/main/2026/Flowise/CVE-2026-67622.md); and
 - view-only document-store mutation [GHSA-7q53-9j99-gg5c / CVE-2026-67621](https://github.com/advisories/GHSA-7q53-9j99-gg5c) and the [research record](https://github.com/Caycon/cve-advisories/blob/main/2026/Flowise/CVE-2026-67621.md); and
-- cloud-metadata deny-list gaps and redirect handling [GHSA-6h53-jfj2-fh9c / CVE-2026-67620](https://github.com/advisories/GHSA-6h53-jfj2-fh9c), the [NVD record](https://nvd.nist.gov/vuln/detail/CVE-2026-67620), and the [VulnCheck record](https://www.vulncheck.com/advisories/flowise-ssrf-via-fetch-links-endpoint-incomplete-deny-list).
+- cloud-metadata deny-list gaps and redirect handling [GHSA-6h53-jfj2-fh9c / CVE-2026-67620](https://github.com/advisories/GHSA-6h53-jfj2-fh9c), the [NVD record](https://nvd.nist.gov/vuln/detail/CVE-2026-67620), and the [VulnCheck record](https://www.vulncheck.com/advisories/flowise-ssrf-via-fetch-links-endpoint-incomplete-deny-list); and
+- unauthenticated private Assistants-file download [GHSA-mf39-7j64-g95c / CVE-2026-71962](https://github.com/advisories/GHSA-mf39-7j64-g95c).
 
 !!! warning "Disposable Flowise labs and inert recorders only"
     Use affected and corrected local instances, two synthetic workspaces, fake API keys and OAuth credentials, owned HTTP listeners, package indexes, and S3-compatible buckets, synthetic flows/CSV/SQLite/history fixtures, mocked payment-provider objects, and patched file/module/process/delete/provider loaders. Never enumerate customer or credential IDs, retrieve billing records or real integration histories, capture real OAuth secrets, delete flows or files, target metadata or internal services, deserialize unknown data, install an unknown package, load unknown JavaScript, or execute a command.
@@ -76,6 +77,7 @@ Primary sources:
 | Assistants credential selector | workspace member may use its own OpenAI Assistants integration | caller-supplied credential UUID is not bound to the active workspace | A selects B's fake credential and reaches mocked metadata/file/vector-store operations |
 | Document-store refresh/upsert | view-only member may inspect a knowledge base | sibling mutation routes omit operation permission | viewer reaches a no-op ingestion/refresh recorder for a synthetic store |
 | Fetch-links and URL-loading nodes | caller may submit a URL to an enabled flow | incomplete provider-address deny lists or redirects change the final peer after the initial decision | owned redirector reaches only an isolated synthetic destination and records the policy/peer mismatch |
+| `POST /api/v1/openai-assistants-file/download` | no session can reach a globally whitelisted route | `chatflowId`, `chatId`, and `fileName` select a private file across workspaces | B's synthetic file identity reaches a denied read/relay recorder under no session |
 
 ## 1. Diff feature gates, permissions, and storage scope
 
@@ -512,3 +514,13 @@ This workflow distinguishes three findings that should not be collapsed:
 3. **connect gap:** DNS is checked, but the actual selected peer is not rebound to the decision.
 
 A static list containing well-known metadata IPs is not proof of complete SSRF control. Inventory cloud-specific IPv4, IPv6, link-local, alias-hostname, and provider-proxy classes from current provider documentation, but perform validation only with synthetic equivalents. Reapply the same canonical policy after each redirect and immediately before every connection. Never query a real metadata path, request an identity document, retrieve a role credential, or probe an internal service.
+
+## 24. Bind anonymous download routes to public objects and file ownership
+
+The August 10 record describes `POST /api/v1/openai-assistants-file/download` as present in the global authentication whitelist while accepting `chatflowId`, `chatId`, and `fileName` selectors. This is not merely a filename-confinement check: route authentication, chatflow visibility, chat/session ownership, file ownership, storage path, and response relay are independent decisions.
+
+Create workspaces A and B with one public synthetic flow in A, one private synthetic flow in B, one random chat ID each, and marker-named empty files. Replace storage lookup, file open, provider download, and response streaming with recorders that return no bytes. Test no session, A, and B against own, foreign, nonexistent, malformed, omitted, duplicated, traversal-shaped, and cross-combined flow/chat/file selectors.
+
+Capture raw and normalized route, whitelist match, principal, active workspace, requested IDs, resolved flow visibility/owner, chat owner, file owner, canonical storage key, and first read/relay recorder. A bounded positive is **no session -> B private `chatflowId`/`chatId`/`fileName` -> B's synthetic file reaches the denied read or response recorder without authentication and ownership checks**. Identifier acceptance or status differences alone are insufficient.
+
+Keep anonymous reachability, cross-workspace IDOR, and path traversal as separate findings. Do not enumerate IDs, retrieve a real file, return marker bytes, list provider objects, or test customer chat history. The fixed route should either leave the global whitelist or bind an intentionally public download capability to one flow, chat, file, audience, and expiry before any storage/provider call.

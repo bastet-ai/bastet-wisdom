@@ -173,6 +173,24 @@ For `tar-rs`, a bounded positive is **privileged archiver accepts an untrusted d
 
 For Jenkins, stop at **authorized low-privilege build trigger -> tar extraction accepts an outside-pointing link -> a later synthetic cache or publication read would dereference it at the denied sink**. Capture whether the link persists across builds, who can trigger the extraction, and which endpoint would return the resulting marker. Do not retrieve `master.key`, `hudson.util.Secret`, `credentials.xml`, user configuration, tokens, or any production console data. Do not repeat the advisory's claimed credential-decryption or code-execution chain.
 
+## Python `unearth` traversal and symlink-composition follow-up
+
+[GHSA-2fcv-9f95-p67v / CVE-2026-73030](https://github.com/advisories/GHSA-2fcv-9f95-p67v) reports that `unearth` through 0.18.2 checked archive destinations with an `is_within_directory` function that did not normalize paths before containment validation. The unreviewed record identifies both `../` member names and symlink composition as outside-root write paths; it points to commit `6c78164` as the fix. Confirm the exact package build and application call path before reporting.
+
+Use a disposable Python environment with an empty extraction root, a random sibling canary directory, and patched file/link/rename sinks. Construct TAR fixtures locally with inert markers and compare:
+
+| Case | Member layout | Evidence |
+| --- | --- | --- |
+| baseline | ordinary relative file | canonical destination remains in root |
+| lexical traversal | parent segments and dot segments | raw name, normalized name, canonical destination, denied write |
+| separator controls | `/`, `\\`, repeated, and mixed separators | platform-specific parser and filesystem decisions |
+| symlink baseline | in-root link to an in-root marker | target remains confined |
+| link composition | link below root points only to the sibling canary, followed by a child member | link target and final child destination are checked at the sink |
+| ordering | child-before-link, link-before-child, duplicate replacement | final object identity and operation order |
+| corrected build | byte-identical fixtures | rejection occurs before outside-root create/link/open |
+
+A bounded positive is **archive member passes `is_within_directory` -> final normalized or link-resolved destination is the synthetic sibling canary -> denied filesystem sink records the operation**. Do not overwrite an existing file, target startup/configuration paths, create a persistent outside-pointing link, or infer package-install code execution without proving a separate consumer.
+
 ### Reporting skeleton
 
 ```text
@@ -200,3 +218,4 @@ Impact demonstrated (path escape or metadata drift):
 - OpenCart extension-installer ZIP traversal: https://github.com/advisories/GHSA-3rx6-2g27-8gfq
 - tar-rs source-tree symlink escape during archive creation: https://github.com/advisories/GHSA-c2qp-v5vm-7vxf
 - Jenkins extraction symlink-target validation boundary: https://github.com/advisories/GHSA-83x3-qgq9-rfcq
+- Python `unearth` traversal and symlink-composition boundary: https://github.com/advisories/GHSA-2fcv-9f95-p67v
