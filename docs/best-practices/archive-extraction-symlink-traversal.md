@@ -148,6 +148,31 @@ Use a disposable OpenCart lab with no production store, credentials, customer da
 
 A bounded positive is **authorized extension upload -> installer accepts the archive -> a member resolves outside the temporary extension root -> denied file sink records the synthetic sibling-canary destination**. Do not write a web shell, target the webroot, activate attacker code, overwrite configuration, or infer unauthenticated reachability. Record the exact role required to upload/install extensions and test rollback and uninstall separately: later lifecycle helpers can reintroduce the same path authority even after extraction is corrected.
 
+## Archive creation and extraction need separate link checks
+
+Two August 10 records cover opposite sides of the archive boundary:
+
+- [GHSA-c2qp-v5vm-7vxf / CVE-2026-70622](https://github.com/advisories/GHSA-c2qp-v5vm-7vxf) reports that `tar-rs` `Builder::append_dir_all()` in versions 0.4.11 through 0.4.46 follows symlinks planted below an untrusted source directory and can include an outside-root file as an ordinary archive member.
+- [GHSA-83x3-qgq9-rfcq / CVE-2026-19429](https://github.com/advisories/GHSA-83x3-qgq9-rfcq) reports that Jenkins `FilePath.untarFrom()` validates where a symlink is created but not where its target resolves, allowing a build-triggered extraction path to retain an outside-pointing symlink. The GitHub record is unreviewed; confirm the deployed Jenkins code path and behavior before making an impact claim.
+
+The first is a **source-tree read boundary during archive creation**. The second is a **target-resolution and lifecycle boundary during extraction**. A safe extractor does not make an archive builder safe, and validating a symlink's destination name does not validate its target.
+
+Use a disposable root containing an ordinary marker, an in-root symlink target, and a random sibling canary. Interpose file reads, link creation, and later opens so any sibling-canary operation is recorded and denied. Never point fixtures at Jenkins secrets, credentials, user configuration, source repositories, or host files.
+
+| Case | Controlled fixture | Evidence to capture |
+| --- | --- | --- |
+| builder baseline | ordinary files below the source root | enumerated source path and emitted member type/name |
+| builder in-root link | symlink resolving to an in-root marker | raw link, canonical read target, and whether the archive preserves or dereferences it |
+| builder source escape | source-tree symlink resolving only to the sibling canary | `lstat`/`readlink`, canonical read target, denied read, and absence of canary bytes from the archive |
+| extractor baseline | regular member and an in-root symlink | created object type plus canonical target |
+| extractor target escape | symlink destination below the extraction root but target resolving to the sibling canary | raw target, final resolution, denied `symlink`/later open, and no outside read |
+| Jenkins lifecycle | build request, extraction, cache reuse, console/report publication, and cleanup | required item permission, retained link identity, every later dereference sink, and authorization on each response |
+| corrected builds | byte-identical tree/archive fixtures | outside-root read or link is rejected before the filesystem sink |
+
+For `tar-rs`, a bounded positive is **privileged archiver accepts an untrusted directory -> planted link resolves outside the approved source root -> denied read sink observes the sibling canary as the effective source**. Do not require archive disclosure of real data.
+
+For Jenkins, stop at **authorized low-privilege build trigger -> tar extraction accepts an outside-pointing link -> a later synthetic cache or publication read would dereference it at the denied sink**. Capture whether the link persists across builds, who can trigger the extraction, and which endpoint would return the resulting marker. Do not retrieve `master.key`, `hudson.util.Secret`, `credentials.xml`, user configuration, tokens, or any production console data. Do not repeat the advisory's claimed credential-decryption or code-execution chain.
+
 ### Reporting skeleton
 
 ```text
@@ -173,3 +198,5 @@ Impact demonstrated (path escape or metadata drift):
 - CPython hardlink ownership-filter boundary: https://github.com/advisories/GHSA-gf2w-jqmq-fcm8
 - GNU cpio absolute hard-link target boundary: https://github.com/advisories/GHSA-rc3p-p5w3-fm9j and https://cert.pl/en/posts/2026/08/CVE-2026-66484
 - OpenCart extension-installer ZIP traversal: https://github.com/advisories/GHSA-3rx6-2g27-8gfq
+- tar-rs source-tree symlink escape during archive creation: https://github.com/advisories/GHSA-c2qp-v5vm-7vxf
+- Jenkins extraction symlink-target validation boundary: https://github.com/advisories/GHSA-83x3-qgq9-rfcq

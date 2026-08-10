@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Archive creation and extraction symlink authority testing](best-practices/archive-extraction-symlink-traversal.md#archive-creation-and-extraction-need-separate-link-checks)
+- [Cross-hub CloudEvent identity and migration-topic audience testing](alerts/2026-05-07-cluster-control-plane-secret-and-impersonation-boundary-batch-ghsa.md#august-10-follow-up-bind-cross-hub-messages-and-migration-material-to-the-authenticated-hub)
 - [Unicode-dot TLS and document/workflow authority testing](alerts/2026-08-10-hostname-document-workflow-authority-boundaries-ghsa.md)
 - [CTI graph and raw-object HTML-resolver sink inventory](alerts/2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md#graph-and-raw-object-viewers-enumerate-every-html-resolver)
 - [OpenCart extension-installer extraction boundary](best-practices/archive-extraction-symlink-traversal.md#opencart-extension-installer-extraction-boundary)
@@ -16,8 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [WordPress authentication, reset, fetch, file, booking, and commerce authority](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-10-follow-up-bind-authentication-fetch-file-and-commerce-authority-at-the-final-sink)
 - [MCP article/model/proxy final-peer and document/session path authority](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#apply-final-peer-enforcement-to-mcp-url-and-uri-capabilities)
 - [NLTK RFC 6598 strict-mode SSRF destination testing](alerts/2026-07-31-library-tenant-commerce-file-boundaries-ghsa.md#nltk-special-use-destination-matrix)
-- [WordPress alternate-route, management-proof, query-selector, and cart authority](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-9-follow-up-bind-alternate-routes-remote-management-proofs-and-selectors-to-final-authority)
-- [MCP path authority by read, write, replace, and delete operation](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#map-path-authority-by-operation-not-by-parameter-name)
 
 
 
