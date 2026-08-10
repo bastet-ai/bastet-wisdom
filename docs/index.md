@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Apache Ranger connector, download, token, script, and privilege authority](alerts/2026-08-10-apache-ranger-control-plane-authority-boundaries-ghsa.md)
+- [GNU cpio absolute hard-link target validation](best-practices/archive-extraction-symlink-traversal.md#gnu-cpio-absolute-hard-link-target-matrix)
 - [WordPress authentication, reset, fetch, file, booking, and commerce authority](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-10-follow-up-bind-authentication-fetch-file-and-commerce-authority-at-the-final-sink)
 - [MCP article/model/proxy final-peer and document/session path authority](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#apply-final-peer-enforcement-to-mcp-url-and-uri-capabilities)
 - [NLTK RFC 6598 strict-mode SSRF destination testing](alerts/2026-07-31-library-tenant-commerce-file-boundaries-ghsa.md#nltk-special-use-destination-matrix)
@@ -16,8 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Server-rendered text to Vue runtime-compiler boundary testing](alerts/2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md#vue-mount-boundaries-test-the-browsers-second-interpretation)
 - [MCP project-name to recursive-scan-root confinement testing](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#treat-project-names-as-recursive-scan-capabilities)
 - [Flowise final-peer SSRF destination and redirect testing](alerts/2026-08-04-flowise-workspace-runtime-credential-boundaries-ghsa.md#23-validate-destination-classes-and-redirects-at-the-final-peer)
-- [MCP identifier lifecycle path-confinement testing](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#trace-one-identifier-across-every-file-lifecycle-operation)
-- [MCP project and Git wrapper process-boundary testing](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#git-and-server-command-wrappers)
+
 
 
 

@@ -113,6 +113,23 @@ Build archives programmatically in the fixture rather than redistributing weapon
 
 Do not claim a generic `tarfile` escape from CVE-2026-4360: its demonstrated boundary is metadata-filter loss on the hardlink branch. Do not label a lexical drive path as exploitation until the Windows resolver or filesystem recorder proves the effective destination. For CVE-2026-11940, preserve both resolutions in evidence: the link target at its archived location and at the shallower location where fallback recreates it.
 
+## GNU cpio absolute hard-link target matrix
+
+[GHSA-rc3p-p5w3-fm9j / CVE-2026-66484](https://github.com/advisories/GHSA-rc3p-p5w3-fm9j) adds a distinct `cpio` case: in copy-in mode, `--no-absolute-filenames` normalizes an archive member name, but an absolute TAR hard-link target can reportedly reach `link()` without equivalent normalization. This is not ordinary `../` traversal and does not require a symlink chain. The policy-visible destination and the filesystem source selected for the hard link are separate authorities.
+
+Use an unprivileged mount namespace containing only a temporary extraction root, one in-root source, and one random sibling canary. Interpose `link`/`linkat` so an outside-root source or destination is recorded and denied. Build the TAR fixture programmatically and do not redistribute it.
+
+| Case | Archive metadata | Evidence to capture |
+| --- | --- | --- |
+| regular baseline | relative regular member | canonical write remains below extraction root |
+| in-root hard link | relative destination and relative in-root target | source and destination both remain below root |
+| destination control | absolute member name with a relative target | `--no-absolute-filenames` normalization and final destination |
+| target-authority case | relative destination with an absolute target naming only the sibling canary | raw link target, normalized member name, final `link`/`linkat` source and destination; deny syscall |
+| target spelling controls | repeated separators, dot segments, and relative equivalent | parser and canonical source decision table |
+| corrected build | byte-identical archive and command | reject before any outside-root link syscall |
+
+A bounded positive is **`--no-absolute-filenames` accepts the archive -> destination stays under the extraction root -> raw absolute hard-link target selects the synthetic sibling canary at the denied filesystem sink**. Do not create the link, point at host files, or claim an overwrite: this primitive links an existing outside object into the extraction tree unless another application behavior supplies additional impact.
+
 ### Reporting skeleton
 
 ```text
@@ -136,3 +153,4 @@ Impact demonstrated (path escape or metadata drift):
 - CPython hardlink-to-symlink relocation boundary: https://github.com/advisories/GHSA-9mc4-rqmq-h467
 - CPython Windows drive-absolute ZIP boundary: https://github.com/advisories/GHSA-7r27-jhmm-vmp6
 - CPython hardlink ownership-filter boundary: https://github.com/advisories/GHSA-gf2w-jqmq-fcm8
+- GNU cpio absolute hard-link target boundary: https://github.com/advisories/GHSA-rc3p-p5w3-fm9j and https://cert.pl/en/posts/2026/08/CVE-2026-66484
