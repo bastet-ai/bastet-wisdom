@@ -130,6 +130,24 @@ Use an unprivileged mount namespace containing only a temporary extraction root,
 
 A bounded positive is **`--no-absolute-filenames` accepts the archive -> destination stays under the extraction root -> raw absolute hard-link target selects the synthetic sibling canary at the denied filesystem sink**. Do not create the link, point at host files, or claim an overwrite: this primitive links an existing outside object into the extraction tree unless another application behavior supplies additional impact.
 
+## OpenCart extension-installer extraction boundary
+
+[GHSA-3rx6-2g27-8gfq](https://github.com/advisories/GHSA-3rx6-2g27-8gfq) reports that OpenCart 4.2.0.0 installs uploaded `.ocmod.zip` extensions without proving that every extracted path remains under the extension staging root. This is a useful application-layer case because the archive is not merely unpacked: an authenticated extension workflow hands attacker-controlled member names to a server-side installer near the web application tree.
+
+Use a disposable OpenCart lab with no production store, credentials, customer data, payment integration, or outbound network. Replace archive writes, moves, publication copies, and extension activation with record-and-deny sinks. Build fixtures programmatically and include only random marker files.
+
+| Case | Member-name class | Required evidence |
+| --- | --- | --- |
+| baseline | ordinary relative file | canonical destination stays below the staging root |
+| dot segments | single and repeated parent segments | decoded member, normalized path, canonical destination, denied outside-root write |
+| encoded/name controls | mixed separators and any decoding performed before extraction | path at upload, ZIP parser, installer, and filesystem sink |
+| directory entry | escaping directory followed by an ordinary child | whether child inherits an outside-root destination |
+| symlink control | link entry plus later child where the ZIP stack supports links | final target resolution; deny link creation and write-through |
+| lifecycle | install, validation failure, rollback, uninstall, and cleanup | every copy/move/delete root, not only initial extraction |
+| corrected build | byte-identical marker archives | rejection occurs before any outside-root file operation |
+
+A bounded positive is **authorized extension upload -> installer accepts the archive -> a member resolves outside the temporary extension root -> denied file sink records the synthetic sibling-canary destination**. Do not write a web shell, target the webroot, activate attacker code, overwrite configuration, or infer unauthenticated reachability. Record the exact role required to upload/install extensions and test rollback and uninstall separately: later lifecycle helpers can reintroduce the same path authority even after extraction is corrected.
+
 ### Reporting skeleton
 
 ```text
@@ -154,3 +172,4 @@ Impact demonstrated (path escape or metadata drift):
 - CPython Windows drive-absolute ZIP boundary: https://github.com/advisories/GHSA-7r27-jhmm-vmp6
 - CPython hardlink ownership-filter boundary: https://github.com/advisories/GHSA-gf2w-jqmq-fcm8
 - GNU cpio absolute hard-link target boundary: https://github.com/advisories/GHSA-rc3p-p5w3-fm9j and https://cert.pl/en/posts/2026/08/CVE-2026-66484
+- OpenCart extension-installer ZIP traversal: https://github.com/advisories/GHSA-3rx6-2g27-8gfq

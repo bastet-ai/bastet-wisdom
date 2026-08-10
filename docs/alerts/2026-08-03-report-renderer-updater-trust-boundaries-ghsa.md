@@ -2,11 +2,12 @@
 
 Source: hourly offensive-security scan of the GitHub Security Advisory feed on 2026-08-03. These records were unreviewed when this page was written; confirm the exact product version, reachable content field, render path, updater behavior, and fixed behavior before reporting.
 
-This wave and an August 9 CTI-Transmute follow-up yield three durable operator patterns:
+This wave and August 9–10 CTI-Transmute follow-ups yield four durable operator patterns:
 
 - rich-text content can become a server-side URL or file selector when a report renderer resolves embedded resources; and
 - TLS does not authenticate a software update when the client accepts every certificate and then executes an unsigned, unhashed installer; and
-- server-side HTML escaping is not authoritative when a client framework recompiles the parsed DOM as template source.
+- server-side HTML escaping is not authoritative when a client framework recompiles the parsed DOM as template source; and
+- a graph or JSON viewer can reparse trusted text as HTML through several library and popup sinks after the main template path was fixed.
 
 Sources:
 
@@ -15,6 +16,7 @@ Sources:
 - [GHSA-6x7q-w685-49vg / CVE-2026-71502: CTI-Transmute stored Vue template injection](https://github.com/advisories/GHSA-6x7q-w685-49vg)
 - [CTI-Transmute global delimiter-neutralization fix](https://github.com/MISP/cti-transmute/commit/ecfdaef63860a071c6f07afd30156ca77a77ad2b)
 - [CTI-Transmute mounted-region `v-pre` fixes](https://github.com/MISP/cti-transmute/commit/522fa8ff8223b12a6128ea3fc2344a77b7b9108d)
+- [GHSA-p8v9-h3m5-mvj9: CTI-Transmute conversion-graph and raw-JSON stored XSS](https://github.com/advisories/GHSA-p8v9-h3m5-mvj9)
 - [GHSA-gw22-gf8m-29g5 / CVE-2026-0392: eParakstītājs 3.0 unauthenticated update chain](https://github.com/advisories/GHSA-gw22-gf8m-29g5)
 - [CERT.LV vulnerability record](https://cvd.cert.lv/inbox/view/vuln-all-1689187061)
 
@@ -27,6 +29,7 @@ Sources:
 | --- | --- | --- | --- | --- |
 | CTI-Transmute report | conversion name, description, or comment rendered from Markdown | HTML conversion followed by WeasyPrint resource fetching | attacker content reaches evaluation-report PDF generation | owned HTTP canary or synthetic local-service marker reaches a no-content fetch recorder |
 | CTI-Transmute web UI | conversion/profile/flash text containing configured Vue delimiters | browser parse followed by Vue runtime compilation of a mounted region | low-privilege or public stored text is rendered inside a Vue mount root | patched compiler records a harmless marker expression while an equivalent `v-pre` or unmounted control stays inert |
+| CTI-Transmute graph and raw JSON | labels, types, property keys/values, hashes, child attributes, edge metadata, and serialized raw objects | Pivotick HTML resolution, property panels, hover/select rendering, or popup document construction | attacker-controlled CTI data is converted and viewed | patched HTML/DOM sink receives an inert marker while a text-only control stays literal |
 | eParakstītājs updater | update descriptor and installer response | permissive TLS client followed by updater execution | approved lab can redirect or interpose the updater's vendor authority | fake certificate is accepted, descriptor chooses an owned URL, and inert installer reaches a process-start recorder |
 
 Keep each transition separate. A Markdown preview, a URL-shaped string in a PDF, an update request, or acceptance of a test certificate does not by itself prove the final privileged sink.
@@ -83,6 +86,20 @@ The August 9 CTI-Transmute record describes stored conversion names/descriptions
 7. Add regression controls for values already marked as HTML/JSON, macros, adjacent values whose boundaries could reassemble a delimiter, and new templates added after the fix. The global hook must not corrupt JSON data islands, while the mounted-region inventory should fail when a future unprotected server expression enters a Vue root.
 
 Apply this workflow to Alpine, AngularJS, Vue runtime compilation, client-side Handlebars, and any hydration/bootstrap layer that reads `innerHTML` or DOM text as template input. Report **server-rendered value -> browser normalization -> client compiler authority**, not generic stored XSS, until the final compiler/evaluator sink is demonstrated with the inert recorder.
+
+## Graph and raw-object viewers: enumerate every HTML resolver
+
+The August 10 CTI-Transmute record adds a different browser path. Converted CTI fields can reach Pivotick's HTML-oriented rendering for node labels, sublabels, edge labels, node types, property names and values, hash names, child attributes, and hover/selection panels. The raw-object action also constructed a new document around serialized JSON. Fixing only the obvious label or main template therefore leaves alternate interaction and popup sinks alive.
+
+Use synthetic CTI objects in a detached browser profile with outbound networking and navigation denied. Patch `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`, template-element parsing, Pivotick's HTML resolver, event-handler assignment, and popup/document creation so they record and reject candidate markup. Do not execute JavaScript.
+
+1. Give every source field and context a unique inert marker. Preserve the imported object, converted object, graph model, renderer argument, and final DOM operation separately.
+2. Exercise initial graph load, node and edge creation, hover, selection, expand/collapse, property panels, search/filter results, export/preview, and raw-JSON viewing. A sink reachable only after interaction is still part of the normal render surface.
+3. Compare plain text, HTML-shaped text without an event, quotes, angle brackets, entity spellings, identifier punctuation, nested objects, arrays, nulls, and long-but-bounded values. Do not use credential forms, realistic login overlays, keylogging, browser APIs, or network-bearing elements.
+4. Verify context-appropriate behavior: labels and properties should become text nodes; node-type fields should enforce identifier grammar where required; serialized JSON should be assigned with `textContent` inside a DOM-built `pre`, not interpolated into a new HTML document.
+5. Replay against each intermediate and final fix. A first patch can cover labels while leaving property panels or hover paths exposed, so preserve the exact sink inventory by revision.
+
+A bounded positive is **synthetic CTI field -> conversion preserves the marker -> a normal graph interaction passes it to an HTML-parsing recorder rather than a text-only sink**. If the recorder only sees markup-shaped input, report an HTML interpretation boundary; do not claim script execution unless a separately approved inert event marker reaches an executable handler decision. Generalize this sink inventory to topology graphs, report viewers, diff tools, log explorers, and object inspectors that wrap a third-party visualization library.
 
 ## Desktop updating: verify every binding before process start
 
