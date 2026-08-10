@@ -19,6 +19,7 @@ Sources:
 - [GHSA-g29c-rgq6-gxgj](https://github.com/advisories/GHSA-g29c-rgq6-gxgj) covers `awxkit` YAML `!include` traversal;
 - [GHSA-f6vj-48fm-hmvx](https://github.com/advisories/GHSA-f6vj-48fm-hmvx) covers GCS object names escaping an Airflow Samba destination before provider 4.12.6; and
 - [GHSA-pfvc-3p5h-x7h6](https://github.com/advisories/GHSA-pfvc-3p5h-x7h6) covers user-editable Pterodactyl egg values reaching Wings daemon configuration templates before 1.12.3.
+- [GHSA-2jhm-w3mp-jcwr / CVE-2026-12372](https://github.com/advisories/GHSA-2jhm-w3mp-jcwr) covers NLTK strict network validation omitting RFC 6598 shared-address-space destinations in 3.9.4 and the then-current development branch.
 
 !!! warning "Canaries only"
     Run these checks in disposable applications, clusters, stores, corpora, shares, repositories, and game-server nodes. Use fake Vault tokens, owned DNS/listener pairs, inert Kubernetes objects, synthetic orders and payments, marker-only files, no-op help commands, and fake template values. Never call a live Vault administrative endpoint, alter a real order, read customer data, access real local files, or retrieve node tokens and registry credentials.
@@ -82,6 +83,12 @@ connection lookup -> owned listener B
 ```
 
 Listener B should return only `SKILLZ-FINAL-DESTINATION`. Capture lookup order, approved address set, connected peer, redirects, and response marker. A valid positive shows the validator approving A while the HTTP client independently resolves and connects to B. Do not use cloud metadata, loopback administration routes, or production private services.
+
+### NLTK special-use destination matrix
+
+The later NLTK record adds a classification gap independent of DNS rebinding: `validate_network_url()` reportedly rejects familiar private categories but can admit `100.64.0.0/10` because Python's `ipaddress` classification does not make that range either `is_private` or `is_global`. Test the validator and each reachable network-loading helper separately in a disposable namespace with no production routes.
+
+Place an owned no-content listener on one lab-only RFC 6598 address. Compare a public test peer, loopback, RFC 1918, link-local, RFC 6598, IPv4-mapped forms, and an owned hostname resolving to each class. Record raw URL, parsed host, every DNS answer, `ipaddress` properties, validator verdict, final connected peer, and whether response bytes would be relayed. A bounded positive is **strict mode enabled -> RFC 6598 fixture passes validation -> the affected helper selects the owned listener**. A validator-only acceptance is a policy gap, not product-level SSRF, and must not be reported as network reachability without the connector trace. Never contact carrier infrastructure, VPN/shared services, metadata endpoints, or arbitrary hosts.
 
 ## Capsule alternate-path authority check
 
