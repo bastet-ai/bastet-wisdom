@@ -8,6 +8,9 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [CTI-Transmute final-peer fetch, alternate-renderer, export, and reaction testing](alerts/2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md#august-11-follow-up-resolve-fetch-peers-enumerate-renderers-and-replay-object-policy)
+- [EAP/WildFly ORB, IIOP, SAML, and AJP listener-authority testing](alerts/2026-08-04-node-wildfly-rocketchat-zyxel-boundaries-ghsa.md#august-11-follow-up-test-listener-trust-before-application-authorization)
+- [MRTG privileged PID-file ownership-transfer testing](alerts/2026-08-01-privileged-pidfile-symlink-boundary-ghsa.md#august-11-mrtg-ownership-change-follow-up)
 - [Server import, connector, and device API authority testing](alerts/2026-08-11-server-import-connector-device-authority-boundaries-ghsa.md)
 - [mcp-grafana override-header final-peer testing](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#august-11-follow-up-override-headers-are-destination-capabilities)
 - [OpenShift AI dashboard internal-listener identity testing](alerts/2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md#august-11-follow-up-bind-dashboard-identity-to-the-authenticated-listener)
@@ -16,8 +19,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [AI feature-store and cluster control-plane tenant testing](alerts/2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md)
 - [Airflow team-scoped secrets-backend fallback testing](alerts/2026-06-30-ai-artifact-airflow-boundaries-ghsa.md#august-10-follow-up-bind-secrets-backend-fallback-to-the-active-team)
 - [Flowise anonymous private Assistants-file authority testing](alerts/2026-08-04-flowise-workspace-runtime-credential-boundaries-ghsa.md#24-bind-anonymous-download-routes-to-public-objects-and-file-ownership)
-- [Hugging Face Accelerate checkpoint-shard path testing](alerts/2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-10-follow-up-bind-sharded-checkpoint-entries-to-the-checkpoint-root)
-- [Python `unearth` archive traversal and symlink composition](best-practices/archive-extraction-symlink-traversal.md#python-unearth-traversal-and-symlink-composition-follow-up)
 
 
 

@@ -102,4 +102,12 @@ Do not automatically claim code execution or privilege escalation. Those outcome
 
 ## Adjacent advisory triage
 
+### August 11 MRTG ownership-change follow-up
+
+[GHSA-pqrp-p4c6-2q4g / CVE-2026-72694](https://github.com/advisories/GHSA-pqrp-p4c6-2q4g) adds a distinct PID-path side effect: an MRTG daemon started as root reportedly drops privilege but can follow a pre-positioned PID-file symlink when changing file ownership. Reuse the path-control and startup-order inventory above, but patch `chown`/`fchownat` rather than looking only for truncating opens.
+
+In a disposable VM, create a random sibling canary owned by a synthetic user and point only the temporary MRTG PID entry at it. Record every component's ownership/ACL, effective identity, `lstat`/open sequence, canonical target, requested owner/group, and privilege-drop position. Interpose the ownership syscall and deny it. Compare a regular PID file, final symlink, replaceable parent, root-owned runtime directory, affected package, and corrected package.
+
+The bounded positive is **low-privilege principal can prepare the PID path -> root MRTG startup follows it -> denied ownership syscall selects the synthetic sibling canary for transfer to the daemon user**. Do not change ownership of the canary, target privileged files, or claim escalation without a separately proven consumer. This differs from the `sslh` case: the reportable primitive is ownership transfer, not truncation.
+
 The same hourly wave also surfaced [GHSA-fffv-7w63-p3xw / CVE-2026-18556](https://github.com/advisories/GHSA-fffv-7w63-p3xw), a sparse N-able N-central alternate-path authentication-bypass record, and [GHSA-96xh-5wq4-m4cc / CVE-2024-10918](https://github.com/advisories/GHSA-96xh-5wq4-m4cc), a libmodbus unexpected-length memory-safety record. Neither supplied enough route, parser, or build detail in this scan to publish a replayable operator workflow; they are retained as source leads rather than generalized into unsupported exploit instructions.

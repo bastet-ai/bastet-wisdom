@@ -19,6 +19,7 @@ Primary sources:
 
 - Node.js forwarding-proxy request desynchronization [GHSA-6hff-9f4h-85xm / CVE-2026-58044](https://github.com/advisories/GHSA-6hff-9f4h-85xm) and stale SQLite iterator [GHSA-qgrj-5wc5-7xvc / CVE-2026-58041](https://github.com/advisories/GHSA-qgrj-5wc5-7xvc), with the [Node.js July 2026 security release](https://nodejs.org/en/blog/vulnerability/july-2026-security-releases);
 - WildFly domain-controller repository traversal [GHSA-62xj-w627-m337 / CVE-2026-17614](https://github.com/advisories/GHSA-62xj-w627-m337) and [Red Hat CVE record](https://access.redhat.com/security/cve/CVE-2026-17614);
+- EAP/OpenJDK ORB codebase loading [GHSA-4238-grjh-g4xm / CVE-2026-15560](https://github.com/advisories/GHSA-4238-grjh-g4xm), unauthenticated IIOP naming bind [GHSA-259j-555g-mwrr / CVE-2026-15563](https://github.com/advisories/GHSA-259j-555g-mwrr), PicketLink signature empty-match [GHSA-vw9v-mpfh-qwg3 / CVE-2026-15556](https://github.com/advisories/GHSA-vw9v-mpfh-qwg3), unsolicited-response validation [GHSA-wcq4-9xxp-5px6 / CVE-2026-10579](https://github.com/advisories/GHSA-wcq4-9xxp-5px6), and Undertow AJP client-certificate attribute trust [GHSA-f478-cwfc-jqh3 / CVE-2026-15554](https://github.com/advisories/GHSA-f478-cwfc-jqh3);
 - Rocket.Chat filesystem-backed custom-sound traversal [GHSA-6c37-9jgq-mgm8 / CVE-2026-56845](https://github.com/advisories/GHSA-6c37-9jgq-mgm8) and [HackerOne report 3514640](https://hackerone.com/reports/3514640);
 - Zyxel WAX650S captive-portal authentication bypass [GHSA-hq2r-whw2-gr82 / CVE-2026-8508](https://github.com/advisories/GHSA-hq2r-whw2-gr82), administrator command injection [GHSA-fq66-x242-gfpv / CVE-2026-6837](https://github.com/advisories/GHSA-fq66-x242-gfpv), and the [wireless-device advisory](https://www.zyxel.com/global/en/support/security-advisories/zyxel-security-advisory-for-command-injection-and-improper-authentication-vulnerabilities-in-certain-aps-fwa7-and-security-routers-08-04-2026); and
 - Zyxel ZLD firewall configuration-file traversal [GHSA-75p7-jv3w-pjpc / CVE-2026-14818](https://github.com/advisories/GHSA-75p7-jv3w-pjpc) and the [ZLD firewall advisory](https://www.zyxel.com/global/en/support/security-advisories/zyxel-security-advisory-for-path-traversal-vulnerability-in-the-configuration-file-execution-cli-command-of-zld-firewalls-08-04-2026).
@@ -144,6 +145,40 @@ Use only an owned, resettable firewall in a disconnected lab. Create a temporary
 5. If the recorder proves an outside selection, substitute a parser recorder that returns a fixed no-op result for the random marker. Do not create a syntactically active firewall directive merely to demonstrate impact.
 
 The bounded positive is **disposable administrator invokes configuration-file CLI -> traversal selector canonicalizes to a random canary outside the approved root -> affected firmware reaches the patched file/parser recorder -> V5.43 rejects before file access**. A CLI error, path echo, or existence oracle alone is not configuration execution. State the administrator prerequisite, exact product/firmware, configuration root, resolved target, and first reached sink.
+
+## August 11 follow-up: test listener trust before application authorization
+
+The late EAP/WildFly records are useful as one protocol-boundary campaign: network listeners can assign code, naming, SAML, or client-certificate authority before EJB or application authorization runs. Confirm the exact EAP/WildFly/PicketLink build, deployment mode, enabled listener, bind address, security-manager setting, and application authentication path. Do not infer exposure from an installed package alone.
+
+Use an isolated server with only synthetic applications, a fake SAML realm, locally generated certificates, a fake ORB/JNDI service, denied class-loading/bind/session sinks, and packet capture restricted to the lab. Never serve executable classes, bind production names, forge a real identity, or connect to an operational AJP/IIOP listener.
+
+| Surface | Required precondition | Controlled input | Bounded positive |
+| --- | --- | --- | --- |
+| OpenJDK ORB on `:3528` | affected EAP runs with `-secmgr` and listener is reachable | CDR object metadata references an owned codebase URL | patched class-resolution sink records the URL before EJB interceptors, then denies loading |
+| IIOP NameService | naming listener accepts unauthenticated bind operations | random disposable name and fake ORB reference | denied bind recorder shows no authenticated principal was required |
+| PicketLink SP signature validation | protected lab application uses the affected SP path | synthetic response has no assertion matching the signature-selection check | denied session mapper records that the empty match was treated as validation success |
+| PicketLink unsolicited response | unsolicited-response handler is enabled/reachable | synthetic principal/role assertion signed by no trusted lab key | denied session mapper is reached without successful signature, issuer, audience, destination, and time checks |
+| Undertow AJP on `:8009` | AJP is directly reachable and application requires `CLIENT-CERT` | locally generated canary certificate in AJP `ssl_cert`/`is_ssl` attributes | denied auth recorder sees the asserted certificate without an authenticated AJP peer/shared secret |
+
+### Listener and sink workflow
+
+1. Enumerate listeners from the effective server configuration and confirm reachability only from the approved lab client. Record protocol, bind address, port, TLS, AJP secret, IIOP naming policy, security-manager state, and protected application route.
+2. Patch final privileged decisions: remote class resolution/definition, naming bind, SAML principal/session creation, and client-certificate principal mapping. Each recorder must log and reject without producing the side effect.
+3. Establish valid controls with a local inert class already on the classpath, an authenticated naming operation where supported, a correctly signed synthetic SAML response, and a real TLS client certificate passed through the intended trusted connector.
+4. Change one authority input at a time. Keep listener reachability, parser acceptance, security-interceptor order, and final privileged decision as separate observations.
+5. Replay on the corrected build and with the listener disabled, loopback-only, or protected by its expected shared secret/authentication mechanism.
+
+For ORB codebase handling, the positive stops at **unauthenticated CDR input -> owned URL reaches the denied class-resolution sink before application authorization**. A callback alone does not prove class definition or instantiation, and no class file needs to be returned.
+
+For NameService, stop at **unauthenticated request -> random lab name reaches denied bind mutation**. Do not complete a binding or relay subsequent invocations. For SAML, preserve raw response, selected signature target, assertion count, trust decision, and proposed principal/roles; a parser accepting XML is not authentication bypass. For AJP, show **direct lab TCP peer -> untrusted AJP certificate attributes -> denied client-certificate identity mapping**, then prove the same attributes are rejected when the shared secret or trusted-front-end binding is absent.
+
+### Reporting boundaries
+
+- State whether the issue is pre-authentication, but do not call a non-HTTP listener internet-exposed without measured reachability.
+- For PicketLink, distinguish an empty signature-selection set from a cryptographically valid signature and distinguish solicited from unsolicited response handlers.
+- For AJP, identify the network position required to reach port 8009 and the exact application route that relies on client-certificate identity.
+- For IIOP/JNDI, report a naming-authority flaw separately from any speculative deserialization, MITM, or code-execution chain.
+- Keep fake keys, certificates, principals, names, URLs, and classes in evidence; never include production identity material.
 
 ## Reporting checklist
 

@@ -2,12 +2,15 @@
 
 Source: hourly offensive-security scan of the GitHub Security Advisory feed on 2026-08-03. These records were unreviewed when this page was written; confirm the exact product version, reachable content field, render path, updater behavior, and fixed behavior before reporting.
 
-This wave and August 9–10 CTI-Transmute follow-ups yield four durable operator patterns:
+This wave and August 9–11 CTI-Transmute follow-ups yield seven durable operator patterns:
 
-- rich-text content can become a server-side URL or file selector when a report renderer resolves embedded resources; and
-- TLS does not authenticate a software update when the client accepts every certificate and then executes an unsigned, unhashed installer; and
-- server-side HTML escaping is not authoritative when a client framework recompiles the parsed DOM as template source; and
-- a graph or JSON viewer can reparse trusted text as HTML through several library and popup sinks after the main template path was fixed.
+- rich-text content can become a server-side URL or file selector when a report renderer resolves embedded resources;
+- TLS does not authenticate a software update when the client accepts every certificate and then executes an unsigned, unhashed installer;
+- server-side HTML escaping is not authoritative when a client framework recompiles the parsed DOM as template source;
+- a graph or JSON viewer can reparse trusted text as HTML through several library and popup sinks after the main template path was fixed;
+- an outbound-fetch guard can reject IP literals yet accept a hostname whose resolved destination is private;
+- table highlighting, tag icons, remote MISP fields, visualization tooltips, and saved graph styles can each be a separate HTML interpreter; and
+- report exports and reaction endpoints can omit the object-level policy enforced by the corresponding interactive read path.
 
 Sources:
 
@@ -17,6 +20,14 @@ Sources:
 - [CTI-Transmute global delimiter-neutralization fix](https://github.com/MISP/cti-transmute/commit/ecfdaef63860a071c6f07afd30156ca77a77ad2b)
 - [CTI-Transmute mounted-region `v-pre` fixes](https://github.com/MISP/cti-transmute/commit/522fa8ff8223b12a6128ea3fc2344a77b7b9108d)
 - [GHSA-p8v9-h3m5-mvj9: CTI-Transmute conversion-graph and raw-JSON stored XSS](https://github.com/advisories/GHSA-p8v9-h3m5-mvj9)
+- [GHSA-x373-32xc-7gqv / CVE-2026-73160: anonymous MISP fetch/search SSRF through unresolved hostnames](https://github.com/advisories/GHSA-x373-32xc-7gqv)
+- [GHSA-9p42-c923-p9c9 / CVE-2026-73161: conversion-table highlighting HTML interpretation](https://github.com/advisories/GHSA-9p42-c923-p9c9)
+- [GHSA-3vx2-8r8r-pf7r / CVE-2026-73159: tag-icon `v-html` interpretation](https://github.com/advisories/GHSA-3vx2-8r8r-pf7r)
+- [GHSA-j8cv-pjx7-pvqf / CVE-2026-73158: saved graph `svgIcon` interpretation](https://github.com/advisories/GHSA-j8cv-pjx7-pvqf)
+- [GHSA-fh4x-m2h5-c6vx / CVE-2026-73157: remote MISP values reaching HTML sinks](https://github.com/advisories/GHSA-fh4x-m2h5-c6vx)
+- [GHSA-fq55-48v3-mc95 / CVE-2026-73156: ECharts tooltip HTML interpretation](https://github.com/advisories/GHSA-fq55-48v3-mc95)
+- [GHSA-vrrh-vgmq-m54x / CVE-2026-73140: private comments included in report exports](https://github.com/advisories/GHSA-vrrh-vgmq-m54x)
+- [GHSA-rv36-q8cj-wgr9 / CVE-2026-73155: reaction mutation without comment visibility](https://github.com/advisories/GHSA-rv36-q8cj-wgr9)
 - [GHSA-gw22-gf8m-29g5 / CVE-2026-0392: eParakstītājs 3.0 unauthenticated update chain](https://github.com/advisories/GHSA-gw22-gf8m-29g5)
 - [CERT.LV vulnerability record](https://cvd.cert.lv/inbox/view/vuln-all-1689187061)
 
@@ -100,6 +111,50 @@ Use synthetic CTI objects in a detached browser profile with outbound networking
 5. Replay against each intermediate and final fix. A first patch can cover labels while leaving property panels or hover paths exposed, so preserve the exact sink inventory by revision.
 
 A bounded positive is **synthetic CTI field -> conversion preserves the marker -> a normal graph interaction passes it to an HTML-parsing recorder rather than a text-only sink**. If the recorder only sees markup-shaped input, report an HTML interpretation boundary; do not claim script execution unless a separately approved inert event marker reaches an executable handler decision. Generalize this sink inventory to topology graphs, report viewers, diff tools, log explorers, and object inspectors that wrap a third-party visualization library.
+
+## August 11 follow-up: resolve fetch peers, enumerate renderers, and replay object policy
+
+The late CTI-Transmute wave adds three adjacent workflows. Treat the GitHub records as leads until the affected revision, route exposure, role, and final sink are confirmed.
+
+### Final-peer MISP fetch matrix
+
+The affected `/fetch_misp_event` and `/misp_search_events` validator reportedly classified IP literals but accepted ordinary hostnames without first resolving them. Build the proof with an owned DNS name, a no-content synthetic private service, and a patched HTTP connector. Do not query metadata, loopback applications, or production internal services.
+
+| Case | DNS/route state | Required result |
+| --- | --- | --- |
+| public baseline | owned name resolves only to an owned public recorder | request is attributable to the tested route |
+| private literal | literal synthetic private address | rejected before connect |
+| private resolution | owned name resolves only to the synthetic private recorder | affected build reaches denied connect; corrected build rejects every address |
+| mixed answer set | one public and one synthetic private answer | reject the whole destination set rather than select the convenient answer |
+| redirect | public recorder redirects to the private canary | re-resolve and re-check at the redirect hop |
+| authorization | anonymous, ordinary user, and authorized integration user | record route policy independently from destination policy |
+
+Capture the raw URL, normalized host, all `getaddrinfo()` answers, selected address, redirect chain, final socket peer, route identity, and whether response bytes would be relayed. A strong bounded positive is **anonymous or lower-trust route call -> accepted hostname -> resolution selects the synthetic private peer -> patched connector denies dispatch -> corrected build rejects before connect**. DNS resolution evidence alone is not SSRF, and an authentication fix does not replace final-peer enforcement.
+
+### Alternate renderer inventory
+
+Use one synthetic CTI/MISP corpus and assign a unique inert markup marker to every candidate field. Patch HTML-oriented sinks and deny events, navigation, and networking. Exercise both empty and non-empty search queries, initial rendering, hover, selection, administrative triage, saved-style application, and remote-event browsing.
+
+| Surface | Controlled field | Boundary to record |
+| --- | --- | --- |
+| conversion table | highlighted value with empty and non-empty query | source text is escaped before application-owned `<mark>` insertion |
+| tag renderer | icon name | structured class binding receives a constrained slug; no `v-html` string is built |
+| MISP event browser | IDs, info, organization, tags, colors, TLP/distribution labels, and flash text | text reaches `textContent`; color is limited to the expected grammar |
+| Sunburst/Treemap | STIX/MISP-derived slice name or value | ECharts tooltip formatter escapes every HTML-bearing argument |
+| saved graph config | style keys including unknown keys and `svgIcon`/`iconClass` controls | server and client schemas reject HTML-capable properties before Pivotick |
+
+Preserve source object, conversion result, formatter argument, interaction, and final DOM operation. The positive is **synthetic field -> normal view/interaction -> patched sink observes HTML parsing where a text-only or structured-attribute sink was expected**. Do not execute script; do not generalize one fixed renderer to every alternate table, tooltip, popup, or saved configuration path.
+
+### Export and mutation authorization matrix
+
+Create two users, one visible conversion, one public synthetic comment, and one private synthetic comment. Use random comment IDs and marker-only author names. Replace report serialization and reaction writes with record-and-deny sinks.
+
+1. Compare interactive comment listing with Markdown export, PDF export, and any queued/report-preview path for the same principal and object.
+2. Record conversion visibility, comment privacy, owner, author, administrator state, selected report ID, and the exact comment IDs handed to the serializer.
+3. For reactions, compare readable public comment, unreadable private comment, nonexistent/deleted comment, another conversion's comment, and corrected behavior.
+4. Require every alternate operation to call the same policy with the active principal and parent conversion before serialization or mutation.
+
+A bounded export positive is **user may view the conversion but not the private comment -> affected report builder selects the private marker -> denied serializer records it -> corrected path omits it**. A bounded reaction positive is **authenticated user cannot view the comment -> direct ID reaches the denied reaction mutation -> corrected path returns the authorization denial before mutation**. Never retrieve private comments or retain another user's author data; the synthetic marker and denied sink are sufficient.
 
 ## Desktop updating: verify every binding before process start
 
