@@ -80,6 +80,12 @@ Report as **gateway secret field -> server environment expansion -> caller-contr
 
 Report as **resource-scoped API token -> action-only route check -> list/search returns out-of-scope script content**.
 
+### August 11 Windmill job, schema, and orphan-draft follow-up
+
+Three unreviewed records add sibling-route and null-owner cases: [GHSA-x2wj-mjf7-8rr5 / CVE-2026-72542](https://github.com/advisories/GHSA-x2wj-mjf7-8rr5), [GHSA-m628-hrwj-47mg / CVE-2026-72541](https://github.com/advisories/GHSA-m628-hrwj-47mg), and [GHSA-6xgx-xx3m-pg85 / CVE-2026-72539](https://github.com/advisories/GHSA-6xgx-xx3m-pg85).
+
+In a two-user workspace, seed marker-only jobs, resource-type schemas, and drafts owned by A, B, and no owner. Replace metrics/progress serialization, progress writes, schema updates, and draft serialization with denied sinks. Compare read/write/delete siblings, member/operator/admin roles, own/foreign job IDs, current/legacy drafts, null/empty/deleted owners, and fixed behavior. A positive is **lower role -> sibling route omits the policy -> denied sink selects a foreign job/schema**, or **null owner -> ACL branch falls through -> denied serializer selects the synthetic draft**. Never read draft bodies or credentials, alter progress, or update a live schema.
+
 ### ERP document upload to executable storage
 
 1. Use a disposable NotrinosERP instance and a low-privilege HR test account with only the permission needed to manage employee documents.

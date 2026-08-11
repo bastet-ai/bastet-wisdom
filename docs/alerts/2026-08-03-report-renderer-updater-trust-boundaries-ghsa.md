@@ -28,6 +28,7 @@ Sources:
 - [GHSA-fq55-48v3-mc95 / CVE-2026-73156: ECharts tooltip HTML interpretation](https://github.com/advisories/GHSA-fq55-48v3-mc95)
 - [GHSA-vrrh-vgmq-m54x / CVE-2026-73140: private comments included in report exports](https://github.com/advisories/GHSA-vrrh-vgmq-m54x)
 - [GHSA-rv36-q8cj-wgr9 / CVE-2026-73155: reaction mutation without comment visibility](https://github.com/advisories/GHSA-rv36-q8cj-wgr9)
+- [GHSA-75j5-9v4m-c666 / CVE-2026-73162: state-changing account GET routes without CSRF binding](https://github.com/advisories/GHSA-75j5-9v4m-c666)
 - [GHSA-gw22-gf8m-29g5 / CVE-2026-0392: eParakstītājs 3.0 unauthenticated update chain](https://github.com/advisories/GHSA-gw22-gf8m-29g5)
 - [CERT.LV vulnerability record](https://cvd.cert.lv/inbox/view/vuln-all-1689187061)
 
@@ -155,6 +156,12 @@ Create two users, one visible conversion, one public synthetic comment, and one 
 4. Require every alternate operation to call the same policy with the active principal and parent conversion before serialization or mutation.
 
 A bounded export positive is **user may view the conversion but not the private comment -> affected report builder selects the private marker -> denied serializer records it -> corrected path omits it**. A bounded reaction positive is **authenticated user cannot view the comment -> direct ID reaches the denied reaction mutation -> corrected path returns the authorization denial before mutation**. Never retrieve private comments or retain another user's author data; the synthetic marker and denied sink are sufficient.
+
+### State-changing GET and CSRF follow-up
+
+Map `/account/follow`, `/account/delete_notification`, `/account/mark_notification_read`, and `/account/mark_all_read` across GET, POST, DELETE, form, fetch, redirect, and prefetch/navigation contexts. Use a disposable user, synthetic notifications, a same-site recorder, and denied follow/delete/read-state mutation sinks. Capture method, cookies, `Origin`, `Referer`, CSRF token source, SameSite behavior, selected object, and whether authorization ran before mutation.
+
+A bounded positive is **cross-site top-level or subresource GET -> ambient authenticated cookie -> denied mutation sink receives the synthetic target without a per-request CSRF proof**. Test each route because a fix can convert one verb while leaving aliases or frontend helpers. Do not change follow state, delete notifications, mark retained items, or weaken browser protections merely to obtain a stronger result.
 
 ## Desktop updating: verify every binding before process start
 

@@ -14,6 +14,7 @@ Portainer sits between regular users and Docker/Kubernetes hosts, so every proxy
 - **Backup archive path traversal arbitrary file write** — [GHSA-m8fg-67j7-cx4v](https://github.com/advisories/GHSA-m8fg-67j7-cx4v), CVE-2026-44885: tar extraction joined paths without a final containment check, letting crafted backups write outside the restore root. Fixed in `2.39.0` and later; `2.33.8` also carries the LTS fix.
 - **JWT accepted in URL query leaks tokens** — [GHSA-jvp4-q659-95mj](https://github.com/advisories/GHSA-jvp4-q659-95mj), CVE-2026-44883: `?token=<JWT>` worked on authenticated API routes and could leak through logs, browser history, and `Referer`. Fixed in `2.33.8`, `2.39.2`, and `2.41.0`.
 - **Custom-template file missing authorization** — [GHSA-cqpq-2fgr-8mvc](https://github.com/advisories/GHSA-cqpq-2fgr-8mvc), CVE-2026-44884: authenticated users could enumerate custom-template file IDs and read template contents. Fixed in `2.33.8` and `2.39.1`; `2.40.0+` is not affected.
+- **Docker proxy path-normalization authorization bypass** — [GHSA-588v-59vc-3xh9](https://github.com/advisories/GHSA-588v-59vc-3xh9), CVE-2026-72533: an August 11 unreviewed record reports that non-canonical proxy paths can be authorized under one route identity and forwarded to Docker under another through CE 2.44.0. Confirm affected/fixed builds before reporting.
 
 ## Operator triage
 
@@ -31,3 +32,9 @@ Portainer sits between regular users and Docker/Kubernetes hosts, so every proxy
 - After writing an error response in middleware, terminate control flow and test that denied requests cannot reach downstream handlers.
 - Treat Git repositories and backup archives as hostile filesystems: reject symlink entrypoints, canonicalize after checkout/extraction, and require final realpath containment before reading or writing.
 - Never accept bearer tokens in URLs. Use headers or short-lived, purpose-scoped WebSocket/session tokens that are not logged by default.
+
+## August 11 proxy canonicalization follow-up
+
+Run Portainer and a fake Docker API in an isolated lab. Give a low-privilege user access only to harmless status routes, then replace Docker dispatch with a recorder that returns no daemon data. Generate raw path pairs covering dot segments, repeated and encoded separators, percent-decoding order, mixed slash forms where the stack accepts them, path parameters, and double decoding. Preserve the raw request target, each middleware's route identity, normalized upstream path, matched RBAC rule, and denied backend operation.
+
+A bounded positive is **low-privilege request -> authorization evaluates benign route A -> proxy normalization forwards privileged route B to the denied fake-Docker sink**. A changed status code or parser discrepancy alone is insufficient. Never create a container, mount the host, access the Docker socket outside the fake backend, or claim host root without the exact privileged operation and endpoint binding.

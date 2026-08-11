@@ -18,6 +18,8 @@ Source records:
 - Bitwarden organization audit-log write: [GHSA-m2wp-hqw2-j56m](https://github.com/advisories/GHSA-m2wp-hqw2-j56m);
 - Attendize cross-organizer event-question write: [GHSA-6c35-rp78-p585](https://github.com/advisories/GHSA-6c35-rp78-p585); and
 - CTI-Transmute retained history after the related conversion is deleted: [GHSA-9p5q-96wv-4xvh](https://github.com/advisories/GHSA-9p5q-96wv-4xvh).
+- OpenSign unauthenticated contact/tenant reads, contact writes, caller-attributed audit events, and user-ID resolution: [GHSA-89m8-qpv9-7q8g](https://github.com/advisories/GHSA-89m8-qpv9-7q8g), [GHSA-5w47-3cxw-fxxf](https://github.com/advisories/GHSA-5w47-3cxw-fxxf), [GHSA-4vpg-x7mh-3947](https://github.com/advisories/GHSA-4vpg-x7mh-3947), [GHSA-7j6v-hchx-rmq3](https://github.com/advisories/GHSA-7j6v-hchx-rmq3), and [GHSA-8r4x-jw7g-pvfw](https://github.com/advisories/GHSA-8r4x-jw7g-pvfw); and
+- Attendize cross-organizer attendee import/invite writes: [GHSA-pm9m-4jvw-f3q5](https://github.com/advisories/GHSA-pm9m-4jvw-f3q5) and [GHSA-rvg3-vfj6-mf9f](https://github.com/advisories/GHSA-rvg3-vfj6-mf9f).
 
 The product-specific records were unreviewed when scanned. Confirm the exact package, deployment mode, route, role, version, and corrected behavior before reporting. Do not infer internet reachability or combine independent records into an unsupported exploit chain.
 
@@ -66,6 +68,12 @@ For every route, compare anonymous, malformed-session, A/A, A/B, B/B, nonexisten
 
 A token string is not required as evidence. Prefer a signer trace showing the exact synthetic object and claims that would have been authorized, then deny token creation. Likewise, prove a decline issue at the mutation recorder; do not terminate even a disposable workflow merely to strengthen the report.
 
+### August 11 follow-up: trace every Parse cloud function separately
+
+The later OpenSign records expand the matrix beyond contracts. Inventory `getcontact`, `gettenant`, `updatecontacttour`, `triggerevent`, and `getUserId` as distinct capabilities; do not assume a shared `useMasterKey` wrapper applies object policy. Use two fake organizations, synthetic contacts, random addresses, and patched query, serializer, update, and audit-append sinks.
+
+Compare anonymous, malformed-session, A/A, A/B, nonexistent, and deleted selectors. For `getUserId`, use only synthetic usernames and email addresses and stop at a recorder that returns no identifier. For `triggerevent`, vary document, viewer identity, and IP independently and deny the append. Bounded positives are **unauthenticated selector -> foreign synthetic object reaches denied serializer/update**, or **caller-attributed identity/network fields -> denied audit sink without a session/document binding**. Never return contact/tenant fields, map real accounts, update records, or create audit evidence.
+
 ## 3. Bind workflow and audit mutations to session-owned objects
 
 The Bitwarden and Attendize records show two variants of the same authority drift:
@@ -84,6 +92,8 @@ Use organizations or tenants A and B with one marker object each. Interpose the 
 A bounded audit positive is **user A session -> body selects organization B -> membership check is absent -> append recorder receives a backdated synthetic B event**. Do not persist the event. A bounded event positive is **organizer A -> event B selector -> unscoped parent lookup -> insert/attach recorder receives a question for B**. Capture the owner assigned to the child as well as the parent selected; that mismatch can explain why a victim cannot later remove the injected object.
 
 Test the full lifecycle because create and delete paths may use different tenant scopes. Never use the mismatch to create durable false evidence, send notifications, block registration, or alter a live event.
+
+The August 11 Attendize follow-ups add `postImportAttendee` and `postInviteAttendee`. Replay the same A/B event matrix through question creation, bulk import, and invite/order creation, but replace attendee/order inserts, totals, email, and queue dispatch with denied recorders. Preserve session organizer, requested event, event owner, parser/import row count, proposed attendee/order owner, and first sink. A bounded positive is **organizer A -> event B ID -> unscoped parent lookup -> denied attendee/order recorder selects B**. Do not import people, create financial records, or send invitations.
 
 ## 4. Treat missing related objects as deny cases
 

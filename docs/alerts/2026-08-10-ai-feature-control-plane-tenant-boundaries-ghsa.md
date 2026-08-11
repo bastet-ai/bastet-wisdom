@@ -21,6 +21,8 @@ Primary records:
 - TrustyAI backend reachable behind the intended gateway: [GHSA-7rjm-5cpg-vwpq / CVE-2026-15581](https://github.com/advisories/GHSA-7rjm-5cpg-vwpq); and
 - OpenShift AI MaaS gateway traffic-interception authority: [GHSA-335x-vvmj-55qx / CVE-2026-13717](https://github.com/advisories/GHSA-335x-vvmj-55qx).
 - OpenShift AI dashboard internal-listener token impersonation: [GHSA-h5q4-fjj4-4792 / CVE-2026-16745](https://github.com/advisories/GHSA-h5q4-fjj4-4792).
+- OpenShift Console webhook-helper response-reflecting SSRF: [GHSA-c4v8-c9cj-xrmr / CVE-2026-50236](https://github.com/advisories/GHSA-c4v8-c9cj-xrmr); and
+- OpenShift Console tenant-supplied Helm repository fetch and catalog trust: [GHSA-5mvj-m7fw-m49w / CVE-2026-50237](https://github.com/advisories/GHSA-5mvj-m7fw-m49w).
 
 These records were unreviewed when scanned and do not all identify affected or corrected package versions. Confirm the exact OpenShift AI distribution, operator image digest, API generation, enabled component, route topology, authentication mode, and vendor fix before reporting. Do not infer internet reachability, cluster-admin impact, or code execution from a source record alone.
 
@@ -96,6 +98,12 @@ The `odh-dashboard` record adds a listener-specific control: an authenticated ex
 Capture TCP peer, listener address, route middleware, token source and normalization, whether cryptographic validation ran, selected user, generated client identity, and the first denied Kubernetes API operation. A bounded positive is **ordinary pod A -> internal dashboard listener -> arbitrary marker accepted as user B -> denied Kubernetes client records B authority**. A reachable listener or a changed error body alone is insufficient. Never submit a real bearer token, list cluster objects, create a workload, or read another namespace's data.
 
 ## 3. Bind controller references to the originating namespace
+
+### August 11 follow-up: console fetch authority and Helm catalog provenance
+
+Run a disposable cluster with an ordinary namespace user, an owned external callback, and a synthetic cluster-local no-content Service. Patch the console HTTP connector and response relay. For webhook helpers, vary raw/encoded path components, redirects, resolved peers, and response types; record initial URL, all resolutions, final peer, selected route, response-byte count, and denied relay. A bounded positive is **tenant URL -> console-pod final peer is the synthetic internal Service -> denied relay would return its marker**. Never target metadata, Kubernetes APIs, registries, or operational Services.
+
+For `ProjectHelmChartRepository`, use an owned repository serving an inert chart and unique metadata marker. Patch fetch, catalog persistence, and install/render/apply sinks. Trace **namespace object -> console fetch -> catalog/UI representation -> administrator selection -> denied chart operation**. Separate SSRF from supply-chain impact: a callback proves fetch authority; privilege escalation requires proof that attacker-controlled catalog identity/content survives into an admin-mediated install decision. Do not install a chart, create a workload, read credentials, or capture administrator tokens.
 
 For `odh-model-controller`, seed one synthetic Secret per namespace. Each Secret should contain only a random marker key name; patch the Kubernetes client so `get Secret` records namespace/name and returns no value. Submit the same custom resource while varying omitted namespace, own namespace, foreign namespace, nonexistent namespace, malformed namespace, and a namespace alias if the API supports one.
 

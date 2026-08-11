@@ -8,17 +8,16 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
-- [CTI-Transmute final-peer fetch, alternate-renderer, export, and reaction testing](alerts/2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md#august-11-follow-up-resolve-fetch-peers-enumerate-renderers-and-replay-object-policy)
+- [OpenSign and Attendize object-authority follow-ups](alerts/2026-08-10-hostname-document-workflow-authority-boundaries-ghsa.md#august-11-follow-up-trace-every-parse-cloud-function-separately)
+- [OpenShift Console fetch-authority and Helm catalog-provenance testing](alerts/2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md#august-11-follow-up-console-fetch-authority-and-helm-catalog-provenance)
+- [Portainer Docker-proxy canonicalization testing](alerts/2026-05-14-portainer-control-plane-host-boundary-batch-ghsa.md#august-11-proxy-canonicalization-follow-up)
+- [authentik SCIM source-binding and name-collision testing](alerts/2026-05-29-authentik-cc-tweaked-keras-identity-and-model-boundary-batch-ghsa.md#august-11-follow-up-bind-scim-adoption-to-the-provisioning-source)
+- [Prefect Git branch argument-boundary testing](alerts/2026-05-22-prefect-camel-imagemagick-airflow-boundary-batch-ghsa.md#replayable-validation-boundaries)
+- [Windmill job, schema, and orphan-draft authority testing](alerts/2026-07-10-mcp-agent-package-workflow-boundaries-ghsa.md#august-11-windmill-job-schema-and-orphan-draft-follow-up)
+- [CTI-Transmute state-changing GET and CSRF testing](alerts/2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md#state-changing-get-and-csrf-follow-up)
 - [EAP/WildFly ORB, IIOP, SAML, and AJP listener-authority testing](alerts/2026-08-04-node-wildfly-rocketchat-zyxel-boundaries-ghsa.md#august-11-follow-up-test-listener-trust-before-application-authorization)
 - [MRTG privileged PID-file ownership-transfer testing](alerts/2026-08-01-privileged-pidfile-symlink-boundary-ghsa.md#august-11-mrtg-ownership-change-follow-up)
 - [Server import, connector, and device API authority testing](alerts/2026-08-11-server-import-connector-device-authority-boundaries-ghsa.md)
-- [mcp-grafana override-header final-peer testing](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#august-11-follow-up-override-headers-are-destination-capabilities)
-- [OpenShift AI dashboard internal-listener identity testing](alerts/2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md#august-11-follow-up-bind-dashboard-identity-to-the-authenticated-listener)
-- [SAP edge session, tenant, callback, WebSocket, and backend authority testing](alerts/2026-08-11-sap-edge-session-tenant-authority-boundaries-ghsa.md)
-- [TP-Link Aginet route, role, firmware-key, USB-path, and command authority testing](alerts/2026-08-11-tplink-aginet-appliance-authority-boundaries-ghsa.md)
-- [AI feature-store and cluster control-plane tenant testing](alerts/2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md)
-- [Airflow team-scoped secrets-backend fallback testing](alerts/2026-06-30-ai-artifact-airflow-boundaries-ghsa.md#august-10-follow-up-bind-secrets-backend-fallback-to-the-active-team)
-- [Flowise anonymous private Assistants-file authority testing](alerts/2026-08-04-flowise-workspace-runtime-credential-boundaries-ghsa.md#24-bind-anonymous-download-routes-to-public-objects-and-file-ownership)
 
 
 

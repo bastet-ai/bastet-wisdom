@@ -53,6 +53,14 @@ This batch is durable because it captures reusable offensive validation patterns
 - For Keras, include vulnerable version, `safe_mode=True` evidence, the exact model-ingestion route, and the benign effect produced by the archive.
 - Keep all proofs scoped to authorized lab identities, controlled callbacks, and synthetic model artifacts.
 
+## August 11 follow-up: bind SCIM adoption to the provisioning source
+
+[GHSA-f25x-j567-ffxh / CVE-2026-72537](https://github.com/advisories/GHSA-f25x-j567-ffxh) and [GHSA-phh7-mppp-4jx8 / CVE-2026-72534](https://github.com/advisories/GHSA-phh7-mppp-4jx8) report that source-scoped SCIM provisioning could adopt existing local users or groups by name, including administrative identities, rather than creating or updating only objects owned by that source.
+
+Use two disposable SCIM sources, ordinary local users/groups, and admin-looking synthetic objects with no real privilege. Patch user/group adoption, membership replacement, delete, and privilege-assignment sinks. Compare unique names, same-source matches, cross-source matches, local-object matches, case/Unicode normalization collisions, rename/recreate, and deprovisioning. Record token source, external ID, normalized name, existing object's source/owner, proposed mutation, and denied sink.
+
+A bounded positive is **source-A token -> name matches local or source-B object -> denied adoption/membership sink selects that existing object without source binding**. Do not grant superuser, overwrite or delete accounts, lock out administrators, or use a real provisioning token.
+
 ## Notes on skipped items from this scan
 
 - Langflow CORS/session refresh to token theft and RCE (`GHSA-577h-p2hh-v4mv` / CVE-2025-34291) was reviewed as already reflected in the May 21 Langflow KEV guidance.

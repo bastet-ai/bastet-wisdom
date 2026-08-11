@@ -10,6 +10,13 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [OpenSign and Attendize object-authority follow-ups](2026-08-10-hostname-document-workflow-authority-boundaries-ghsa.md#august-11-follow-up-trace-every-parse-cloud-function-separately)
+- [OpenShift Console fetch-authority and Helm catalog-provenance testing](2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md#august-11-follow-up-console-fetch-authority-and-helm-catalog-provenance)
+- [Portainer Docker-proxy canonicalization testing](2026-05-14-portainer-control-plane-host-boundary-batch-ghsa.md#august-11-proxy-canonicalization-follow-up)
+- [authentik SCIM source-binding and name-collision testing](2026-05-29-authentik-cc-tweaked-keras-identity-and-model-boundary-batch-ghsa.md#august-11-follow-up-bind-scim-adoption-to-the-provisioning-source)
+- [Prefect Git branch argument-boundary testing](2026-05-22-prefect-camel-imagemagick-airflow-boundary-batch-ghsa.md#replayable-validation-boundaries)
+- [Windmill job, schema, and orphan-draft authority testing](2026-07-10-mcp-agent-package-workflow-boundaries-ghsa.md#august-11-windmill-job-schema-and-orphan-draft-follow-up)
+- [CTI-Transmute state-changing GET and CSRF testing](2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md#state-changing-get-and-csrf-follow-up)
 - [CTI-Transmute final-peer fetch, alternate-renderer, export, and reaction testing](2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md#august-11-follow-up-resolve-fetch-peers-enumerate-renderers-and-replay-object-policy)
 - [EAP/WildFly ORB, IIOP, SAML, and AJP listener-authority testing](2026-08-04-node-wildfly-rocketchat-zyxel-boundaries-ghsa.md#august-11-follow-up-test-listener-trust-before-application-authorization)
 - [MRTG privileged PID-file ownership-transfer testing](2026-08-01-privileged-pidfile-symlink-boundary-ghsa.md#august-11-mrtg-ownership-change-follow-up)
