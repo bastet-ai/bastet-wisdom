@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [SAP edge session, tenant, callback, WebSocket, and backend authority testing](alerts/2026-08-11-sap-edge-session-tenant-authority-boundaries-ghsa.md)
 - [TP-Link Aginet route, role, firmware-key, USB-path, and command authority testing](alerts/2026-08-11-tplink-aginet-appliance-authority-boundaries-ghsa.md)
 - [AI feature-store and cluster control-plane tenant testing](alerts/2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md)
 - [Airflow team-scoped secrets-backend fallback testing](alerts/2026-06-30-ai-artifact-airflow-boundaries-ghsa.md#august-10-follow-up-bind-secrets-backend-fallback-to-the-active-team)
@@ -17,7 +18,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Archive creation and extraction symlink authority testing](best-practices/archive-extraction-symlink-traversal.md#archive-creation-and-extraction-need-separate-link-checks)
 - [Cross-hub CloudEvent identity and migration-topic audience testing](alerts/2026-05-07-cluster-control-plane-secret-and-impersonation-boundary-batch-ghsa.md#august-10-follow-up-bind-cross-hub-messages-and-migration-material-to-the-authenticated-hub)
 - [Unicode-dot TLS and document/workflow authority testing](alerts/2026-08-10-hostname-document-workflow-authority-boundaries-ghsa.md)
-- [CTI graph and raw-object HTML-resolver sink inventory](alerts/2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md#graph-and-raw-object-viewers-enumerate-every-html-resolver)
+
 
 
 
