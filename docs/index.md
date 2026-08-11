@@ -8,6 +8,9 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Server import, connector, and device API authority testing](alerts/2026-08-11-server-import-connector-device-authority-boundaries-ghsa.md)
+- [mcp-grafana override-header final-peer testing](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#august-11-follow-up-override-headers-are-destination-capabilities)
+- [OpenShift AI dashboard internal-listener identity testing](alerts/2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md#august-11-follow-up-bind-dashboard-identity-to-the-authenticated-listener)
 - [SAP edge session, tenant, callback, WebSocket, and backend authority testing](alerts/2026-08-11-sap-edge-session-tenant-authority-boundaries-ghsa.md)
 - [TP-Link Aginet route, role, firmware-key, USB-path, and command authority testing](alerts/2026-08-11-tplink-aginet-appliance-authority-boundaries-ghsa.md)
 - [AI feature-store and cluster control-plane tenant testing](alerts/2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md)
@@ -15,9 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Flowise anonymous private Assistants-file authority testing](alerts/2026-08-04-flowise-workspace-runtime-credential-boundaries-ghsa.md#24-bind-anonymous-download-routes-to-public-objects-and-file-ownership)
 - [Hugging Face Accelerate checkpoint-shard path testing](alerts/2026-06-30-model-parser-deserialization-identity-boundaries-ghsa.md#august-10-follow-up-bind-sharded-checkpoint-entries-to-the-checkpoint-root)
 - [Python `unearth` archive traversal and symlink composition](best-practices/archive-extraction-symlink-traversal.md#python-unearth-traversal-and-symlink-composition-follow-up)
-- [Archive creation and extraction symlink authority testing](best-practices/archive-extraction-symlink-traversal.md#archive-creation-and-extraction-need-separate-link-checks)
-- [Cross-hub CloudEvent identity and migration-topic audience testing](alerts/2026-05-07-cluster-control-plane-secret-and-impersonation-boundary-batch-ghsa.md#august-10-follow-up-bind-cross-hub-messages-and-migration-material-to-the-authenticated-hub)
-- [Unicode-dot TLS and document/workflow authority testing](alerts/2026-08-10-hostname-document-workflow-authority-boundaries-ghsa.md)
 
 
 

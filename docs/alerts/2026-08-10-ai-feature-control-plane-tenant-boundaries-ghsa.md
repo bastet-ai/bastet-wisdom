@@ -20,6 +20,7 @@ Primary records:
 - TrustyAI LMEvalJob sidecar-policy bypass: [GHSA-qw34-v3jw-3crv / CVE-2026-15467](https://github.com/advisories/GHSA-qw34-v3jw-3crv);
 - TrustyAI backend reachable behind the intended gateway: [GHSA-7rjm-5cpg-vwpq / CVE-2026-15581](https://github.com/advisories/GHSA-7rjm-5cpg-vwpq); and
 - OpenShift AI MaaS gateway traffic-interception authority: [GHSA-335x-vvmj-55qx / CVE-2026-13717](https://github.com/advisories/GHSA-335x-vvmj-55qx).
+- OpenShift AI dashboard internal-listener token impersonation: [GHSA-h5q4-fjj4-4792 / CVE-2026-16745](https://github.com/advisories/GHSA-h5q4-fjj4-4792).
 
 These records were unreviewed when scanned and do not all identify affected or corrected package versions. Confirm the exact OpenShift AI distribution, operator image digest, API generation, enabled component, route topology, authentication mode, and vendor fix before reporting. Do not infer internet reachability, cluster-admin impact, or code execution from a source record alone.
 
@@ -42,6 +43,7 @@ These records were unreviewed when scanned and do not all identify affected or c
 | LMEvalJob | caller adds sidecar fields | controller-generated pod and remote-code setting | forbidden sidecar/capability reaches denied pod creation |
 | TrustyAI backend | cluster pod reaches Service directly | backend CRUD API | unauthenticated pod reaches a no-op backend recorder while gateway path denies it |
 | MaaS Gateway | low-privilege object can affect gateway placement/config | model request and response stream | synthetic request marker reaches an untrusted canary gateway recorder without exposing content |
+| Dashboard internal listener | cluster pod supplies an arbitrary access-token value | dashboard identity and Kubernetes API client | fake token selects synthetic user B at a denied API recorder from pod A |
 
 ## 1. Separate Feast network exposure, object authorization, and deserialization
 
@@ -80,6 +82,18 @@ Create namespaces A and B, a low-privilege pod in A, and fake MaaS users/groups 
 Capture TCP peer, mTLS or workload identity, ingress policy, original client headers, gateway overwrite/strip behavior, backend-visible headers, selected tenant, and first operation sink. A bounded positive is **ordinary A pod -> direct backend route -> forged B identity header survives -> B-scoped no-op recorder is selected**. Never allow a real ServiceAccount token to be minted or a provider key to be returned.
 
 Apply the same topology test to TrustyAI: gateway success is not evidence that its backend Service is protected. Test direct Service reachability with harmless status and no-op CRUD recorders only; do not read, alter, inject, or delete retained monitoring data.
+
+### August 11 follow-up: bind dashboard identity to the authenticated listener
+
+The `odh-dashboard` record adds a listener-specific control: an authenticated external route can coexist with an incorrectly bound internal endpoint that accepts a caller-supplied access token and constructs a Kubernetes client under the asserted identity. Do not begin by calling the live Kubernetes API. In a two-namespace lab, replace token review, user-info lookup, and Kubernetes client methods with denied recorders, then compare:
+
+- documented ingress versus every pod-reachable dashboard listener and port;
+- no token, invalid random token, a valid synthetic A token, and an arbitrary B-looking marker;
+- `Authorization`, cookie, query, WebSocket/bootstrap, and any product-specific token channel;
+- loopback, pod IP, Service, and ingress peers; and
+- affected and corrected image digests under the same network policy.
+
+Capture TCP peer, listener address, route middleware, token source and normalization, whether cryptographic validation ran, selected user, generated client identity, and the first denied Kubernetes API operation. A bounded positive is **ordinary pod A -> internal dashboard listener -> arbitrary marker accepted as user B -> denied Kubernetes client records B authority**. A reachable listener or a changed error body alone is insufficient. Never submit a real bearer token, list cluster objects, create a workload, or read another namespace's data.
 
 ## 3. Bind controller references to the originating namespace
 
@@ -132,6 +146,7 @@ Compare an ordinary tenant-local route, a route selecting another namespace, wil
 - [ ] Network reachability, authentication, tenant authorization, deserialization, controller identity, and final runtime sink are separate findings.
 - [ ] Feast UDF and repository proofs use inert reconstruction/import recorders and execute no supplied code.
 - [ ] MaaS header tests record authenticated peer identity and gateway overwrite behavior; they mint no token and return no key.
+- [ ] Dashboard-listener tests use fake tokens and stop at a denied identity/API-client sink.
 - [ ] Secret proofs stop at a denied namespace/name lookup and contain no Secret bytes.
 - [ ] ServiceAccount and workflow proofs stop before pod creation and never schedule privileged workloads.
 - [ ] DSN proofs stop at parsed mock connector options and never request a local file.

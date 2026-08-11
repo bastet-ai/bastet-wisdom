@@ -10,6 +10,9 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Server import, connector, and device API authority testing](2026-08-11-server-import-connector-device-authority-boundaries-ghsa.md)
+- [mcp-grafana override-header final-peer testing](2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#august-11-follow-up-override-headers-are-destination-capabilities)
+- [OpenShift AI dashboard internal-listener identity testing](2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md#august-11-follow-up-bind-dashboard-identity-to-the-authenticated-listener)
 - [TP-Link Aginet route, role, firmware-key, USB-path, and command authority testing](2026-08-11-tplink-aginet-appliance-authority-boundaries-ghsa.md)
 - [AI feature-store and cluster control-plane tenant testing](2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md)
 - [Airflow team-scoped secrets-backend fallback testing](2026-06-30-ai-artifact-airflow-boundaries-ghsa.md#august-10-follow-up-bind-secrets-backend-fallback-to-the-active-team)
