@@ -10,6 +10,7 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [TP-Link Aginet route, role, firmware-key, USB-path, and command authority testing](2026-08-11-tplink-aginet-appliance-authority-boundaries-ghsa.md)
 - [AI feature-store and cluster control-plane tenant testing](2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md)
 - [Airflow team-scoped secrets-backend fallback testing](2026-06-30-ai-artifact-airflow-boundaries-ghsa.md#august-10-follow-up-bind-secrets-backend-fallback-to-the-active-team)
 - [Flowise anonymous private Assistants-file authority testing](2026-08-04-flowise-workspace-runtime-credential-boundaries-ghsa.md#24-bind-anonymous-download-routes-to-public-objects-and-file-ownership)
