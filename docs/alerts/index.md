@@ -10,6 +10,8 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Lemur certificate-management authority-boundary testing](2026-08-18-lemur-certificate-management-authority-boundaries-ghsa.md)
+- [Code-editor extension webview and file-write boundary testing](../methodology/editor-extension-webview-file-write-boundary-testing.md)
 - [OpenSign and Attendize object-authority follow-ups](2026-08-10-hostname-document-workflow-authority-boundaries-ghsa.md#august-11-follow-up-trace-every-parse-cloud-function-separately)
 - [OpenShift Console fetch-authority and Helm catalog-provenance testing](2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md#august-11-follow-up-console-fetch-authority-and-helm-catalog-provenance)
 - [Portainer Docker-proxy canonicalization testing](2026-05-14-portainer-control-plane-host-boundary-batch-ghsa.md#august-11-proxy-canonicalization-follow-up)

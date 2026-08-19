@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Lemur certificate-management authority-boundary testing](alerts/2026-08-18-lemur-certificate-management-authority-boundaries-ghsa.md)
+- [Code-editor extension webview and file-write boundary testing](methodology/editor-extension-webview-file-write-boundary-testing.md)
 - [OpenSign and Attendize object-authority follow-ups](alerts/2026-08-10-hostname-document-workflow-authority-boundaries-ghsa.md#august-11-follow-up-trace-every-parse-cloud-function-separately)
 - [OpenShift Console fetch-authority and Helm catalog-provenance testing](alerts/2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md#august-11-follow-up-console-fetch-authority-and-helm-catalog-provenance)
 - [Portainer Docker-proxy canonicalization testing](alerts/2026-05-14-portainer-control-plane-host-boundary-batch-ghsa.md#august-11-proxy-canonicalization-follow-up)
@@ -16,8 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Windmill job, schema, and orphan-draft authority testing](alerts/2026-07-10-mcp-agent-package-workflow-boundaries-ghsa.md#august-11-windmill-job-schema-and-orphan-draft-follow-up)
 - [CTI-Transmute state-changing GET and CSRF testing](alerts/2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md#state-changing-get-and-csrf-follow-up)
 - [EAP/WildFly ORB, IIOP, SAML, and AJP listener-authority testing](alerts/2026-08-04-node-wildfly-rocketchat-zyxel-boundaries-ghsa.md#august-11-follow-up-test-listener-trust-before-application-authorization)
-- [MRTG privileged PID-file ownership-transfer testing](alerts/2026-08-01-privileged-pidfile-symlink-boundary-ghsa.md#august-11-mrtg-ownership-change-follow-up)
-- [Server import, connector, and device API authority testing](alerts/2026-08-11-server-import-connector-device-authority-boundaries-ghsa.md)
 
 
 
