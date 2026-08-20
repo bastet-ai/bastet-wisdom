@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [MLflow webhook redirect, registry source, and run-permission boundaries (KEV)](alerts/2026-08-19-mlflow-webhook-redirect-and-registry-permission-boundaries-ghsa-kev.md)
+- [SearXNG/FAF/Contentful MCP and agent-catalog option-to-sink testing](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#august-19-follow-up-llm-controlled-options-are-destination-capabilities)
 - [Lemur certificate-management authority-boundary testing](alerts/2026-08-18-lemur-certificate-management-authority-boundaries-ghsa.md)
 - [Code-editor extension webview and file-write boundary testing](methodology/editor-extension-webview-file-write-boundary-testing.md)
 - [OpenSign and Attendize object-authority follow-ups](alerts/2026-08-10-hostname-document-workflow-authority-boundaries-ghsa.md#august-11-follow-up-trace-every-parse-cloud-function-separately)
