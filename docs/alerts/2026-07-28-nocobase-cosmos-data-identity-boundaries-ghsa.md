@@ -87,6 +87,36 @@ Include:
 
 Do not include tokens, cookies, database hashes, production table names, real usernames, device inventories, internal addresses, upstream application data, or copied advisory proof-of-concept secrets.
 
+## August 20 NocoBase follow-up: storage-root redirection and backup-restore shell interpolation
+
+Two records published 2026-08-19/20 extend the NocoBase low-code platform boundary with a reusable pattern: an admin-configurable storage property or a backup metadata field crosses into a filesystem root or a shell command string without binding the value to the object it is supposed to describe.
+
+- [GHSA-ghvf-qf6h-g8x5: NocoBase arbitrary file write chained with local file inclusion](https://github.com/advisories/GHSA-ghvf-qf6h-g8x5): `storages:update` accepts an unsanitized `documentRoot`, letting any authenticated admin redirect the upload storage root to an arbitrary path (including the application directory), while the plugin-manager `pm:enable` endpoint triggers Node.js `require()` on a user-supplied absolute path with no validation. Chained, the two flaws reach authenticated remote code execution.
+- [GHSA-p853-83gj-wjj3 / CVE-2026-55410: NocoBase backup restore schema-name command injection](https://github.com/advisories/GHSA-p853-83gj-wjj3): `@nocobase/plugin-backups` 2.0.57 restores PostgreSQL backups by interpolating the backup metadata schema name into shell command strings executed via `child_process.exec()`. A backup-management user who can restore an uploaded PostgreSQL backup with forced schema restore can place shell metacharacters in `_metadata.json` under `database.schema`.
+
+### Storage-root redirection to module load
+
+Replayable validation:
+
+- Preconditions: a disposable NocoBase install, a synthetic admin account, a lab-only storage directory with one marker file, a denied `require()` recorder patched into the plugin-manager load path, and no production plugins or application files.
+- Baseline: confirm `storages:update` on the default `public` storage root returns the configured `documentRoot`, and that `pm:enable` for a benign in-app plugin succeeds.
+- Send a `storages:update` request setting `documentRoot` to the lab-only directory, then confirm a subsequent upload lands there. Record the raw request, the persisted storage record, and the resolved filesystem root.
+- Drive `pm:enable` with a path pointing only at the lab marker module (a no-op ESM file) and capture the denied `require()` recorder: the requested path, the resolution result, and whether module code was entered.
+- A bounded positive is **admin `documentRoot` value -> storage root rebind -> upload writes outside the default root**, and **plugin-manager path -> `require()` entry for an absolute path outside the plugin directory**, on the affected build only.
+
+Do not write outside the lab root, do not load executable application files, and do not use this chain on a production instance. The report is the two-step boundary (storage root rebind plus unrestricted module path), not a claim that default installations expose both.
+
+### Backup metadata schema name into a shell command
+
+Replayable validation:
+
+- Preconditions: a disposable NocoBase install with `@nocobase/plugin-backups` and PostgreSQL, a synthetic backup-management user (no other privileges), and a patched `child_process.exec` recorder that captures the composed command string and rejects before execution.
+- Upload a synthetic PostgreSQL backup fixture whose `_metadata.json` `database.schema` contains a shell metacharacter marker (for example a quoted marker that would break out of the argument position).
+- Trigger the restore with forced schema restore. Capture: the raw `_metadata.json` field, the composed command line, the exec branch, and the denied-sink result.
+- Controls: a benign schema name, a schema name with only allowed characters, a restore without forced schema restore, and the fixed build where the schema name is bound as a single argument or passed through a parameterized path.
+
+A bounded positive is **backup-management user's `database.schema` value -> interpolated shell command string -> exec argument boundary broken for the marker**, on the affected build only. Never execute the composed command, never restore into a real database, and keep every fixture synthetic.
+
 ## pglogical publisher-to-subscriber command boundary
 
 [GHSA-cg29-63x4-27px / CVE-2026-50736](https://github.com/advisories/GHSA-cg29-63x4-27px) adds a database control-plane variant: pglogical queue messages can carry out-of-band commands such as replicated DDL, and affected subscribers execute the payload with the apply worker's PostgreSQL-superuser-equivalent authority. The record's key precondition is the ability to direct a subscription at an attacker-controlled publisher; default PostgreSQL installations normally reserve that action for superusers, so the useful target is a managed or shared service that delegates subscription creation to lower-privilege tenants.

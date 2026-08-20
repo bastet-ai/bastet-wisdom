@@ -192,3 +192,68 @@ Explicitly excluded stronger claims:
 ```
 
 The durable operator lesson is to follow protocol objects past their first successful validation. Preserve evidence for the final authority decision: code consumption, token activity, scope grant, principal creation, import parser, or object reconstruction.
+
+## August 20 follow-up: JNDI config injection, OAuth2 token-claim validation, and inverted IP binding
+
+Nine records updated 2026-08-20 on the same Apache CXF code path extend two themes from the August 6 page: a JMS configuration or JCA deployment surface that accepts operator-supplied strings all the way to a JNDI lookup, and an OAuth2 access-token validator that stops short of the claims that actually prove which resource server the token was minted for. Apache's recommended versions are `4.2.2` or `4.1.7` for every record below.
+
+Source records:
+
+- JNDI injection in `JMSConfigFactory` (incomplete fix for [CVE-2026-44417](https://nvd.nist.gov/vuln/detail/CVE-2026-44417)): [GHSA-93g8-qqv3-mrx8 / CVE-2026-50632](https://github.com/advisories/GHSA-93g8-qqv3-mrx8);
+- JNDI injection in `DispatchMDBMessageListenerImpl` via the JCA `ra.xml` deployment descriptor or runtime activation parameters: [GHSA-qp3f-rvj8-46c8 / CVE-2026-50633](https://github.com/advisories/GHSA-qp3f-rvj8-46c8);
+- missing `aud` and `iss` validation in `JwtAccessTokenValidator`: [GHSA-9mrv-8pvf-hf4m / CVE-2026-50627](https://github.com/advisories/GHSA-9mrv-8pvf-hf4m);
+- inverted IP-binding check in `OAuthRequestFilter` that rejects bound-source traffic and accepts anything else: [GHSA-g5v7-jchf-7jrr / CVE-2026-50628](https://github.com/advisories/GHSA-g5v7-jchf-7jrr);
+- refresh-token replay race when `recycleRefreshTokens=false`: [GHSA-83r6-96m8-r52p / CVE-2026-50631](https://github.com/advisories/GHSA-83r6-96m8-r52p);
+- log injection via unsanitized `clientId`: [GHSA-f8p7-h97q-7vx7 / CVE-2026-50629](https://github.com/advisories/GHSA-f8p7-h97q-7vx7);
+- CRLF injection in the `WWW-Authenticate` `realm` value (`AuthorizationUtils`): [GHSA-xf62-wr5p-5p95 / CVE-2026-50630](https://github.com/advisories/GHSA-xf62-wr5p-5p95); and
+- missing `throw` in the `TokenIntrospectionService` security-context check: [GHSA-542g-m3fx-q86f / CVE-2026-50623](https://github.com/advisories/GHSA-542g-m3fx-q86f).
+
+### 9. JNDI config injection: bind the final lookup sink
+
+The two JNDI records differ on where untrusted input originates but share the same shape: an operator-controlled string (JMS factory URL, JCA activation property) crosses from configuration into a JNDI `InitialContext.lookup`. The August 6 JMS `ObjectMessage` record covered the message-body side; these cover the configuration and activation-parameter side.
+
+In a lab:
+
+1. Stand up CXF on a disposable host with a patched `JndiTemplate` recorder that logs the requested resource name and rejects before any `Reference` resolution or classload.
+2. For `JMSConfigFactory`, drive the affected configuration route with two fixtures: a benign `file:` URL and an owned no-content LDAP/JRMP endpoint. Do not point at internal or production JNDI services.
+3. For `DispatchMDBMessageListenerImpl`, place two synthetic `ra.xml` files in the JCA deploy directory: one with a benign activation property and one that routes the activation property through the owned callback recorder. Deploy both and confirm which one the recorder observed.
+4. Record: exact CXF version, configuration or activation-parameter key, raw value, the patched-lookup result, and whether the class resolution path was entered before the policy decision.
+5. Compare against `4.2.2` / `4.1.7` where the recorder is never reached.
+
+A bounded positive is **operator-supplied JMS factory URL / JCA activation property -> JNDI `lookup` begins before a resource-name allowlist** and the recorder proves the outbound lookup target. Do not claim RCE from the lookup alone; RCE requires a resolvable reference on the target host and a reachable gadget classpath, which is a separate untested precondition.
+
+### 10. OAuth2 token confusion: `aud` and `iss` pin the intended resource server
+
+`JwtAccessTokenValidator` validates signature and `exp` but not `aud` or `iss`. The operator consequence is a cross-resource-server replay: a token minted for `resource-server-A` is accepted by `resource-server-B` if both use the same signing key (the common `single IdP / multiple protected APIs` deployment). This is distinct from the August 6 self-issued-token record, which concerns claims on a token the resource server minted itself.
+
+Replayable validation:
+
+- Two disposable resource servers in the same lab, both using the same lab IdP signing key and the same `aud` claim format.
+- Mint a synthetic access token addressed to `resource-server-A` with a canary scope that reaches only `resource-server-A`'s recorder.
+- Present that token to `resource-server-B` through a patched principal sink that records only whether the caller's principal would be established.
+- Decision table: correct `aud`/`iss`, missing `aud`, missing `iss`, `aud` for the other server, `aud` with an extra audience, `iss` mismatch, and the same-token-same-server control.
+- Positive evidence: `resource-server-B`'s principal sink records a synthetic principal established from a token whose `aud` was minted for `resource-server-A`, on an affected build only.
+
+Do not use real IdP material, real user principals, or cross-tenant tokens. The proof is the two-server differential plus the patched principal decision, not the signature being valid.
+
+### 11. Inverted IP binding: the allowlist rejects what it should accept
+
+`OAuthRequestFilter`'s IP-binding check is inverted: legitimate clients from the bound address are rejected, and any other source IP is accepted. This is a logic-inversion finding, not a bypass: the intended security control is off by one comparison. Test it by standing up a lab CXF OAuth endpoint with a bound source IP and three clients (bound, same-subnet, remote) and recording which of the three the filter accepts and which it rejects. Positive evidence is **bound-source client rejected, non-bound-source client accepted**, on the affected build only. No outbound traffic beyond the lab is needed.
+
+### 12. Refresh-token replay when `recycleRefreshTokens=false`
+
+`AbstractOAuthDataProvider`'s refresh-token path is not atomic when `recycleRefreshTokens=false`. Send N synchronized refresh requests for the same synthetic refresh token to a patched token-issuance recorder and count how many distinct access tokens the recorder records. Positive evidence is **N > 1 distinct access tokens from one refresh token** on the affected build, with `N = 1` on the fixed build. Use low request volume (a dozen at most), synthetic refresh tokens only, and no shared production identity.
+
+### 13. Log injection, CRLF in `realm`, and the introspection-auth `throw` gap
+
+Three remaining records are each a single-token sanitization or control-flow gap. Treat them as report findings, not as standalone exploit chains:
+
+- **`clientId` log injection**: send a synthetic `clientId` containing CRLF plus a fake log prefix through the OAuth authorization or token endpoint. The recorder should capture the log line and confirm the fake entry landed. Do not use this to plant content that would be read by a log-based auth flow; that is a separate, untested impact.
+- **CRLF in the `WWW-Authenticate` `realm` value**: send a synthetic `realm` containing CRLF through the OAuth2 token endpoint when authentication fails. The recorder should capture the full response and confirm the injected header or body. The bounded positive is **header split**, not cache poisoning.
+- **Missing `throw` in the introspection check**: on an affected build, hit `/services/oauth2/introspect` unauthenticated and record whether the `active` field reflects a real token lookup. The record explicitly notes this is a safeguard that matters only when the service itself was misconfigured to omit auth; report it as the missing control-flow branch, not as an independent bypass.
+
+For all three: no shared production OAuth deployment, synthetic clients and tokens only, and the fixed-build negative control is required evidence.
+
+## Reviewed but not promoted in this follow-up
+
+The remaining CXF-adjacent records updated in this window (`Apache CXF` OAuth2 signature-trust, WS-JSON first-signature metadata, and the `TokenIntrospectionService` duplicate-range entries) are variations on the same code paths already covered above or are availability-only parser issues without a stronger reusable boundary. No new CXF page is warranted.

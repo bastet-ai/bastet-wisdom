@@ -10,6 +10,10 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Laravel Backpack CRUD admin-panel authority boundaries](2026-08-20-laravel-backpack-crud-admin-panel-authority-boundaries-ghsa.md)
+- [Apache CXF JNDI config injection and OAuth2 token-claim follow-up](2026-08-06-apache-cxf-oauth-wsdl-jms-authority-boundaries-ghsa.md#august-20-follow-up-jndi-config-injection-oauth2-token-claim-validation-and-inverted-ip-binding)
+- [NocoBase storage-root redirection and backup-restore shell interpolation](2026-07-28-nocobase-cosmos-data-identity-boundaries-ghsa.md#august-20-nocobase-follow-up-storage-root-redirection-and-backup-restore-shell-interpolation)
+- [GeoServer FreeMarker SSTI follow-up](2026-06-11-geoserver-wsgidav-openfga-devguard-filament-boundary-batch-ghsa.md#august-20-geoserver-freemarker-template-injection-follow-up)
 - [MLflow webhook redirect, registry source, and run-permission boundaries (KEV)](2026-08-19-mlflow-webhook-redirect-and-registry-permission-boundaries-ghsa-kev.md)
 - [SearXNG/FAF/Contentful MCP and agent-catalog option-to-sink follow-ups](2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#august-19-follow-up-llm-controlled-options-are-destination-capabilities)
 - [Lemur certificate-management authority-boundary testing](2026-08-18-lemur-certificate-management-authority-boundaries-ghsa.md)
@@ -17,9 +21,6 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 - [OpenSign and Attendize object-authority follow-ups](2026-08-10-hostname-document-workflow-authority-boundaries-ghsa.md#august-11-follow-up-trace-every-parse-cloud-function-separately)
 - [OpenShift Console fetch-authority and Helm catalog-provenance testing](2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md#august-11-follow-up-console-fetch-authority-and-helm-catalog-provenance)
 - [Portainer Docker-proxy canonicalization testing](2026-05-14-portainer-control-plane-host-boundary-batch-ghsa.md#august-11-proxy-canonicalization-follow-up)
-- [authentik SCIM source-binding and name-collision testing](2026-05-29-authentik-cc-tweaked-keras-identity-and-model-boundary-batch-ghsa.md#august-11-follow-up-bind-scim-adoption-to-the-provisioning-source)
-- [Prefect Git branch argument-boundary testing](2026-05-22-prefect-camel-imagemagick-airflow-boundary-batch-ghsa.md#replayable-validation-boundaries)
-- [Windmill job, schema, and orphan-draft authority testing](2026-07-10-mcp-agent-package-workflow-boundaries-ghsa.md#august-11-windmill-job-schema-and-orphan-draft-follow-up)
 - [CTI-Transmute state-changing GET and CSRF testing](2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md#state-changing-get-and-csrf-follow-up)
 - [CTI-Transmute final-peer fetch, alternate-renderer, export, and reaction testing](2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md#august-11-follow-up-resolve-fetch-peers-enumerate-renderers-and-replay-object-policy)
 - [EAP/WildFly ORB, IIOP, SAML, and AJP listener-authority testing](2026-08-04-node-wildfly-rocketchat-zyxel-boundaries-ghsa.md#august-11-follow-up-test-listener-trust-before-application-authorization)
