@@ -17,6 +17,17 @@ This batch is durable because each item exposes a reusable operator boundary: ad
 
 [GHSA-44wp-g8f4-f4v5](https://github.com/advisories/GHSA-44wp-g8f4-f4v5) adds a separate Filament boundary: schemas that do not need file upload, such as panel login forms, still received Livewire's `WithFileUploads` behavior, exposing unauthenticated temporary file uploads. Treat framework-level upload traits as a route-surface boundary, not only as a form-field feature.
 
+### August 20 GeoServer FreeMarker template-injection follow-up
+
+[GHSA-wf6j-gr27-g7ch / CVE-2024-45747](https://github.com/advisories/GHSA-wf6j-gr27-g7ch) extends the GeoServer surface: on a plain GeoServer `< 2.27.0` installation (no extension needed), the built-in WMS `GetFeatureInfo` HTML/JSON and `GetMap` KML/GeoRSS output formats render FreeMarker templates, and `TemplateUtils.getSafeConfiguration()` only blocks direct access to `freemarker.template.utility.Execute`. A method-call chain can still reach that utility class, so an authenticated user who can supply template content reaches OS command execution and arbitrary file read/write.
+
+Replayable validation:
+
+- Preconditions: lab or customer-approved GeoServer `< 2.27.0`, an authenticated account that can reach the affected WMS output-format route, and no production maps or data stores.
+- Submit a canary template through the affected route that resolves a synthetic method chain toward the blocked utility class, ending in an inert marker such as a `touch`/`echo` into a temporary lab directory or a controlled environment-variable readback rendered into the response. Do not read secrets or write outside the lab root.
+- Record: version, role, WMS output format, raw template, the exact chain step that reaches the utility class, and the marker or rendered value. Compare against patched 2.27.0 behavior, where `GEOSERVER_FREEMARKER_BLOCK_LIST`, `GEOSERVER_FREEMARKER_ALLOW_LIST`, and `GEOSERVER_FREEMARKER_API_EXPOSED` restrict reachable objects to getters by default.
+- A bounded positive is **authenticated template content -> rendered output format -> canary chain reaches the blocked utility -> marker readback or inert file operation only**. Report it as a template-author-to-runtime boundary, not as unauthenticated compromise, and state the output formats and role required up front.
+
 ## Operator triage
 
 1. **Confirm the exact trust boundary before probing:** these are not broad unauthenticated internet RCEs. Most require authenticated access, a specific extension, a feature flag, a public asset, a relation action, or an affected database wrapper version.
