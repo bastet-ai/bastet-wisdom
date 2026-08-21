@@ -115,6 +115,26 @@ Include:
 - redacted synthetic marker evidence;
 - explicit separation between confirmed behavior and inferred chain impact.
 
+## August 20 follow-up: Omada Gateway OpenVPN pre-auth command injection and DDNS credential channel
+
+Two GitHub records for TP-Link Omada gateways add appliance boundaries that sit on the same workflow but at different trust distances:
+
+- [GHSA-32hp-8pjq-2c8g / CVE-2026-19586](https://github.com/advisories/GHSA-32hp-8pjq-2c8g) (critical) describes pre-authentication OS command injection on Omada gateways configured as an OpenVPN Server. Insufficient validation of client-supplied data during OpenVPN connection establishment reaches backend command execution logic before authentication completes; exploitation requires the OpenVPN Server feature to be enabled, the VPN service to be attacker-reachable, and a connection attempt to be initiated.
+- [GHSA-hgmf-v69c-5gmf / CVE-2026-19683](https://github.com/advisories/GHSA-hgmf-v69c-5gmf) (medium) reports that Omada Gateway DDNS sends authentication credentials to the third-party DDNS service over an unencrypted channel, so an observer or active manipulator on that path can harvest DDNS account credentials or interfere with DNS updates.
+
+| Boundary | Advisory signal | Safe proof target |
+| --- | --- | --- |
+| OpenVPN handshake to backend command | client-supplied pre-auth input reaches command execution logic | patched `system()`-equivalent recorder receives marker-shaped bytes from a lab handshake |
+| DDNS outbound credential channel | credentials transmitted cleartext to the DDNS provider | owned lab DNS/HTTP endpoint sees marker credential fields, not real account material |
+
+1. Provision a lab Omada gateway (or the matching firmware in an isolated network with no WAN attachment) with the OpenVPN Server feature enabled and one canary VPN client profile.
+2. Patch the backend process-creation sink before the handshake: replace `system()`/equivalent execution with a recorder that captures the final argv or shell string and returns failure. No marker may ever run on the appliance.
+3. Drive the OpenVPN control channel from the canary client: normal handshake, then one field at a time carrying inert metacharacter-shaped markers (spaces, quotes, separators, substitutions, newlines, option prefixes, encoding transitions) through the fields accepted before authentication completes.
+4. Classify each handshake field with the same four-way split used in section 5: structured argv preserved, option injection, shell grammar reached, or rejected before sink. The pre-auth property is the differentiator: record whether the recorder fires on a connection that never authenticates.
+5. For the DDNS boundary, point the gateway's DDNS configuration at an owned lab service that accepts the update request, instrument it to capture the credential fields as-is, and verify which fields travel unencrypted. Use a synthetic DDNS account; never point DDNS at a production zone or capture real credentials.
+
+A bounded positive for the first record is **unauthenticated OpenVPN control-channel input -> backend command recorder receives marker bytes before any auth success**. A bounded positive for the second is **DDNS update request to owned lab service -> credential fields present on the wire without encryption**. Do not execute shell markers on the appliance, do not create administrative accounts, and do not test ISP-managed or production gateways.
+
 ## Sources
 
 - [TP-Link: Multiple vulnerabilities in ISP-managed TP-Link networking products (CVE-2025-30237 to CVE-2025-30241)](https://www.tp-link.com/us/support/faq/5239/)

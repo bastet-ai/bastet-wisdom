@@ -120,6 +120,28 @@ The bounded positive is **signature elements are present -> every candidate exit
 
 This differs from duplicate-ID wrapping: here the central question is whether *any* cryptographic verification occurred. Keep signature enumeration count, attempted count, verified count, selected reference, and consumed node as separate evidence fields.
 
+## August 20 follow-up: enforce SAML assertion single-use and InResponseTo binding
+
+Two unreviewed GitHub records for the Samly Elixir SAML SP package add the two missing Web Browser SSO controls on the request side of the SP:
+
+- [GHSA-5x87-gf34-8ww7 / CVE-2026-53424](https://github.com/advisories/GHSA-5x87-gf34-8ww7) reports that `Samly.Helper.decode_idp_auth_resp/3` calls `esaml_sp:validate_assertion/2`, whose default duplicate detector is a no-op. The esaml arity accepting a `DuplicateFun` exists but Samly never supplies one, so a captured `SAMLResponse` (network capture, browser history, or logs) can be resubmitted byte-for-byte until `NotOnOrAfter` passes, establishing a new session as the assertion subject each time.
+- [GHSA-4mhx-38g6-r4wq / CVE-2026-53425](https://github.com/advisories/GHSA-4mhx-38g6-r4wq) reports that the SP-initiated path validates only `RelayState`, IdP identifier, and the presence of a target URL in session state. The SP never compares `SubjectConfirmationData/@InResponseTo` against the ID of the `AuthnRequest` it issued, and that request ID is never persisted, so a SAML response the SP never requested can still establish a session.
+
+| Boundary | Advisory signal | Safe proof target |
+| --- | --- | --- |
+| assertion replay state | no-op duplicate detector; bearer assertion reusable to expiry | patched session sink fires a second time on byte-identical resubmission |
+| request-response binding | `InResponseTo` never compared; request ID never persisted | session established for an `AuthnRequest` ID the SP fixture never issued |
+
+Build the harness with a generated lab SP and IdP, random entity IDs, two canary users, and a patched session consumer that records the subject and returns without creating a session. Capture the full `SAMLResponse` bytes from the lab IdP so every replay test resubmits the identical payload.
+
+1. Baseline: submit a valid assertion once; the recorder must show exactly one session-establishment event for canary user A.
+2. Replay: resubmit the identical `SAMLResponse` bytes N times before `NotOnOrAfter`. Record per-submission acceptance, duplicate-detection decision, and session-event count. The bounded positive is **byte-identical resubmission -> accepted -> second session event for canary A** on the affected build.
+3. Expiry control: resubmit after `NotOnOrAfter` and confirm rejection is time-based, not duplicate-based.
+4. InResponseTo matrix: submit responses with (a) the ID of an `AuthnRequest` the SP fixture did issue, (b) an ID it never issued, (c) a missing `InResponseTo` attribute, and (d) a missing or expired session target URL. Record the session decision for each cell.
+5. Repeat on corrected builds and require: a monotonic assertion-consumption record keyed by assertion ID, and rejection whenever `InResponseTo` is absent or does not match a persisted, unconsumed `AuthnRequest` ID.
+
+Report **captured assertion -> repeated acceptance -> second canary session** and **unrequested response -> session** as two separate findings. Do not capture or replay real IdP assertions, real accounts, real session cookies, or production SAML traffic; the lab SP/IdP pair supplies every fixture.
+
 ## Reporting checklist
 
 - [ ] Advisory review status, exact package/revision, role, route, and configuration are recorded.
@@ -128,4 +150,5 @@ This differs from duplicate-ID wrapping: here the central question is whether *a
 - [ ] SSH authentication, channel-open policy, channel state, and callback dispatch are distinct evidence.
 - [ ] SiYuan proofs contain only synthetic marker/object/path/query metadata and no notebook content.
 - [ ] Grav callable, filesystem, and redirect findings are reported as separate primitives.
+- [ ] SAML replay and InResponseTo tests record per-submission session events and request-response bindings without using captured production assertions.
 - [ ] Fixed-build and negative controls fail at the intended boundary.

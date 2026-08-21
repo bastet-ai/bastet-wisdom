@@ -80,3 +80,37 @@ Test retries, concurrent migrations, controller restart, and failed migration cl
 - synthetic marker only, with proof that it authorizes no action;
 - affected-versus-corrected behavior and negative controls;
 - separate conclusions for message attribution, message visibility, and credential usability.
+
+## August 20 follow-up: bind cross-cluster objects, endpoints, and controller credentials to the authenticated cluster
+
+Five GitHub records for Red Hat Advanced Cluster Management components add the spoke-to-broker/peer authority surface of federated Kubernetes. The shared pattern: an object created inside one cluster (spoke) selects a destination — namespace, network range, or credential — that is derived from attacker-controlled fields rather than from the authenticated cluster's identity.
+
+- [GHSA-264j-8377-4hmm / CVE-2026-66788](https://github.com/advisories/GHSA-264j-8377-4hmm) (critical, Lighthouse): the destination namespace for resource injection is derived from an attacker-controlled label or annotation on the broker object, letting a compromised spoke inject EndpointSlices and ServiceImports into any namespace on peer clusters, including `kube-system` and `openshift-*`.
+- [GHSA-7fh9-j94v-w42j / CVE-2026-66787](https://github.com/advisories/GHSA-7fh9-j94v-w42j) (high, Lighthouse): advertised IP addresses in EndpointSlice objects are insufficiently validated, so a spoke can make other clusters' lighthouse DNS redirect service traffic to attacker-chosen endpoints (transparent MITM of cross-cluster service communication).
+- [GHSA-37mq-728j-5q43 / CVE-2026-66785](https://github.com/advisories/GHSA-37mq-728j-5q43) (critical, Submariner): a spoke can publish a network endpoint declaring arbitrary subnets; peer-cluster traffic destined for those ranges is rerouted through the attacker's tunnel.
+- [GHSA-gf3r-gm67-jgrv / CVE-2026-67567](https://github.com/advisories/GHSA-gf3r-gm67-jgrv) (critical, multicloud-operators-subscription): a tenant that can create HelmRelease CRs gets the HelmRelease controller to process chart templates with its elevated ServiceAccount and insufficient validation, enabling arbitrary resource deployment cluster-wide.
+- [GHSA-rf6j-x765-j4p2 / CVE-2026-73137](https://github.com/advisories/GHSA-rf6j-x765-j4p2) (high, multicloud-operators-subscription): manipulating `secretRef.Namespace` lets `GetSecret()` fetch credentials from any namespace, which are then sent to an attacker-controlled Helm repository.
+
+!!! warning "Authorized lab validation only"
+    Use a two-namespace marker-only cluster pair with fake hub/spoke identities, synthetic charts, and fake nonfunctional kubeconfigs. Patch deserializer, Secret-read, token-use, DNS resolution, and tunnel-forward sinks to record and deny. Never deploy real workloads to system namespaces, exfiltrate real Secrets, point DNS or traffic at operational services, or use bootstrap material against a real API server.
+
+### Authority map
+
+| Boundary | Advisory signal | Safe proof target |
+| --- | --- | --- |
+| broker-object label/annotation to injection namespace | namespace derived from spoke-controlled metadata | denied create sink records an injection target inside `kube-system` for a synthetic object |
+| EndpointSlice IPs to cross-cluster DNS answer | advertised IPs not validated against spoke ownership | lab DNS recorder answers with the attacker-chosen marker IP for a canary service name |
+| published endpoint subnets to peer traffic routing | arbitrary subnet declaration accepted | tunnel-forward recorder captures a canary packet for an attacker-declared range |
+| HelmRelease CR to controller service-account | tenant CR processed with elevated SA and unvalidated templates | patched chart renderer records a canary resource outside the tenant namespace |
+| `secretRef.Namespace` to cross-namespace Secret read | `GetSecret()` honors caller-chosen namespace | denied Secret sink records a marker Secret in a namespace the tenant cannot otherwise read |
+
+### Workflow
+
+1. Build the lab federated pair: one "broker/hub" cluster and one "spoke" cluster, both disposable, with the affected ACM components installed. Give the spoke exactly the minimum CR creation rights the advisory describes (broker object write, EndpointSlice publish, or HelmRelease create) and no more.
+2. For the namespace-derivation path, create broker objects whose labels/annotations select the canary marker namespace, the system namespace, and an unrelated namespace. Instrument the peer-side creation sink to log (object kind, target namespace, source cluster ID) and deny all creation. A positive is **spoke-owned object -> peer sink records target namespace outside the spoke's granted set**.
+3. For the DNS/MITM path, publish EndpointSlices advertising owned-lab marker IPs for a canary service name, then resolve the service from a peer cluster against a patched DNS responder that only records queries and answers. Capture which IP the resolver would return. Do not redirect real service traffic.
+4. For the Submariner path, publish an endpoint declaring an attacker-chosen subnet containing an owned-lab IP; patch the peer tunnel-forward path to record what would be sent where. A positive is the forward decision selecting the attacker-declared range.
+5. For the HelmRelease paths, use a synthetic chart whose templates reference a canary Secret in a namespace the tenant has no right to read. Patch `GetSecret()` and the renderer to log the requested namespace/name and return a marker; patch the Helm repository client to record URLs and deny egress. A positive is **tenant HelmRelease -> cross-namespace Secret marker selected** or **repository URL = attacker-controlled endpoint**.
+6. Repeat on corrected components and require: namespace fixed to the authenticated cluster's binding, IP/subnet validation against the spoke's declared ranges, controller execution as the requesting tenant's identity, and `secretRef` namespace locked to the HelmRelease's own namespace.
+
+Report each edge as a separate finding with **authenticated spoke identity -> attacker-controlled field -> denied sink decision**. Do not infer full cluster compromise from a single object injection, and do not combine the five records into one chain unless every transition is observed on the same lab topology.
