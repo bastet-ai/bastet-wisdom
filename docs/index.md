@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Zimbra SNMP-notification SMTP command-injection authority validation (KEV)](alerts/2026-08-21-zimbra-snmp-notification-smtp-command-injection-cve-2026-73570.md)
 - [Canonicalization differentials at security gates (Mailpit WS origin bypass)](methodology/canonicalization-differentials-at-security-gates.md)
 - [Laravel Backpack CRUD admin-panel authority boundaries](alerts/2026-08-20-laravel-backpack-crud-admin-panel-authority-boundaries-ghsa.md)
 - [Apache CXF JNDI config injection and OAuth2 token-claim follow-up](alerts/2026-08-06-apache-cxf-oauth-wsdl-jms-authority-boundaries-ghsa.md#august-20-follow-up-jndi-config-injection-oauth2-token-claim-validation-and-inverted-ip-binding)

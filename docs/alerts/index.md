@@ -10,6 +10,7 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Zimbra SNMP-notification SMTP command-injection authority validation (KEV)](2026-08-21-zimbra-snmp-notification-smtp-command-injection-cve-2026-73570.md)
 - [Laravel Backpack CRUD admin-panel authority boundaries](2026-08-20-laravel-backpack-crud-admin-panel-authority-boundaries-ghsa.md)
 - [Apache CXF JNDI config injection and OAuth2 token-claim follow-up](2026-08-06-apache-cxf-oauth-wsdl-jms-authority-boundaries-ghsa.md#august-20-follow-up-jndi-config-injection-oauth2-token-claim-validation-and-inverted-ip-binding)
 - [NocoBase storage-root redirection and backup-restore shell interpolation](2026-07-28-nocobase-cosmos-data-identity-boundaries-ghsa.md#august-20-nocobase-follow-up-storage-root-redirection-and-backup-restore-shell-interpolation)
