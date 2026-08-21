@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Canonicalization differentials at security gates (Mailpit WS origin bypass)](methodology/canonicalization-differentials-at-security-gates.md)
 - [Laravel Backpack CRUD admin-panel authority boundaries](alerts/2026-08-20-laravel-backpack-crud-admin-panel-authority-boundaries-ghsa.md)
 - [Apache CXF JNDI config injection and OAuth2 token-claim follow-up](alerts/2026-08-06-apache-cxf-oauth-wsdl-jms-authority-boundaries-ghsa.md#august-20-follow-up-jndi-config-injection-oauth2-token-claim-validation-and-inverted-ip-binding)
 - [NocoBase storage-root redirection and backup-restore shell interpolation](alerts/2026-07-28-nocobase-cosmos-data-identity-boundaries-ghsa.md#august-20-nocobase-follow-up-storage-root-redirection-and-backup-restore-shell-interpolation)
@@ -16,9 +17,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [SearXNG/FAF/Contentful MCP and agent-catalog option-to-sink testing](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#august-19-follow-up-llm-controlled-options-are-destination-capabilities)
 - [Lemur certificate-management authority-boundary testing](alerts/2026-08-18-lemur-certificate-management-authority-boundaries-ghsa.md)
 - [Code-editor extension webview and file-write boundary testing](methodology/editor-extension-webview-file-write-boundary-testing.md)
-- [OpenSign and Attendize object-authority follow-ups](alerts/2026-08-10-hostname-document-workflow-authority-boundaries-ghsa.md#august-11-follow-up-trace-every-parse-cloud-function-separately)
 - [OpenShift Console fetch-authority and Helm catalog-provenance testing](alerts/2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md#august-11-follow-up-console-fetch-authority-and-helm-catalog-provenance)
-- [CTI-Transmute state-changing GET and CSRF testing](alerts/2026-08-03-report-renderer-updater-trust-boundaries-ghsa.md#state-changing-get-and-csrf-follow-up)
 
 
 

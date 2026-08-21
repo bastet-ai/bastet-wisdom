@@ -98,6 +98,7 @@ nav:
       - OAuth Misconfigs for MCP / Agents: methodology/oauth-mcp-misconfig.md
       - JWT Algorithm Confusion: methodology/jwt-algorithm-confusion-testing.md
       - Return URL Scheme Bypasses: methodology/return-url-scheme-bypass-testing.md
+      - Canonicalization Differentials at Security Gates: methodology/canonicalization-differentials-at-security-gates.md
       - Rich-text Import SSRF: methodology/rich-text-import-ssrf-testing.md
       - CVE Reversing: methodology/cve-reversing-web-vulnerabilities.md
       - Uniswap v4 Hook Boundary Testing: methodology/uniswap-v4-hook-boundary-testing.md
