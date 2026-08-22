@@ -8,6 +8,9 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [TrueConf server 4307/TCP authority and sandbox-breakout validation (KEV)](alerts/2026-08-21-trueconf-server-kev-boundaries.md)
+- [JSONata expression sandbox escape and arbitrary-code-execution boundaries](alerts/2026-08-22-jsonata-expression-sandbox-escape-code-execution-ghsa.md)
+- [Xinference Llama3 tool-call eval() and LLM-output-to-execution boundaries](alerts/2026-08-22-xinference-llama3-tool-call-eval-code-execution-ghsa.md)
 - [Zimbra SNMP-notification SMTP command-injection authority validation (KEV)](alerts/2026-08-21-zimbra-snmp-notification-smtp-command-injection-cve-2026-73570.md)
 - [Canonicalization differentials at security gates (Mailpit WS origin bypass)](methodology/canonicalization-differentials-at-security-gates.md)
 - [Laravel Backpack CRUD admin-panel authority boundaries](alerts/2026-08-20-laravel-backpack-crud-admin-panel-authority-boundaries-ghsa.md)

@@ -10,6 +10,9 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [TrueConf server 4307/TCP authority and sandbox-breakout validation (KEV)](2026-08-21-trueconf-server-kev-boundaries.md)
+- [JSONata expression sandbox escape and arbitrary-code-execution boundaries](2026-08-22-jsonata-expression-sandbox-escape-code-execution-ghsa.md)
+- [Xinference Llama3 tool-call eval() and LLM-output-to-execution boundaries](2026-08-22-xinference-llama3-tool-call-eval-code-execution-ghsa.md)
 - [Zimbra SNMP-notification SMTP command-injection authority validation (KEV)](2026-08-21-zimbra-snmp-notification-smtp-command-injection-cve-2026-73570.md)
 - [Laravel Backpack CRUD admin-panel authority boundaries](2026-08-20-laravel-backpack-crud-admin-panel-authority-boundaries-ghsa.md)
 - [Apache CXF JNDI config injection and OAuth2 token-claim follow-up](2026-08-06-apache-cxf-oauth-wsdl-jms-authority-boundaries-ghsa.md#august-20-follow-up-jndi-config-injection-oauth2-token-claim-validation-and-inverted-ip-binding)
