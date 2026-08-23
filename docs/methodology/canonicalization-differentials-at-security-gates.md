@@ -95,6 +95,7 @@ Positive result: plain path returns `403` while the percent-encoded path returns
 - **CakePHP Authentication** backslash normalization before slash conversion, bypassing a "local target only" check.
 - **Puma** PROXY-protocol v1 source-IP trust when a trusted edge keeps `Host`/SNI and origin disagree.
 - **Apache Shiro Jakarta EE** trusting client-controlled `Referer` as the post-login return target.
+- **Reverse::Proxy** (GHSA-5xq5-hx4g-f5v6 / CVE-2026-75922): routing decision and upstream serializer disagree on encoded versus decoded `PATH_INFO`, turning `%0d%0a` in the client target into a CRLF in the proxy's self-serialized request line — the same representational drift pointed at a **request-framing sink** rather than a gate. See the "Decoded `PATH_INFO` framing at serialized upstream request lines" section of the [HTTP desync research campaigns](http-desync-research-campaigns.md) page.
 
 ## What to report
 

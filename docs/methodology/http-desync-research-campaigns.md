@@ -128,6 +128,41 @@ A bounded positive is **one synthetic attacker stream -> origin records an extra
 
 For the cited Traefik branches, the reviewed record lists fixes in `2.11.53`, `3.6.24`, and `3.7.9`; it states that the experimental FastProxy path was not affected. Confirm the exact proxy implementation and branch rather than treating a version string as topology proof. Never replay the public queue-poisoning demonstration against shared users or retain any response body beyond random fixture markers.
 
+## Decoded `PATH_INFO` framing at serialized upstream request lines
+
+The reviewed [Reverse::Proxy GHSA-5xq5-hx4g-f5v6 / CVE-2026-75922](https://github.com/advisories/GHSA-5xq5-hx4g-f5v6) record (Perl PSGI proxy, versions before `0.04`) adds a third framing seed: an intermediary that receives client input **already percent-decoded**, then writes that byte string into a request line it **serializes itself** without re-encoding. Because PSGI hands `PATH_INFO` to the application decoded, `%0d%0a` in the client URL becomes a literal CRLF in the proxy's emitted request line; a decoded space, `?`, or `#` truncates the same line. Everything the client sends after the break arrives as a **second request** on a keep-alive connection the proxy pools and reuses, and the upstream attributes it to the proxy, so it reaches upstream paths the proxy's own routing does not expose.
+
+This is the same trust-confusion shape as [canonicalization differentials at security gates](canonicalization-differentials-at-security-gates.md): the safety decision (routing) and the serializer operate on different representations of the same input. The reusable rule: any component that appends caller-decoded material into a **self-serialized** wire message (request line, CONNECT target, tunnel URL, SMTP/IMAP envelope, WebSocket upgrade line) is a candidate request-framing boundary.
+
+### Candidate inputs and transforms to record
+
+| Candidate input | Transform to record | Harmless differential |
+| --- | --- | --- |
+| `%XX` sequences in the client path | raw target -> decoded `PATH_INFO`/decoded target -> upstream request line | inert header or marker reaches the origin recorder in the request line |
+| `%0d%0a` in the target | decoded CRLF -> emitted request-line termination | a second synthetic request line appears in the origin byte trace |
+| decoded space, `?`, `#` in the target | decoded delimiter -> request-line truncation point | origin records a shorter target and separate trailing request |
+| Upgrade/tunnel path variant | decoded path -> serialized `Upgrade`/`CONNECT` request line | tunnel request line contains the break; tunnel byte stream carries a marker |
+| buffered versus raw forwarding path | which pool/socket the trigger lands on | pooled socket reuse versus per-request socket decision |
+
+### Validation workflow
+
+1. **Reproduce the transform in the lab.** Stand up the affected proxy version against an origin recorder. Send one clean request and one target containing `%0d%0a` plus a synthetic inert follow-up. Record the exact upstream bytes, connection/socket ID, and whether the socket returns to the idle pool.
+2. **Prove the framing transition.** Promote to request splitting only when one clean client request serializes into two complete upstream requests. A status change or extra header alone is a header-injection lead, not splitting.
+3. **Prove cross-request assignment.** Promote to desync only when the deterministic cross-request evaluator (§3) shows a second synthetic client receiving the marker response of the attacker's injected request through the shared pool.
+4. **Classify connection scope** using the §"Classify connection scope before impact" table. The reviewed record indicates a buffered/pooled path; confirm the pool transition with a socket-ID trace rather than inferring it from response ordering.
+5. **Stop at the bounded positive:** one synthetic client -> origin records an extra marker request attributed to the proxy -> the pooled socket carries it to a route the proxy does not expose. Do not queue-poison live users, target internal services, or retain any response beyond random markers.
+
+### Operator signal
+
+Scan for this primitive whenever:
+
+- a proxy/relay/forwarder forwards decoded path or query material into a request line it builds itself (`Upgrade`, `CONNECT`, `WebSocket`, tunnel, or plain relay serializers);
+- the upstream client library does not re-validate the target it is asked to send;
+- the connection to the origin is pooled/keep-alive and the proxy reuses it after the trigger request;
+- routing policy is applied to the *raw* target while the serializer consumes the *decoded* form.
+
+The same shape applies to any protocol bridge that re-serializes messages from decoded fields; treat the request line, envelope line, and handshake line as first-class framing sinks in desync campaigns.
+
 ## Duplicate authority fields across an HTTP/2 bridge
 
 The h2 record adds a narrower campaign seed: affected releases through `4.4.0` accept more than one `Host` field and expose all copies to the consuming application. The security effect depends on a later component translating that block to HTTP/1.1 or making an authority decision from a different copy; acceptance alone is not request smuggling.
