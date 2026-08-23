@@ -930,6 +930,35 @@ Create customers A/B, bookings A/B, and a fake calendar/provider integration. Cr
 
 For commerce, record **local object + merchant/payee + amount + currency + provider transaction + status + payment method + purpose + replay state**. Use only mocked provider responses and no-op payment/booking sinks. Test wrong merchant, partial/zero/negative/duplicate amount, pending/failed status, proof from order A against order B, caller-created completed records, and replay. A positive requires a mismatched tuple to reach the paid/approved recorder; never contact a gateway, reserve inventory, or create a retained payment.
 
+## August 23 follow-up: bind registration role selection, permission-filter rewrites, and invoice-file selectors to final authority
+
+An August 23 unreviewed WordPress wave adds useful variants to the existing matrices:
+
+- registration role selection: RestrictMate role restriction bypass, unauthenticated administrator-account creation [GHSA-vmqg-pqj8-5w8h](https://github.com/advisories/GHSA-vmqg-pqj8-5w8h);
+- permission-filter rewrites over core REST handlers: Security Hardener `rest_endpoints` filter overwrites every `/wp/v2/users` handler's `permission_callback` with a bare `is_user_logged_in` closure, stripping `create_users`/`promote_user`/`edit_users`/`delete_users` [GHSA-493r-g3qv-5457](https://github.com/advisories/GHSA-493r-g3qv-5457);
+- publication capability drift: Content Mask Contributor-level publish of the selected post type without the `publish` capability [GHSA-mfj2-2xr8-6w24](https://github.com/advisories/GHSA-mfj2-2xr8-6w24);
+- AJAX capability and nonce gaps: WooCommerce Bookings AJAX action without capability check, nonce bypass by omission, Subscriber-level draft bookable-product creation [GHSA-jfpw-hmq2-3xwx](https://github.com/advisories/GHSA-jfpw-hmq2-3xwx);
+- invoice-file base64 selector: WebToffee PDF Invoices `get_image_src_in_base64` directory traversal, subscriber-level arbitrary-file read embedded in cached invoice HTML served by the plugin's own Print/Download endpoints [GHSA-7r74-667v-4q77](https://github.com/advisories/GHSA-7r74-667v-4q77); and
+- deserialization of a role-list parameter: PPWP Password Protect Pages PHP object injection from `post_protection_roles`, Contributor and above, impact gated on a co-resident POP chain [GHSA-fgg6-3rw5-h3j8](https://github.com/advisories/GHSA-fgg6-3rw5-h3j8).
+
+Confirm exact plugin slug, affected version, enabled feature (Security Hardener's block-user-enum is on by default), route/action, and role before testing. These records were unreviewed when scanned; treat them as test seeds, not independent proof of exposure.
+
+### Select the role on the server, not in the registration form
+
+For registration-role records, create no real accounts: patch the user-insertion sink with a recorder that captures the requested role and denies the write. Submit registration forms with the role field omitted, empty, a known role, an administrator role, and encoded variants on the affected plugin. A bounded positive is **unauthenticated registration request with caller-selected administrator role -> user-insertion recorder observes the administrator role assignment**. Never complete a real registration or mint a session.
+
+### Rewrite the permission decision, not the endpoint table
+
+For Security Hardener-style `rest_endpoints` filter rewrites, register the affected filter in a lab install with a patched capability check that records which handler closure it installed. Enumerate every route family the filter touches (core users plus any plugin routes), every method, and the original versus installed `permission_callback`. Patch the capability check with a recorder. A bounded positive is **subscriber request -> original capability check bypassed -> denied capability recorder on a core user-creation or password-reset handler**. Record the exact filter, the stripped capabilities, and the default-enabled option that activates the rewrite.
+
+### Keep the base64 file selector out of the invoice root
+
+For WebToffee-style image selectors, use a disposable upload root with marker files inside and a sibling marker file outside whose contents are never opened by the control path. Patch file reads with a recorder and drive the Print/Download invoice endpoints with a valid synthetic nonce and access key, varying the image source parameter (literal, encoded, and prefix-anchored traversal). A bounded positive is **subscriber request with caller-selected source -> denied read recorder observes an out-of-root target** and the marker content would reach the cached invoice HTML. Never read `wp-config.php` or credential files.
+
+### Prove deserialization separately from gadget availability
+
+For PPWP-style object injection, record the exact parameter, codec, and authenticated role floor, and patch the unserializer with a recorder that captures the incoming object graph shape and denies instantiation of any class. A bounded positive is **Contributor request -> recorder observes an attacker-shaped object at the deserialization sink**. State POP-chain availability as a separate untested precondition; never instantiate a gadget chain.
+
 ## Reporting checklist
 
 Include:

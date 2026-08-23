@@ -10,6 +10,8 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [GitLab package-registry traversal and docker-socket-proxy read-endpoint boundaries](2026-08-23-gitlab-registry-traversal-and-docker-socket-proxy-read-gating-ghsa.md)
+- [WordPress registration role, permission-filter, and invoice-file selector follow-up](2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-23-follow-up-bind-registration-role-selection-permission-filter-rewrites-and-invoice-file-selectors-to-final-authority)
 - [TrueConf server 4307/TCP authority and sandbox-breakout validation (KEV)](2026-08-21-trueconf-server-kev-boundaries.md)
 - [JSONata expression sandbox escape and arbitrary-code-execution boundaries](2026-08-22-jsonata-expression-sandbox-escape-code-execution-ghsa.md)
 - [Xinference Llama3 tool-call eval() and LLM-output-to-execution boundaries](2026-08-22-xinference-llama3-tool-call-eval-code-execution-ghsa.md)

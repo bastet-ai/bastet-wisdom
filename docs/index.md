@@ -8,20 +8,16 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [GitLab package-registry traversal and docker-socket-proxy read-endpoint boundaries](alerts/2026-08-23-gitlab-registry-traversal-and-docker-socket-proxy-read-gating-ghsa.md)
+- [WordPress registration role, permission-filter, and invoice-file selector follow-up](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-23-follow-up-bind-registration-role-selection-permission-filter-rewrites-and-invoice-file-selectors-to-final-authority)
 - [TrueConf server 4307/TCP authority and sandbox-breakout validation (KEV)](alerts/2026-08-21-trueconf-server-kev-boundaries.md)
 - [JSONata expression sandbox escape and arbitrary-code-execution boundaries](alerts/2026-08-22-jsonata-expression-sandbox-escape-code-execution-ghsa.md)
 - [Xinference Llama3 tool-call eval() and LLM-output-to-execution boundaries](alerts/2026-08-22-xinference-llama3-tool-call-eval-code-execution-ghsa.md)
 - [Zimbra SNMP-notification SMTP command-injection authority validation (KEV)](alerts/2026-08-21-zimbra-snmp-notification-smtp-command-injection-cve-2026-73570.md)
 - [Canonicalization differentials at security gates (Mailpit WS origin bypass)](methodology/canonicalization-differentials-at-security-gates.md)
 - [Laravel Backpack CRUD admin-panel authority boundaries](alerts/2026-08-20-laravel-backpack-crud-admin-panel-authority-boundaries-ghsa.md)
-- [Apache CXF JNDI config injection and OAuth2 token-claim follow-up](alerts/2026-08-06-apache-cxf-oauth-wsdl-jms-authority-boundaries-ghsa.md#august-20-follow-up-jndi-config-injection-oauth2-token-claim-validation-and-inverted-ip-binding)
-- [NocoBase storage-root redirection and backup-restore shell interpolation](alerts/2026-07-28-nocobase-cosmos-data-identity-boundaries-ghsa.md#august-20-nocobase-follow-up-storage-root-redirection-and-backup-restore-shell-interpolation)
-- [GeoServer FreeMarker SSTI follow-up](alerts/2026-06-11-geoserver-wsgidav-openfga-devguard-filament-boundary-batch-ghsa.md#august-20-geoserver-freemarker-template-injection-follow-up)
 - [MLflow webhook redirect, registry source, and run-permission boundaries (KEV)](alerts/2026-08-19-mlflow-webhook-redirect-and-registry-permission-boundaries-ghsa-kev.md)
-- [SearXNG/FAF/Contentful MCP and agent-catalog option-to-sink testing](alerts/2026-08-06-agent-tool-policy-file-fetch-boundaries-ghsa.md#august-19-follow-up-llm-controlled-options-are-destination-capabilities)
 - [Lemur certificate-management authority-boundary testing](alerts/2026-08-18-lemur-certificate-management-authority-boundaries-ghsa.md)
-- [Code-editor extension webview and file-write boundary testing](methodology/editor-extension-webview-file-write-boundary-testing.md)
-- [OpenShift Console fetch-authority and Helm catalog-provenance testing](alerts/2026-08-10-ai-feature-control-plane-tenant-boundaries-ghsa.md#august-11-follow-up-console-fetch-authority-and-helm-catalog-provenance)
 
 
 
