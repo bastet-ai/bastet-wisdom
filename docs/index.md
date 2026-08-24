@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [ChromaDB tenant-authorization bypass and model-loading RCE wave](alerts/2026-08-24-chromadb-tenant-authorization-and-model-rce-ghsa.md)
+- [django CMS page-cache Vary poisoning and plugin-tree cyclic-reparenting DoS](alerts/2026-08-24-django-cms-cache-vary-poisoning-and-cyclic-reparenting-ghsa.md)
 - [Oracle WebLogic Proxy Plug-in improper access control KEV (CVE-2026-21962)](alerts/2026-08-24-oracle-weblogic-proxy-plug-in-improper-access-control-kev-cve-2026-21962.md)
 - [GitLab package-registry traversal and docker-socket-proxy read-endpoint boundaries](alerts/2026-08-23-gitlab-registry-traversal-and-docker-socket-proxy-read-gating-ghsa.md)
 - [WordPress registration role, permission-filter, and invoice-file selector follow-up](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-23-follow-up-bind-registration-role-selection-permission-filter-rewrites-and-invoice-file-selectors-to-final-authority)
@@ -16,9 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Xinference Llama3 tool-call eval() and LLM-output-to-execution boundaries](alerts/2026-08-22-xinference-llama3-tool-call-eval-code-execution-ghsa.md)
 - [Zimbra SNMP-notification SMTP command-injection authority validation (KEV)](alerts/2026-08-21-zimbra-snmp-notification-smtp-command-injection-cve-2026-73570.md)
 - [Canonicalization differentials at security gates (Mailpit WS origin bypass)](methodology/canonicalization-differentials-at-security-gates.md)
-- [Laravel Backpack CRUD admin-panel authority boundaries](alerts/2026-08-20-laravel-backpack-crud-admin-panel-authority-boundaries-ghsa.md)
-- [MLflow webhook redirect, registry source, and run-permission boundaries (KEV)](alerts/2026-08-19-mlflow-webhook-redirect-and-registry-permission-boundaries-ghsa-kev.md)
-- [Lemur certificate-management authority-boundary testing](alerts/2026-08-18-lemur-certificate-management-authority-boundaries-ghsa.md)
 
 
 

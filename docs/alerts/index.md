@@ -10,6 +10,8 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [ChromaDB tenant-authorization bypass and model-loading RCE wave](2026-08-24-chromadb-tenant-authorization-and-model-rce-ghsa.md)
+- [django CMS page-cache Vary poisoning and plugin-tree cyclic-reparenting DoS](2026-08-24-django-cms-cache-vary-poisoning-and-cyclic-reparenting-ghsa.md)
 - [Oracle WebLogic Proxy Plug-in improper access control KEV (CVE-2026-21962)](2026-08-24-oracle-weblogic-proxy-plug-in-improper-access-control-kev-cve-2026-21962.md)
 - [GitLab package-registry traversal and docker-socket-proxy read-endpoint boundaries](2026-08-23-gitlab-registry-traversal-and-docker-socket-proxy-read-gating-ghsa.md)
 - [WordPress registration role, permission-filter, and invoice-file selector follow-up](2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-23-follow-up-bind-registration-role-selection-permission-filter-rewrites-and-invoice-file-selectors-to-final-authority)
