@@ -8,6 +8,9 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [GitPython unsafe-option, config-reserialization, and merge-include boundaries](alerts/2026-08-25-gitpython-unsafe-option-and-config-reserialization-boundaries-ghsa.md)
+- [Adminer DSN/ODBC injection, SQLite RCE, and admin-panel CSRF boundaries](alerts/2026-08-25-adminer-dsn-odbc-injection-and-sqlite-rce-boundaries-ghsa.md)
+- [Grav sandbox-escape, privilege-validation, and host/origin trust boundaries](alerts/2026-08-25-grav-sandbox-escape-and-privilege-host-origin-boundaries-ghsa.md)
 - [3X-UI authenticated log-path import to arbitrary file write and RCE](alerts/2026-08-24-3x-ui-xray-log-path-import-file-write-ghsa.md)
 - [Cloudreve remote-download path-escape and context-hint share-revocation follow-up](alerts/2026-07-20-cloudreve-pillow-token-image-boundaries-ghsa.md#august-24-remote-download-path-escape-and-context-hint-revocation-follow-up)
 - [Mattermost federated shared-channel file-sync path traversal (CVE-2026-6961)](alerts/2026-06-01-mattermost-shared-channel-ai-secret-boundary-batch-ghsa.md#federated-shared-channel-file-sync-path-traversal-check)
@@ -15,9 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [django CMS page-cache Vary poisoning and plugin-tree cyclic-reparenting DoS](alerts/2026-08-24-django-cms-cache-vary-poisoning-and-cyclic-reparenting-ghsa.md)
 - [Oracle WebLogic Proxy Plug-in improper access control KEV (CVE-2026-21962)](alerts/2026-08-24-oracle-weblogic-proxy-plug-in-improper-access-control-kev-cve-2026-21962.md)
 - [GitLab package-registry traversal and docker-socket-proxy read-endpoint boundaries](alerts/2026-08-23-gitlab-registry-traversal-and-docker-socket-proxy-read-gating-ghsa.md)
-- [WordPress registration role, permission-filter, and invoice-file selector follow-up](alerts/2026-07-28-wordpress-payment-device-boundaries-ghsa.md#august-23-follow-up-bind-registration-role-selection-permission-filter-rewrites-and-invoice-file-selectors-to-final-authority)
-- [TrueConf server 4307/TCP authority and sandbox-breakout validation (KEV)](alerts/2026-08-21-trueconf-server-kev-boundaries.md)
-- [JSONata expression sandbox escape and arbitrary-code-execution boundaries](alerts/2026-08-22-jsonata-expression-sandbox-escape-code-execution-ghsa.md)
 
 
 

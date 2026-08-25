@@ -10,6 +10,10 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [GitPython unsafe-option, config-reserialization, and merge-include boundaries](2026-08-25-gitpython-unsafe-option-and-config-reserialization-boundaries-ghsa.md)
+- [Adminer DSN/ODBC injection, SQLite RCE, and admin-panel CSRF boundaries](2026-08-25-adminer-dsn-odbc-injection-and-sqlite-rce-boundaries-ghsa.md)
+- [Grav sandbox-escape, privilege-validation, and host/origin trust boundaries](2026-08-25-grav-sandbox-escape-and-privilege-host-origin-boundaries-ghsa.md)
+- [NLTK proxy drift, Graphviz dot search-path, XXE, and pickle follow-up](2026-07-31-library-tenant-commerce-file-boundaries-ghsa.md#august-25-nltk-follow-up-proxy-drift-dot-search-path-xxe-and-pickle)
 - [3X-UI authenticated log-path import to arbitrary file write and RCE](2026-08-24-3x-ui-xray-log-path-import-file-write-ghsa.md)
 - [Cloudreve remote-download path-escape and context-hint share-revocation follow-up](2026-07-20-cloudreve-pillow-token-image-boundaries-ghsa.md#august-24-remote-download-path-escape-and-context-hint-revocation-follow-up)
 - [Mattermost federated shared-channel file-sync path traversal (CVE-2026-6961)](2026-06-01-mattermost-shared-channel-ai-secret-boundary-batch-ghsa.md#federated-shared-channel-file-sync-path-traversal-check)

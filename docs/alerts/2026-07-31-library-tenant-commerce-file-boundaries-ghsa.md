@@ -231,6 +231,37 @@ The bounded result is **package B selected for installation -> B member resolves
 
 Record package identity and archive identity independently. A secure control should reject cross-package ownership collisions before extraction becomes visible, stage writes outside the active namespace, validate the complete package, and publish the package atomically without replacing another package's owned paths.
 
+## August 25 NLTK follow-up: proxy drift, dot search-path, XXE, and pickle
+
+Four later NLTK records (all through `3.10.3`, the pickle one through `3.9.4`) extend the same library-surface theme. Confirm the exact build and corrected behavior before reporting; all were unreviewed at scan time.
+
+### Proxy validation-to-connection drift ([GHSA-crp9-r7rq-c8cg](https://github.com/advisories/GHSA-crp9-r7rq-c8cg))
+
+`nltk.pathsec.urlopen` validates the requested hostname locally, but when an HTTP proxy is configured the proxy-handler inheritance disables the safe HTTP/HTTPS handlers, so the actual fetch goes to the proxy against a destination that is never re-validated. This is the same **validation-to-connect drift** as the DNS-rebinding and RFC 6598 items above, with the drift now at the proxy hop.
+
+Use an owned no-content proxy and two owned peers:
+
+```text
+validate lookup  -> owned public peer A
+delivery fetch   -> owned loopback/private peer B (via proxy)
+```
+
+Supply a validated public URL and have the proxy forward to B. Record the validator verdict, the proxy target, and the final connected peer. A bounded positive is **strict mode enabled -> public URL passes local validation -> proxy forwards to the owned private peer**. Never reach cloud metadata, loopback admin routes, or production private services. A proxy-only acceptance without the connect trace is a policy gap, not product-level SSRF.
+
+### Graphviz `dot` search-path resolution ([GHSA-54xp-3ww7-6wjg](https://github.com/advisories/GHSA-54xp-3ww7-6wjg))
+
+`dependencygraph.dot2img` and `AlignedSent._repr_svg_` invoke the `dot` binary by bare name instead of a validated absolute path. Place an inert `dot` canary on the current working directory (Windows) or a relative `PATH` entry (Unix) and record which binary the resolver selects. A positive is the library selecting the CWD/`PATH` canary over the legitimate tool. Prove binary-resolution drift only; do not execute a real payload.
+
+### `ElementTree` entity-expansion DoS ([GHSA-jx89-3qg8-p2mr](https://github.com/advisories/GHSA-jx89-3qg8-p2mr))
+
+Multiple modules parse XML with `xml.etree.ElementTree`, which honors DTD entity declarations. Craft a document whose nested entities expand from bytes to megabytes and record the parse-time memory growth. Treat this as a bounded DoS/XXE-surface note: prove the expansion differential against a fixed build; do not claim arbitrary file read or OOB write without a separate authorized sink.
+
+### `TransitionParser.parse` unrestricted pickle ([GHSA-gx65-c5hj-vpv5](https://github.com/advisories/GHSA-gx65-c5hj-vpv5))
+
+`TransitionParser.parse()` calls `pickle_load()` with the default `restricted=False`, routing through `WarningUnpickler`, which does not override `find_class()` and so permits arbitrary class resolution. When an application loads an attacker-crafted model file, embedded pickle gadgets execute as the application user. `RestrictedUnpickler` exists but is not used on this production path.
+
+Prove the class-resolution gap with a synthetic pickle that references an inert canary class and a denied `__reduce__` sink; confirm `find_class` resolves the canary without executing it. Do not ship a real RCE gadget or run it on a shared host. Report the deserializer-selection flaw with the exact `pickle_load` call site and the `restricted` default.
+
 ## Evidence and reporting
 
 For every workflow, preserve:
