@@ -48,6 +48,19 @@ Operator validation boundaries:
 - Negative controls: fixed version, strict `Origin` and `Host` checks before SSE initialization, no wildcard CORS on authenticated transports, and rejection after DNS answer changes.
 - Do not run write-capable database tools, query real schemas, capture real MCP tokens, or expose Toolbox to the public internet for testing.
 
+## August 24 MCP Toolbox `--allowed-hosts` follow-up
+
+[GHSA-76g7-m3xw-x9gr / CVE-2026-11624](https://github.com/advisories/GHSA-76g7-m3xw-x9gr) closes the host side of the same pattern. The record says that before v0.25.0, MCP Toolbox for Databases (`github.com/googleapis/mcp-toolbox`, Go, affected: `< 0.25.0`) could not validate the origin's **host**: `--allowed-origins` alone leaves the DNS-rebinding path open, because a browser origin's host can re-resolve after bootstrap. v0.25.0 adds `--allowed-hosts` alongside `--allowed-origins`. Both default to `*`; if either is `*`, the server emits a startup warning.
+
+Operator validation boundaries:
+
+- Preconditions: isolated Toolbox instance below or at 0.25.0 for the positive case, fake database tools/credentials, an owned rebinding domain or local host-header harness, and a fixed 0.25.0 control. No production databases attached.
+- Build a 2×2 decision table: `--allowed-origins` ∈ {`*`, pinned} × `--allowed-hosts` ∈ {`*`, pinned}, and record which combination rejects a browser request whose `Origin` is pinned-allowed but whose `Host` re-resolved to a second owned address.
+- Positive evidence: with both flags pinned, a rebinding-style request (pinned `Origin`, rebound `Host`) is rejected before tool dispatch, while the same `Origin` on the original host still reaches a harmless tool-listing or canary route. A pre-fix build should accept it.
+- Record the startup-warning behavior: either flag set to `*` should print the documented warning. Use that as version evidence, not as a security control.
+- Negative controls: 0.25.0 with both flags pinned rejects the rebinding pair; strict `Origin` and `Host` checks before SSE initialization; no wildcard CORS on authenticated transports; rejection after the DNS answer changes.
+- Do not attach real databases, run write-capable tools, capture real MCP tokens, or point the rebinding domain at anything other than owned canaries.
+
 ## July 16 Ansible Galaxy role dependency update
 
 [GHSA-w8p5-mx5w-cpqj](https://github.com/advisories/GHSA-w8p5-mx5w-cpqj) extends the package-control pattern to `ansible-galaxy role install`. The advisory says `ansible-core` processed dependency specifications from a role's `meta/requirements.yml` and failed to neutralize argument delimiters in `src`, allowing a malicious role author to inject Git configuration flags during role dependency installation. Treat Ansible role metadata as a repository-controlled command-argument boundary: installing a role can cause its declared dependencies to reach `git` before playbook execution starts.
