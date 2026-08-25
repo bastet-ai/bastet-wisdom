@@ -87,9 +87,22 @@ This batch is durable because the advisories point to reusable operator checks f
 - A vulnerable result is disclosure of the plaintext created-user password or enough material to impersonate the account.
 - Immediately rotate or delete the test user after evidence collection.
 
+### Federated shared-channel file-sync path-traversal check
+
+[GHSA-8qq9-cqj8-82w4](https://github.com/advisories/GHSA-8qq9-cqj8-82w4) / [CVE-2026-6961](https://nvd.nist.gov/vuln/detail/CVE-2026-6961) (MMSA-2026-00661, high) is a remote-cluster-to-filestore trust break: during shared-channel file sync, the target server does not sanitize `FileInfo.Name` received from a federated peer, so a controlled federated server can write files to arbitrary locations within the target's filestore via path-traversal sequences in the filename field.
+
+- **Version scope:** affected releases are `11.6.x <= 11.6.1`, `11.5.x <= 11.5.4`, `10.11.x <= 10.11.15` (and `<= 10.11.16` per the advisory). Fixed in `11.6.2`, `11.5.5`, `10.11.17`.
+- **Trust model:** the actor is a *federated* server the target trusts for shared-channel file sync. This extends the [shared-channel membership-removal check](#shared-channel-membership-removal-authorization-check) from the same page: both treat remote-cluster metadata as privileged input that must be re-bound to an authorized location.
+- **Lab setup:** two disposable Mattermost instances in an affected version with a working federation relationship and a shared channel. One instance is the "attacker" peer the tester controls; both use throwaway filestore roots.
+- **Workflow:** from the controlled peer, emit a shared-channel file-sync event whose `FileInfo.Name` carries a traversal-shaped canary (for example `../../canary.txt` or a sibling-above-canary), referencing a synthetic, non-sensitive source object.
+- **Expected secure result:** the file lands under the shared-channel filestore sub-path for that channel, or the event is rejected. **Vulnerable result:** a marker file appears at a location above the expected channel sub-path within the target filestore.
+- **Bound the claim:** this is a *filestore-relative* write primitive, not arbitrary host filesystem write. Prove it with a synthetic canary and stop at the placement decision. Do not overwrite real stored files, do not read other tenants' files, and do not use the write to plant executable content on a live server.
+- **Report** as **federated-peer `FileInfo.Name` -> shared-channel file sync -> unsanitized filename -> filestore path outside the channel sub-path**, and pair it with the membership-sync mismatch so the report frames a consistent "remote-cluster metadata reaches privileged target state" pattern.
+
 ## Reporting heuristics
 
 - For remote-cluster issues, include both the channel object being targeted and the remote cluster's authorized channel set. The finding is the mismatch.
+- For federated file-sync path traversal, include the peer-supplied `FileInfo.Name`, the resolved filestore path, and the expected channel sub-path; the finding is the placement outside that sub-path. Prove with a synthetic canary only.
 - For AI rewrite leakage, include the inaccessible post/thread ID, caller membership state, and the exact canary phrase returned by the endpoint.
 - For support-packet leaks, include redacted file paths and field names, not actual credentials.
 - For host-header findings, include the raw `Host` header, the constructed URL, and the callback proof.

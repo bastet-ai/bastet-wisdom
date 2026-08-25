@@ -129,3 +129,39 @@ Keep claims bounded: the event issue exposes activity metadata, not file bytes; 
 [GHSA-v6w6-358x-2433](https://github.com/advisories/GHSA-v6w6-358x-2433) adds an action-vs-scope mismatch: an OAuth token with `Admin.Read` but not `Admin.Write` could submit caller-controlled node definitions to `/api/v4/admin/node/test` and `/api/v4/admin/node/test/downloader`, causing outbound operational requests. Cloudreve `4.17.0` is the fixed control.
 
 Extend the lab with an owned callback and a synthetic node definition containing fake keys. Establish that the token cannot create/update a node, then call each test route and record only callback receipt, request class, and redacted marker headers. Never target metadata, internal services, or real storage nodes. Report **read-only admin OAuth scope -> node test action -> server-side network request**, not anonymous SSRF.
+
+## August 24 remote-download path-escape and context-hint revocation follow-up
+
+Two Cloudreve `v4` findings (no fixed release published at scan time; treat every `<= 4.0.0-20260606032813-26b6b1044b02` checkout as in range) add two new operator boundaries to this page: a downloader-reported file path that escapes the user-selected destination, and a cached share-navigator state that skips share revalidation.
+
+- [GHSA-w8j7-39hp-8x59](https://github.com/advisories/GHSA-w8j7-39hp-8x59): the remote-download master/slave transfer path joins the user-selected destination URI with the downloader-reported filename via `URI.JoinRaw()`, and `sanitizeFileName()` does not strip `/`, `.`, or `..`. For aria2, `TaskFile.Name` is derived from `tellStatus().files[].path`, so a downloader that reports `<saveDir>/../../escaped.txt` places the downloaded file above the selected destination folder.
+- [GHSA-vx2m-jpxr-xv7w](https://github.com/advisories/GHSA-vx2m-jpxr-xv7w): file-listing responses hand the client a `context_hint` UUID. Replaying it on `file/url` / `file/thumb` makes DBFS restore a cached `shareNavigatorState` whose `shareRoot` is already loaded, so `To()` skips `Root()` — the only place that re-runs `IsValidShare` (expiry, remaining downloads, owner status) and the share-password check. A recipient who prewarms the hint while access is valid can keep minting signed URLs for already-known shared file paths for up to the hint TTL (`5 * 60` = 300 s) after the share is deleted, expires, or hits zero remaining downloads, plus the life of any signed URL minted in that window.
+
+### Remote-download destination-escape check
+
+This extends the [remote-download final-destination check](#cloudreve-remote-download-final-destination-check) with a *downloader-metadata* input class instead of an HTTP URL input class: the traversal arrives in the downloader's own reported path, not in the URL the user typed.
+
+1. Stand up the official Cloudreve Docker image (PostgreSQL, Redis) with remote download enabled and the aria2 provider pointed at a fake aria2 JSON-RPC service you control.
+2. In the file manager create `My files / victim / safe /`. Create a remote-download task for any URL inside `victim/safe`.
+3. The fake aria2 service answers `aria2.tellStatus` with `files[0].path = <saveDir>/../../escaped.txt` (a sibling above the selected destination). Do not target a real downloader; the vulnerable input is the downloader's metadata, so a local fake is the correct oracle.
+4. The expected secure result is the file landing at `cloudreve://my/victim/safe/...`. The vulnerable result is a file at `cloudreve://my/escaped.txt` — it escapes both the selected destination and its parent.
+5. Note the boundary honestly: the escape is still subject to Cloudreve's normal upload and permission checks, so it moves the file into an *accessible* location above the chosen folder rather than arbitrary system paths. Report it as **downloader-reported file path -> `JoinRaw` segment join -> destination URI above the selected folder**, distinct from the URL-SSRF destination finding.
+
+### Context-hint share revocation-bypass check
+
+This is a revocation/expiry bypass, not a way to discover unknown share contents: the tester must already have had access to the share and must know the target file URI from a prior listing.
+
+1. Lab setup: one share owner and one recipient (a second free account, or anonymous if the default anon group keeps share download). The recipient knows the share URL (and password, if any).
+2. While the share is valid, the recipient lists it (`GET /api/v4/file?uri=<share-uri>`) and records the returned `context_hint` and each file's `path`.
+3. Prewarm the cache for one known file: `POST /api/v4/file/url` with header `X-Cr-Context-Hint: <context_hint>` and body `{"uri":["<known-shared-file-uri>"]}`. This is a cache MISS, so `Root()` runs and `PersistState` arms, writing `shareNavigatorState` to KV under `navigator_state_<hint>_share`.
+4. The owner deletes the share (or lets it expire / hit zero remaining downloads).
+5. Within 300 s, the recipient repeats the same `file/url` request with the same hint. Expected secure result is `ErrShareNotFound` / `ErrShareLinkExpired`. The vulnerable result is a signed, downloadable URL — cache HIT, `RestoreState` sets `shareRoot`, `To()` skips `Root()`, and `IsValidShare` never runs.
+6. Confirm the signed content endpoint `file/content/:id/...` then serves the file under `SignRequired` alone.
+
+Report it as **listing response context_hint -> replayed X-Cr-Context-Hint -> DBFS cached shareNavigatorState -> `To()` skips `Root()`/`IsValidShare` -> signed URL after revocation**. Keep the claim bounded: it defeats owner revocation, time expiry, the remaining-download limit, and password revalidation on cached state, but only for files the recipient already knows. Do not use it to read shares or files the recipient never saw.
+
+### Not promoted from this wave
+
+- [GHSA-fx4f-mhw4-qm7j](https://github.com/advisories/GHSA-fx4f-mhw4-qm7j) — `vibeio-http` DoS in the HTTP/1.x chunked-encoding parser: a resource-exhaustion parser issue, no durable operator exploit path.
+- [GHSA-w67g-5rqw-f597](https://github.com/advisories/GHSA-w67g-5rqw-f597) — Gorilla WebSocket uses a weak PRNG for the WebSocket mask key (fixed `1.5.3`): a cryptographic-quality issue with no standalone replayable chain; revisit only if paired with an active-exploitation signal.
+- [GHSA-4ph6-mjv7-3fq6](https://github.com/advisories/GHSA-4ph6-mjv7-3fq6) — netfoil improper handling of untrusted DoH response data (low, fixed `0.5.0`): unverified-response log/memory hygiene, no operator exploit path beyond the existing [netfoil boundary coverage](2026-07-07-better-auth-aider-netfoil-ckan-mcp-boundaries-ghsa.md).

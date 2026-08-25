@@ -10,6 +10,9 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [3X-UI authenticated log-path import to arbitrary file write and RCE](2026-08-24-3x-ui-xray-log-path-import-file-write-ghsa.md)
+- [Cloudreve remote-download path-escape and context-hint share-revocation follow-up](2026-07-20-cloudreve-pillow-token-image-boundaries-ghsa.md#august-24-remote-download-path-escape-and-context-hint-revocation-follow-up)
+- [Mattermost federated shared-channel file-sync path traversal (CVE-2026-6961)](2026-06-01-mattermost-shared-channel-ai-secret-boundary-batch-ghsa.md#federated-shared-channel-file-sync-path-traversal-check)
 - [ChromaDB tenant-authorization bypass and model-loading RCE wave](2026-08-24-chromadb-tenant-authorization-and-model-rce-ghsa.md)
 - [django CMS page-cache Vary poisoning and plugin-tree cyclic-reparenting DoS](2026-08-24-django-cms-cache-vary-poisoning-and-cyclic-reparenting-ghsa.md)
 - [Oracle WebLogic Proxy Plug-in improper access control KEV (CVE-2026-21962)](2026-08-24-oracle-weblogic-proxy-plug-in-improper-access-control-kev-cve-2026-21962.md)
