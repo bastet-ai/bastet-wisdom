@@ -1,8 +1,8 @@
 # Mattermost shared-channel, AI rewrite, support-packet secret, and chatops boundary batch
 
-Source: GitHub Security Advisories, updated 2026-06-01: [GHSA-hqpj-f3jh-29vx](https://github.com/advisories/GHSA-hqpj-f3jh-29vx) / CVE-2026-4273, [GHSA-8h9w-w78c-vvr3](https://github.com/advisories/GHSA-8h9w-w78c-vvr3) / CVE-2026-28759, [GHSA-82j6-4fq7-fx62](https://github.com/advisories/GHSA-82j6-4fq7-fx62) / CVE-2026-6347, [GHSA-9p64-jpc7-m2rp](https://github.com/advisories/GHSA-9p64-jpc7-m2rp) / CVE-2026-6346, [GHSA-m79q-8qf5-v622](https://github.com/advisories/GHSA-m79q-8qf5-v622) / CVE-2026-6343, [GHSA-wvgv-4fc3-2rcp](https://github.com/advisories/GHSA-wvgv-4fc3-2rcp) / CVE-2026-6345, [GHSA-vqp5-2mrp-qqxg](https://github.com/advisories/GHSA-vqp5-2mrp-qqxg) / CVE-2026-6333, [GHSA-8r89-8w26-cq32](https://github.com/advisories/GHSA-8r89-8w26-cq32) / CVE-2026-5163, [GHSA-xvcx-mgpc-5xh3](https://github.com/advisories/GHSA-xvcx-mgpc-5xh3) / CVE-2026-6339, and [GHSA-gvg4-jhmr-6j23](https://github.com/advisories/GHSA-gvg4-jhmr-6j23) / CVE-2026-4286.
+Source: GitHub Security Advisories, updated 2026-06-01: [GHSA-hqpj-f3jh-29vx](https://github.com/advisories/GHSA-hqpj-f3jh-29vx) / CVE-2026-4273, [GHSA-8h9w-w78c-vvr3](https://github.com/advisories/GHSA-8h9w-w78c-vvr3) / CVE-2026-28759, [GHSA-82j6-4fq7-fx62](https://github.com/advisories/GHSA-82j6-4fq7-fx62) / CVE-2026-6347, [GHSA-9p64-jpc7-m2rp](https://github.com/advisories/GHSA-9p64-jpc7-m2rp) / CVE-2026-6346, [GHSA-m79q-8qf5-v622](https://github.com/advisories/GHSA-m79q-8qf5-v622) / CVE-2026-6343, [GHSA-wvgv-4fc3-2rcp](https://github.com/advisories/GHSA-wvgv-4fc3-2rcp) / CVE-2026-6345, [GHSA-vqp5-2mrp-qqxg](https://github.com/advisories/GHSA-vqp5-2mrp-qqxg) / CVE-2026-6333, [GHSA-8r89-8w26-cq32](https://github.com/advisories/GHSA-8r89-8w26-cq32) / CVE-2026-5163, [GHSA-xvcx-mgpc-5xh3](https://github.com/advisories/GHSA-xvcx-mgpc-5xh3) / CVE-2026-6339, and [GHSA-gvg4-jhmr-6j23](https://github.com/advisories/GHSA-gvg4-jhmr-6j23) / CVE-2026-4286. August 25 follow-up wave: [GHSA-6hxm-w4hv-vgvw](https://github.com/advisories/GHSA-6hxm-w4hv-vgvw) / CVE-2026-7387, [GHSA-9p44-r552-4wp9](https://github.com/advisories/GHSA-9p44-r552-4wp9) / CVE-2026-7184, [GHSA-m2w9-h2mm-79qr](https://github.com/advisories/GHSA-m2w9-h2mm-79qr) / CVE-2026-6739, [GHSA-3vmp-whvv-5v9v](https://github.com/advisories/GHSA-3vmp-whvv-5v9v) / CVE-2026-6046, [GHSA-c28q-m4gf-vg4q](https://github.com/advisories/GHSA-c28q-m4gf-vg4q) / CVE-2026-6689, and [GHSA-rp4v-qc77-phm4](https://github.com/advisories/GHSA-rp4v-qc77-phm4) / CVE-2026-3433.
 
-This batch is durable because the advisories point to reusable operator checks for collaboration platforms: remote-cluster trust boundaries, AI helper endpoints that replay private thread context, support export secret handling, host-header callback construction, burn-after-read request forgery, and playbook/chatops permission drift.
+This batch is durable because the advisories point to reusable operator checks for collaboration platforms: remote-cluster trust boundaries, AI helper endpoints that replay private thread context, support export secret handling, host-header callback construction, burn-after-read request forgery, playbook/chatops permission drift, and the August 25 wave of route-scoped authorization checks on role, group-link, team-creation, bot-registration, and websocket-broadcast surfaces.
 
 ## What changed
 
@@ -99,10 +99,81 @@ This batch is durable because the advisories point to reusable operator checks f
 - **Bound the claim:** this is a *filestore-relative* write primitive, not arbitrary host filesystem write. Prove it with a synthetic canary and stop at the placement decision. Do not overwrite real stored files, do not read other tenants' files, and do not use the write to plant executable content on a live server.
 - **Report** as **federated-peer `FileInfo.Name` -> shared-channel file sync -> unsanitized filename -> filestore path outside the channel sub-path**, and pair it with the membership-sync mismatch so the report frames a consistent "remote-cluster metadata reaches privileged target state" pattern.
 
+## August 25 follow-up: route-scoped authorization wave
+
+Six new Mattermost records (MMSA-2026-00616/00649/00655/00656/00662/00665) all land in the same 10.11.x / 11.5.x / 11.6.x window and share one operator pattern: **an API route enforces its object-level permission but not the authority-level permission the mutation actually grants**. Each check below binds one route to one missing authority check.
+
+### Group-sync link `scheme_admin` escalation check
+
+[GHSA-6hxm-w4hv-vgvw](https://github.com/advisories/GHSA-6hxm-w4hv-vgvw) / [CVE-2026-7387](https://nvd.nist.gov/vuln/detail/CVE-2026-7387) (MMSA-2026-00665, high, CVSS 8.8): the group syncable link and patch endpoints accept a `scheme_admin` flag without requiring role-management authorization, so a user holding group-link permissions can escalate themselves and linked group members to team or channel admin.
+
+- **Version scope:** `11.6.x <= 11.6.1`, `11.5.x <= 11.5.4`, `10.11.x <= 10.11.15/16`; patched `11.6.2`, `11.5.5`, `10.11.17`, `8.0.0-20260506065351`.
+- **Lab setup:** one disposable instance in an affected version; a group (for example Ldap-group or a local syncable group) and two synthetic users; one principal with `manage_group` / group-link permission but explicitly without role-management authority.
+- **Workflow:** from that principal, POST the group syncable link (or PATCH the existing link) with the scheme `scheme_admin` / role-escalating payload against the synthetic group; then read back the group membership roles for the two synthetic users.
+- **Expected secure result:** the route rejects the payload or applies only the scheme the caller is authorized to set. **Vulnerable result:** the link records the escalated scheme and the synthetic users now resolve team/channel-admin permissions.
+- **Bound the claim:** prove with synthetic users only. Do not escalate real users, do not grant real admins the flag, and revert any mutated group or role state immediately.
+- **Report** as **group syncable link/patch -> `scheme_admin` accepted without role-management authorization -> synthetic users gain admin role**, including the exact endpoint, caller permission set, and before/after role resolution.
+
+### Protected system-role patch check
+
+[GHSA-m2w9-h2mm-79qr](https://github.com/advisories/GHSA-m2w9-h2mm-79qr) / [CVE-2026-6739](https://nvd.nist.gov/vuln/detail/CVE-2026-6739) (MMSA-2026-00656, medium, CVSS 6.7): patching protected default system roles does not require system-level permission, so a delegated user-management principal can alter built-in role permissions.
+
+- **Version scope:** same 10.11/11.5/11.6 window; patched `10.11.17`, `11.5.5`, `11.6.2`, `8.0.0-20260501142004`.
+- **Lab setup:** one affected instance; a principal with delegated user-management (for example manage users) but not system-admin; a synthetic custom role plus one default protected role (for example `team_admin`).
+- **Workflow:** PATCH the default role's permission set with a benign added permission (for example `create_post`), then read the role back and test a synthetic low-privilege user against the newly added permission.
+- **Expected secure result:** the patch is rejected for the protected default role. **Vulnerable result:** the built-in role's permission set changes and the synthetic user now exercises the added permission.
+- **Bound the claim:** only add a low-impact permission on a disposable instance and revert the role immediately; never widen system-admin or delete roles.
+- **Report** as **role PATCH on protected default role -> accepted without system-level permission -> synthetic principal exercises the added permission**, with the role diff.
+
+### Remote-cluster API token disclosure on PATCH check
+
+[GHSA-9p44-r552-4wp9](https://github.com/advisories/GHSA-9p44-r552-4wp9) / [CVE-2026-7184](https://nvd.nist.gov/vuln/detail/CVE-2026-7184) (MMSA-2026-00662, medium, CVSS 6.5, CWE-201): the Remote Cluster API response is not sanitized on PATCH, so a user with `manage_secure_connections` can obtain remote-cluster authentication tokens through the PATCH response.
+
+- **Version scope:** same window; patched `10.11.17`, `11.5.5`, `11.6.2`, `8.0.0-20260428142921`.
+- **Lab setup:** two instances with a working remote-cluster relationship; the target's cluster token is a synthetic lab value.
+- **Workflow:** as a user holding `manage_secure_connections` on the target, send a PATCH to the remote cluster endpoint and inspect the response body and headers for the cluster token or token-derivable material.
+- **Expected secure result:** the PATCH response is sanitized and carries no cluster authentication material. **Vulnerable result:** the response (or a field of it) contains the remote-cluster token or enough material to reconstruct it.
+- **Bound the claim:** use only synthetic tokens you mint for the lab; capture redacted token fragments, not the full value, in the report.
+- **Report** as **remote-cluster PATCH -> unsanitized response -> cluster token disclosure**, with the response field that leaked and the caller permission.
+
+### Bot-registration username validation check
+
+[GHSA-3vmp-whvv-5v9v](https://github.com/advisories/GHSA-3vmp-whvv-5v9v) / [CVE-2026-6046](https://nvd.nist.gov/vuln/detail/CVE-2026-6046) (MMSA-2026-00649, medium, CVSS 5.3): the server does not validate that a username returned during bot registration belongs to a bot account, enabling an unprivileged user who pre-registers a predictable plugin bot username to intercept private plugin DMs.
+
+- **Version scope:** same window; patched `10.11.17`, `11.5.5`, `11.6.2`, `8.0.0-20260428151657`.
+- **Lab setup:** one affected instance with a plugin (or a stub bot client) that DMs a user using a predictable bot username pattern.
+- **Workflow:** pre-register a normal user account with the predictable bot username; trigger the plugin DM; observe whether the message lands in the attacker-controlled account's DM channel instead of the bot's.
+- **Expected secure result:** registration of a bot username by a non-bot principal is rejected, or the DM resolves to the bot account regardless of pre-registration. **Vulnerable result:** the synthetic plugin DM is delivered to the attacker-controlled user account.
+- **Bound the claim:** use a synthetic plugin message only; do not target real user DMs or capture real plugin output.
+- **Report** as **bot registration returns username not bound to bot account -> pre-registered user intercepts plugin DM**, with the username, registration time, and delivery evidence.
+
+### Team-creation open-invite / allowed-domains check
+
+[GHSA-c28q-m4gf-vg4q](https://github.com/advisories/GHSA-c28q-m4gf-vg4q) / [CVE-2026-6689](https://nvd.nist.gov/vuln/detail/CVE-2026-6689) (MMSA-2026-00655, medium, CVSS 4.3): `POST /api/v4/teams` with `allow_open_invite: true` and/or non-empty `allowed_domains` does not enforce `PermissionInviteUser` on the resulting team, while the update/patch route does.
+
+- **Version scope:** same window; patched `10.11.17`, `11.5.5`, `11.6.2`, `8.0.0-20260501144115`.
+- **Lab setup:** one affected instance; a principal with `PermissionCreateTeam` but not `PermissionInviteUser` on teams they create.
+- **Workflow:** create a team via `POST /api/v4/teams` with `allow_open_invite: true` and a synthetic `allowed_domains` entry; read back the team; then compare with the same settings applied via the team update/patch route.
+- **Expected secure result:** either both routes reject the settings for this principal, or the created team does not expose open-invite/domain-controlled membership to the caller. **Vulnerable result:** the created team accepts the invite settings at creation time while the patch route rejects them for the same principal.
+- **Bound the claim:** use a disposable team and revert or delete it; do not open invite settings on real teams or invite real users.
+- **Report** as **create-route omits `PermissionInviteUser` that the patch-route enforces -> team-creation accepts open-invite/allowed-domain settings**, with the create/patch decision matrix.
+
+### `role_updated` websocket broadcast scope check
+
+[GHSA-rp4v-qc77-phm4](https://github.com/advisories/GHSA-rp4v-qc77-phm4) / [CVE-2026-3433](https://nvd.nist.gov/vuln/detail/CVE-2026-3433) (MMSA-2026-00616, medium, CVSS 4.3, CWE-200): `role_updated` websocket events are not restricted to members of the affected team or channel, so a guest-level user can observe permission-scheme change notifications for private teams they do not belong to.
+
+- **Version scope:** same window; patched `10.11.17`, `11.5.5`, `11.6.2`, `8.0.0-20260504071740`.
+- **Lab setup:** one affected instance; a synthetic private team; a guest-level principal with no membership in that team; a second principal authorized to trigger a `role_updated` event in the private team.
+- **Workflow:** open the websocket as the guest principal; trigger the role update in the private team; record which events the guest receives.
+- **Expected secure result:** the guest receives no `role_updated` event for the private team (or only events scoped to surfaces the guest is part of). **Vulnerable result:** the guest's socket receives the `role_updated` event naming the private team/channel scope.
+- **Bound the claim:** capture event names and scope identifiers only; do not enumerate real teams or exfiltrate real role data.
+- **Report** as **`role_updated` broadcast not scoped to team/channel membership -> guest socket receives private-team scheme-change event**, with the event payload (redacted) and the principal's membership state.
+
 ## Reporting heuristics
 
 - For remote-cluster issues, include both the channel object being targeted and the remote cluster's authorized channel set. The finding is the mismatch.
 - For federated file-sync path traversal, include the peer-supplied `FileInfo.Name`, the resolved filestore path, and the expected channel sub-path; the finding is the placement outside that sub-path. Prove with a synthetic canary only.
+- For the August 25 route-scoped wave, include the exact route, the permission the route should have required, the caller's actual permission set, and a create-vs-patch or authorized-vs-unauthorized decision table. The finding is the route/authority mismatch, not the resulting role by itself.
 - For AI rewrite leakage, include the inaccessible post/thread ID, caller membership state, and the exact canary phrase returned by the endpoint.
 - For support-packet leaks, include redacted file paths and field names, not actual credentials.
 - For host-header findings, include the raw `Host` header, the constructed URL, and the callback proof.
