@@ -10,6 +10,9 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Gitea diff/patch git-hook installation KEV (CVE-2026-60004)](2026-08-25-gitea-diffpatch-git-hook-installation-kev-cve-2026-60004.md)
+- [gRPC-Erlang wire-deserialization, transcoding, and body-boundary batch](2026-08-25-grpc-erlang-wire-deserialization-and-transcoding-boundary-batch-ghsa.md)
+- [PraisonAI SSRF/origin/auth fail-open wave, mcp-shell allowlist bypasses, and Chainlit MCP stdio command injection](2026-05-29-praisonai-agent-platform-and-formie-boundary-batch-ghsa.md#august-25-follow-up-praisonai-ssrforiginauth-fail-open-wave-mcp-shell-allowlist-bypasses-and-chainlit-mcp-stdio-command-injection)
 - [GitPython unsafe-option, config-reserialization, and merge-include boundaries](2026-08-25-gitpython-unsafe-option-and-config-reserialization-boundaries-ghsa.md)
 - [Adminer DSN/ODBC injection, SQLite RCE, and admin-panel CSRF boundaries](2026-08-25-adminer-dsn-odbc-injection-and-sqlite-rce-boundaries-ghsa.md)
 - [Grav sandbox-escape, privilege-validation, and host/origin trust boundaries](2026-08-25-grav-sandbox-escape-and-privilege-host-origin-boundaries-ghsa.md)

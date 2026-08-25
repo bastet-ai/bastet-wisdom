@@ -76,6 +76,39 @@ This batch is durable because it captures reusable offensive validation patterns
 - For sandbox/module execution, keep evidence to marker-only execution and name the missing validation primitive (`__self__`, `vars`, unguarded `exec_module`, or missing local-tool gate).
 - For Formie, include whether front-end editing is enabled, the affected Formie major version, and the unauthorized submission ID overwrite path.
 
+## August 25 follow-up: PraisonAI SSRF/origin/auth fail-open wave, mcp-shell allowlist bypasses, and Chainlit MCP stdio command injection
+
+A second, larger PraisonAI wave plus two adjacent agent-runtime/MCP families landed on 2026-08-25. They reinforce the same boundary classes as this page but add three new, durable patterns: **SSRF patch-bypass via redirect/DNS-rebinding**, **origin/auth allowlist fail-open**, and **MCP command-tool allowlist bypass**.
+
+### PraisonAI / praisonaiagents (19 GHSAs, published 2026-08-25)
+
+- **SSRF protection is validated-once-then-fetched — bypass it two ways.** `web_crawl` (and the Jobs `webhook_url` validator) resolves the host *once*, blocks private/loopback literals, then fetches with `httpx.Client(follow_redirects=True)` (or a fresh `httpx.AsyncClient` for webhooks) with **no re-validation of the redirect target**. Two independent bypasses: (a) a public URL that `302`-redirects to `169.254.169.254` / `127.0.0.1`, and (b) **DNS rebinding** (TTL=1s host that resolves public at validation, private at fetch). `spider_tools._host_is_blocked()` is worse — it never does DNS resolution at all, so `127.0.0.1.nip.io` reaches loopback directly. The `except socket.gaierror: pass` in the webhook validator is a **fail-open on DNS error** plus a validate-then-fetch TOCTOU. See [GHSA-5r34-2g38-6569](https://github.com/advisories/GHSA-5r34-2g38-6569), [GHSA-8hjw-25cg-g52h](https://github.com/advisories/GHSA-8hjw-25cg-g52h), [GHSA-vg6p-v9vm-6fgj](https://github.com/advisories/GHSA-vg6p-v9vm-6fgj), [GHSA-x44h-65qv-cw74](https://github.com/advisories/GHSA-x44h-65qv-cw74), [GHSA-rg5q-pp8p-f7jm](https://github.com/advisories/GHSA-rg5q-pp8p-f7jm), [GHSA-hmfx-4v44-9qw9](https://github.com/advisories/GHSA-hmfx-4v44-9qw9).
+- **Origin allowlists that use `startswith` or unanchored regex are bypassable.** `http://localhost.evil.example` passes a `startswith("http://localhost")` origin check; the WebSocket Chrome-extension origin regex `re.match(r"chrome-extension://[a-z0-9]{32}")` is unanchored at the end, so any longer origin passes. Both enable browser-mediated unauthenticated MCP `tools/call` / WebSocket `start_session` against a local agent runtime. See [GHSA-pvph-5j39-v8qc](https://github.com/advisories/GHSA-pvph-5j39-v8qc), [GHSA-wj6g-v78p-6fx3](https://github.com/advisories/GHSA-wj6g-v78p-6fx3), [GHSA-6g6r-q6gw-w8fg](https://github.com/advisories/GHSA-6g6r-q6gw-w8fg).
+- **Auth fail-open and ignored `--api-key`.** `praisonai serve` / `serve agents` parse `--api-key` but never wire it into the FastAPI app, so `POST /agents` runs unauthenticated even with a key set. The Recipe server fail-opens when `auth: api-key|jwt` is set but no secret exists (`if not expected_key: return await call_next(request)`). The async Jobs API (`/api/v1/runs`) ships with no auth at all. See [GHSA-pvxx-r596-f5qj](https://github.com/advisories/GHSA-pvxx-r596-f5qj), [GHSA-7ww9-85pg-cv4x](https://github.com/advisories/GHSA-7ww9-85pg-cv4x), [GHSA-r7v3-x45f-g7hp](https://github.com/advisories/GHSA-r7v3-x45f-g7hp), [GHSA-gfq8-hmph-9gjv](https://github.com/advisories/GHSA-gfq8-hmph-9gjv), [GHSA-2jgc-f764-c5r2](https://github.com/advisories/GHSA-2jgc-f764-c5r2).
+- **Workspace containment that keys on `abspath` not `realpath`.** `praisonai.code` tools call `is_path_within_directory()` with `os.path.abspath()`, so a symlink *inside* the workspace whose target is *outside* passes the check while `open()` follows it; `list_files()` never calls the containment helper at all. `FileMemory.__init__` builds paths from an unsanitized `user_id`, enabling `../` file writes. `ast_grep_rewrite` rewrites arbitrary files without the `@require_approval` gate every sibling mutation tool has. See [GHSA-ch89-h4r2-c8f8](https://github.com/advisories/GHSA-ch89-h4r2-c8f8), [GHSA-gxmw-5f7x-6g22](https://github.com/advisories/GHSA-gxmw-5f7x-6g22), [GHSA-cfxv-8fw8-rwpv](https://github.com/advisories/GHSA-cfxv-8fw8-rwpv).
+- **Workflow include executes an included recipe's `tools.py` module-level code** even when the documented autoload opt-in is unset, reachable through `praisonai.recipe.run()` without a network service. See [GHSA-hxmv-c4g6-5fqc](https://github.com/advisories/GHSA-hxmv-c4g6-5fqc).
+- Unauthenticated unbounded MCP session accumulation (DoS) via `initialize` with no TTL enforcement. See [GHSA-wv94-5qcp-6m36](https://github.com/advisories/GHSA-wv94-5qcp-6m36).
+
+### mcp-shell allowlist bypasses (3 GHSAs)
+
+`mcp-shell` "secure mode" restricts `shell_exec` to an allowlist, but the default config and validator are bypassable:
+
+- **Git shell-alias injection.** The metacharacter blocklist omits `!`, so `/usr/bin/git -c alias.pwn=!<cmd>` runs arbitrary OS commands as the process user. Default Docker image runs as `mcpuser` (UID 1000) with Git installed and secure mode on — exploitable out of the box. See [GHSA-74hp-mggr-hv58](https://github.com/advisories/GHSA-74hp-mggr-hv58).
+- **Default `/bin/bash` in the allowlist.** The validator only checks the *first token*, so `/bin/bash -c <cmd>` runs anything in the container. See [GHSA-3x77-wg38-92r3](https://github.com/advisories/GHSA-3x77-wg38-92r3).
+- **Security disabled by default** in the bare-binary deploy path (`Security.Enabled: false` unless `MCP_SHELL_SEC_CONFIG_FILE` is set). See [GHSA-f5pj-2738-996m](https://github.com/advisories/GHSA-f5pj-2738-996m).
+
+### Chainlit MCP stdio command injection (CVE-2026-45018)
+
+With `features.mcp.enabled = true` (MCP is disabled by default since v2.7.0), `POST /mcp` for `stdio` transport accepts a user-controlled `fullCommand`. `validate_mcp_command()` checks only the executable name against an allowlist and does not restrict arguments, so `npx -y -c '<arbitrary command>'` executes arbitrary shell commands as the Chainlit process, unauthenticated. Patched in 2.12.0. See [GHSA-w3fx-mc44-mf6j](https://github.com/advisories/GHSA-w3fx-mc44-mf6j). The durable pattern: **an allowlist that validates the command token but not its arguments/flags** is not a command-execution boundary.
+
+### Operator triage for the August 25 wave
+
+1. **Treat every "validate the URL/origin/auth then use it" sink as two separate checks.** Redirect-following and DNS re-resolution invalidate a one-time host check. Probe with an owned no-content peer that 302-redirects to loopback/metadata and with a TTL=1 rebind host; stop at the callback/marker, never at real internal data.
+2. **Search allowlists for `startswith`, unanchored `re.match`, and "first-token-only" logic.** Origin/host/executable allowlists that compare prefixes or only the argv[0] are the bypass class.
+3. **Assume `--api-key`/`auth` flags may be no-ops.** Confirm the flag is actually read by the middleware, not just parsed by the CLI.
+4. **For workspace containment, key on `realpath`/`resolve`, not `abspath`.** Symlinks and `../` are the two escapes; check that *every* sibling tool (not just the patched one) enforces the boundary and the approval gate.
+5. **For MCP command tools, prove the argument boundary.** Show an allowlisted executable whose `-c`/`alias.!`/`-y -c` flag reaches arbitrary execution; keep the marker inert (`id`/`pwd`/marker file) and lab-only.
+
 ## Notes on skipped items from this scan
 
 - Bazaar `bzr+ssh` dash-prefixed hostname command execution was updated in GitHub Advisories but is an old 2017 issue; it remains useful supply-chain history, not fresh Skillz Wiki content.
