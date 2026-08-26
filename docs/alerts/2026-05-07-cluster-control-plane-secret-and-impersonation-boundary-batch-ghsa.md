@@ -114,3 +114,44 @@ Five GitHub records for Red Hat Advanced Cluster Management components add the s
 6. Repeat on corrected components and require: namespace fixed to the authenticated cluster's binding, IP/subnet validation against the spoke's declared ranges, controller execution as the requesting tenant's identity, and `secretRef` namespace locked to the HelmRelease's own namespace.
 
 Report each edge as a separate finding with **authenticated spoke identity -> attacker-controlled field -> denied sink decision**. Do not infer full cluster compromise from a single object injection, and do not combine the five records into one chain unless every transition is observed on the same lab topology.
+
+## August 26 follow-up: MCE hub controllers derive cross-cluster authority from labels, names, and URL paths
+
+Seven GitHub records for OpenShift Multicluster Engine (MCE) add the same hub/spoke trust-boundary family on a second control plane. The shared pattern: hub-side controllers and routes select privileged destinations from **caller-controlled labels, resource naming conventions, and URL path segments** instead of the authenticated cluster's identity.
+
+- [GHSA-9855-9cch-x8mw / CVE-2026-66794](https://github.com/advisories/GHSA-9855-9cch-x8mw) (critical, `cluster-proxy-addon`): the user-facing route accepts unauthenticated requests and lets path-segment manipulation proxy to arbitrary services in any managed cluster — an authentication and authorization bypass with cross-cluster service reach.
+- [GHSA-w9c6-w29v-4vp6 / CVE-2026-66795](https://github.com/advisories/GHSA-w9c6-w29v-4vp6) (critical, `managedcluster-import-controller`): CSR auto-approval does not inspect the signer name or decode the PEM-encoded x509 CSR, so a privileged service account on a spoke can submit a malicious CSR and obtain hub administrative credentials.
+- [GHSA-h2w9-5qx3-frqq / CVE-2026-73269](https://github.com/advisories/GHSA-h2w9-5qx3-frqq) (critical, `cluster-curator-controller`): a ClusterCurator resource matching a specific naming convention triggers creation of a cluster-scoped `ClusterRoleBinding`, escalating a namespace-local user to cluster-wide control.
+- [GHSA-6c6p-j4gf-mj2c / CVE-2026-73268](https://github.com/advisories/GHSA-6c6p-j4gf-mj2c) (critical, `cluster-curator-controller`): `CreateJob()` does not validate `spec.install.overrideJob` raw extension input, so a tenant with ClusterCurator create/update rights can inject an arbitrary Job spec that runs with the controller's elevated privileges.
+- [GHSA-xp42-v53j-r9gh / CVE-2026-73266](https://github.com/advisories/GHSA-xp42-v53j-r9gh) (high, `clusterclaims-controller`): manipulating ClusterClaim labels forces a cluster to join another tenant's `ManagedClusterSet`, enabling policy and workload injection into other tenants' clusters.
+- [GHSA-3vwx-g7ch-f3wg / CVE-2026-19130](https://github.com/advisories/GHSA-3vwx-g7ch-f3wg) (medium, `provider-credential-controller`): manipulating `copiedFrom` labels on a hub, with knowledge of a prior credential value, intercepts newly rotated provider credentials.
+- [GHSA-77qj-pc4h-hxwh / CVE-2026-75569](https://github.com/advisories/GHSA-77qj-pc4h-hxwh) (high, `mce-operator-bundle`): the build process fetches and executes scripts from a remote repository without commit pinning or signature verification — a build-time script-supply boundary for anyone trusting MCE operator bundles.
+
+Treat the proxy-addon record as the most operationally interesting one: it is the only unauthenticated entry point and it turns the MCE route into a user-directed cross-cluster forwarder, which is an SSRF-shaped primitive at cluster scale. The CSR, naming-convention, overrideJob, and label records each require authority already present on a spoke or hub tenant.
+
+!!! warning "Authorized lab validation only"
+    Use a two-cluster (hub + spoke) disposable MCE lab with fake managed clusters, synthetic ClusterCurator/ClusterClaim objects, fake CSR material, and fake provider credentials. Patch Job creation, ClusterRoleBinding creation, credential rotation, and proxy-forward sinks to record and deny. Never obtain or replay real hub admin credentials, point the proxy at operational clusters or internal services, rotate or read live provider credentials, or install real workloads into managed clusters.
+
+### Authority map
+
+| Boundary | Advisory signal | Safe proof target |
+| --- | --- | --- |
+| proxy route path segments to managed-cluster services | unauthenticated route forwards to arbitrary cross-cluster endpoints | patched forwarder records a canary destination in an unrelated managed cluster from a no-identity request |
+| spoke CSR to hub auto-approval | signer name unvalidated, PEM not decoded | denied signer/serializer sink records a canary CSR with a foreign signer that the auto-approver would accept |
+| ClusterCurator name to cluster-scoped ClusterRoleBinding | naming convention triggers cluster-scoped binding | denied create sink records a `cluster-admin`-shaped binding request for a synthetic curator name |
+| ClusterCurator `overrideJob` to controller-privileged Job | raw extension unvalidated at `CreateJob()` | patched Job creator records an out-of-schedule, out-of-scope Job spec under the controller service account |
+| ClusterClaim labels to foreign ManagedClusterSet | labels steer cluster join decision | denied cluster-set mutation sink records a join request into another tenant's set |
+| `copiedFrom` labels to rotated provider credential | label confusion selects the wrong credential copy | denied credential-rotation sink records the canary credential selected for a foreign label |
+| operator-bundle build script fetch | unverified remote script execution at build time | pinned/unsigned script fixtures in a throwaway build workspace; diff executed-vs-pinned script, no live remote execution |
+
+### Workflow
+
+1. Build the lab MCE topology: one hub cluster and one spoke cluster, both disposable, with the affected MCE controllers deployed at the vulnerable versions. Give the spoke/tenant exactly the minimum rights the advisory names (proxy route reach, privileged SA on the spoke, ClusterCurator or ClusterClaim create) and nothing more.
+2. For the proxy route, send requests with path segments that name a canary service in the spoke, in an unrelated managed cluster, and in a system namespace. Patch the forwarder to record (source identity, selected cluster, selected service) and deny all egress. A positive is **unauthenticated request -> forwarder records a cross-cluster canary destination**. Keep probes to the route and canary services; do not scan managed clusters.
+3. For the CSR path, craft a lab CSR with a canary signer name that the auto-approver is reported to miss, plus a negative control with the correct signer. Patch the signer-check and PEM-decode points to record and deny. A positive is **foreign-signer canary CSR -> auto-approval decision records accept**. Do not complete signing or mint hub credentials.
+4. For the curator paths, create synthetic ClusterCurator resources: one matching the trigger naming convention, one not, and one carrying an `overrideJob` extension with an inert canary spec (image = nonfunctional marker, command = no-op). Patch the binding-creation and Job-creation sinks to record and deny. A positive is **trigger name -> cluster-scoped binding request recorded** or **overrideJob extension -> Job creation recorded under the controller SA**.
+5. For the claims path, set ClusterClaim labels that name a second tenant's ManagedClusterSet in the two-tenant lab; patch the cluster-set join mutation to record and deny. A positive is **tenant-A claim labels -> join decision recorded against tenant-B set**.
+6. For the credential path, use two fake provider credential values and `copiedFrom` labels selecting the other tenant's value; patch the rotation-copy sink to record which canary value would be copied. A positive is **foreign `copiedFrom` label -> canary credential B selected for tenant A**. Never capture or replay a real rotated credential.
+7. For the operator bundle, run a throwaway build against pinned and unpinned script fixtures and record which script bytes execute. Frame it as a build-integrity check (commit pin / signature), not as remote code execution.
+
+Report each edge separately as **caller identity (or absence) -> attacker-controlled field -> denied sink decision**, and state the prerequisite authority for every record except the proxy route. Do not claim hub compromise from the label/CSR records without observing the final sink decision in the same lab topology.

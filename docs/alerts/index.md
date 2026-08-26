@@ -10,6 +10,7 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [MCE hub-controller label/name/URL-path cross-cluster authority follow-up](2026-05-07-cluster-control-plane-secret-and-impersonation-boundary-batch-ghsa.md#august-26-follow-up-mce-hub-controllers-derive-cross-cluster-authority-from-labels-names-and-url-paths)
 - [DB-GPT unauthenticated skill-upload path-to-write primitive](2026-08-26-db-gpt-skill-upload-path-write-boundary-ghsa.md)
 - [Apache Tomcat authorization, auth, and parser-boundary batch](2026-08-26-tomcat-authorization-auth-parser-boundary-batch-ghsa.md)
 - [Spring Security DPoP proof cache-based replay](2026-08-26-spring-security-dpop-proof-replay-cache-batch-ghsa.md)

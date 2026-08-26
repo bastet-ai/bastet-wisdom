@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [MCE hub-controller label/name/URL-path cross-cluster authority follow-up](alerts/2026-05-07-cluster-control-plane-secret-and-impersonation-boundary-batch-ghsa.md#august-26-follow-up-mce-hub-controllers-derive-cross-cluster-authority-from-labels-names-and-url-paths)
 - [DB-GPT unauthenticated skill-upload path-to-write primitive](alerts/2026-08-26-db-gpt-skill-upload-path-write-boundary-ghsa.md)
 - [Apache Tomcat authorization, auth, and parser-boundary batch](alerts/2026-08-26-tomcat-authorization-auth-parser-boundary-batch-ghsa.md)
 - [Spring Security DPoP proof cache-based replay](alerts/2026-08-26-spring-security-dpop-proof-replay-cache-batch-ghsa.md)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [gRPC-Erlang wire-deserialization, transcoding, and body-boundary batch](alerts/2026-08-25-grpc-erlang-wire-deserialization-and-transcoding-boundary-batch-ghsa.md)
 - [GitPython unsafe-option, config-reserialization, and merge-include boundaries](alerts/2026-08-25-gitpython-unsafe-option-and-config-reserialization-boundaries-ghsa.md)
 - [Adminer DSN/ODBC injection, SQLite RCE, and admin-panel CSRF boundaries](alerts/2026-08-25-adminer-dsn-odbc-injection-and-sqlite-rce-boundaries-ghsa.md)
-- [Grav sandbox-escape, privilege-validation, and host/origin trust boundaries](alerts/2026-08-25-grav-sandbox-escape-and-privilege-host-origin-boundaries-ghsa.md)
 
 
 
