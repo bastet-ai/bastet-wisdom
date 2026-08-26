@@ -10,6 +10,11 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [DB-GPT unauthenticated skill-upload path-to-write primitive](2026-08-26-db-gpt-skill-upload-path-write-boundary-ghsa.md)
+- [Apache Tomcat authorization, auth, and parser-boundary batch](2026-08-26-tomcat-authorization-auth-parser-boundary-batch-ghsa.md)
+- [Spring Security DPoP proof cache-based replay](2026-08-26-spring-security-dpop-proof-replay-cache-batch-ghsa.md)
+- [OpenStack Keystone delegated-auth scope-escape and credential-minting](2026-08-26-keystone-delegated-auth-scope-and-credential-minting-ghsa.md)
+- [ClipBucket V5 installer `php_cli_filepath` shell execution and BlueZ crafted-EIR overflow](2026-08-26-clipbucket-installer-shell-and-bluez-eir-overflow-ghsa.md)
 - [Gitea diff/patch git-hook installation KEV (CVE-2026-60004)](2026-08-25-gitea-diffpatch-git-hook-installation-kev-cve-2026-60004.md)
 - [gRPC-Erlang wire-deserialization, transcoding, and body-boundary batch](2026-08-25-grpc-erlang-wire-deserialization-and-transcoding-boundary-batch-ghsa.md)
 - [PraisonAI SSRF/origin/auth fail-open wave, mcp-shell allowlist bypasses, and Chainlit MCP stdio command injection](2026-05-29-praisonai-agent-platform-and-formie-boundary-batch-ghsa.md#august-25-follow-up-praisonai-ssrforiginauth-fail-open-wave-mcp-shell-allowlist-bypasses-and-chainlit-mcp-stdio-command-injection)
