@@ -287,3 +287,21 @@ The next Budibase wave belongs in the same two-user/two-app fixture:
 | [GHSA-xcx6-4f2g-hhgx](https://github.com/advisories/GHSA-xcx6-4f2g-hhgx), [GHSA-ppr4-5f46-j9c6](https://github.com/advisories/GHSA-ppr4-5f46-j9c6) | BASIC users can obtain S3 upload URLs for caller-selected buckets; builder-controlled MongoDB TLS file options become server-side filesystem reads/oracles | Use a disposable bucket and temp certificate canary. Do not write public executable objects or probe host/config/credential paths. |
 
 Preserve each precondition independently: AI enabled, datasource type, BASIC/builder role, public-query publication, same-app co-builder, configured trusted IdP, or known datasource ID. Do not collapse the wave into a generic “Budibase compromise.” Strong reports name the exact transition: **parameter string to MongoDB object**, **validated DNS answer to independently resolved dial**, **datasource credential to alternate authority**, **app-wide test channel to another builder**, or **identity claim/handoff to the wrong local user**.
+
+## August 27 attachment signed-URL datasource-credential minting follow-up
+
+[GHSA-6x9p-4r67-5gjx](https://github.com/advisories/GHSA-6x9p-4r67-5gjx) / CVE-2026-54356 (`@budibase/server` ≤ 3.38.1) extends the existing "BASIC users can obtain S3 upload URLs for caller-selected buckets" boundary with a sharper transition: **a low-privilege published-app BASIC user can mint S3 pre-signed `PUT` URLs for attacker-chosen `bucket`/`key` using the workspace datasource's stored server-side credentials.**
+
+- Endpoint: `POST /api/attachments/:datasourceId/url`
+- Caller controls: `bucket`, `key`
+- Returns: `signedUrl`, `publicUrl`
+
+Because the signature is produced from the datasource's server-side S3 credentials, the minted URL writes to the attacker-chosen object destination under that credential's access — the workspace's S3 identity, not the caller's. This is the "datasource credential to alternate authority" transition in its clearest form: the endpoint hands a bearer-capable URL to a role that should not control object destinations.
+
+### Check
+
+1. Lab: Budibase with an S3 datasource holding valid (lab) credentials. Two roles: an admin who creates/publishes the app and a BASIC published-app user.
+2. As the BASIC user, `POST /api/attachments/<datasourceId>/url` with a `bucket`/`key` naming a **disposable** bucket/key the tester controls. Secure result: destination confined to the app's attachment prefix or the request is rejected. Vulnerable result: a `signedUrl` that `PUT`s the canary to the attacker-chosen key.
+3. Prove only with a marker object in a disposable bucket. Do not write public executable objects, do not target host/config/credential paths, and do not exfiltrate via `publicUrl` of real data.
+
+Report it as **BASIC published-app role -> `POST /api/attachments/:datasourceId/url` -> caller-chosen `bucket`/`key` -> datasource-credential S3 signed `PUT`**, distinct from the earlier caller-selected-bucket finding and from the REST-URL re-resolution findings.

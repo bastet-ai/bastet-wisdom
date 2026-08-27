@@ -165,3 +165,17 @@ Report it as **listing response context_hint -> replayed X-Cr-Context-Hint -> DB
 - [GHSA-fx4f-mhw4-qm7j](https://github.com/advisories/GHSA-fx4f-mhw4-qm7j) — `vibeio-http` DoS in the HTTP/1.x chunked-encoding parser: a resource-exhaustion parser issue, no durable operator exploit path.
 - [GHSA-w67g-5rqw-f597](https://github.com/advisories/GHSA-w67g-5rqw-f597) — Gorilla WebSocket uses a weak PRNG for the WebSocket mask key (fixed `1.5.3`): a cryptographic-quality issue with no standalone replayable chain; revisit only if paired with an active-exploitation signal.
 - [GHSA-4ph6-mjv7-3fq6](https://github.com/advisories/GHSA-4ph6-mjv7-3fq6) — netfoil improper handling of untrusted DoH response data (low, fixed `0.5.0`): unverified-response log/memory hygiene, no operator exploit path beyond the existing [netfoil boundary coverage](2026-07-07-better-auth-aider-netfoil-ckan-mcp-boundaries-ghsa.md).
+
+## August 27 WebDAV scoped-credential escape follow-up
+
+[GHSA-w5fv-7x5q-g8qp](https://github.com/advisories/GHSA-w5fv-7x5q-g8qp) / CVE-2026-54563 (Cloudreve `v4`, fixed in `4.0.0-20260606032813-26b6b1044b02`) adds a **scoped-account root escape** through the WebDAV endpoint, the same input class as the earlier remote-download destination-escape but arriving in the HTTP request path instead of downloader metadata.
+
+A WebDAV account stores a `uri` that is its root folder. The `/dav` handler (`stripPrefix` in `pkg/webdav/webdav.go`) trims the `/dav` prefix, joins the remainder to that root with `fs.URI.JoinRaw`, and **never checks the joined URI stays inside the root**. Go's `net/http` decodes `%2e%2e`→`..` and `%2f`→`/` in `r.URL.Path` before the handler sees it, and `JoinRaw` resolves `..` through `url.URL.JoinPath`, so `GET /dav/%2e%2e/outside.txt` against a credential rooted at `cloudreve://my/restricted` resolves to `cloudreve://my/outside.txt` — the sibling above the account root.
+
+### Check
+
+1. Lab: a Cloudreve `v4` instance with two WebDAV accounts. Account A is rooted at `cloudreve://my/restricted`; `outside.txt` is seeded at `cloudreve://my/outside.txt` (sibling, outside A's root).
+2. As account A, issue `GET /dav/%2e%2e/outside.txt` (and the PROPFIND/OPTIONS variants). Expected secure result: 404/403 confined to `restricted/`. Vulnerable result: the sibling's contents/properties return — the scoped credential escaped its configured account root.
+3. Note the boundary honestly: the escape is still subject to Cloudreve's normal file-permission checks, so it moves access to *accessible* sibling paths rather than arbitrary system paths. Report it as **WebDAV request path → `stripPrefix` → `JoinRaw` → URI above the account root**, distinct from the remote-download downloader-metadata finding above.
+
+Keep the proof to a sibling marker file the second account can read; do not target real user data or the admin/`/` root.

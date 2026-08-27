@@ -10,6 +10,14 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Silverstripe email-field to code-execution cluster (userforms/advancedworkflow RCE + framework media-embed XSS)](2026-08-27-silverstripe-email-field-code-execution-cluster-ghsa.md)
+- [Kyverno `generator.apply()` cross-namespace RoleBinding authority (CVE-2026-54523)](2026-08-27-kyverno-generator-apply-cross-namespace-authority-ghsa.md)
+- [File-write and install-path escape batch (IzPack unpacker, libreoffice-convert, n8n-sqlite3 `db_path`, Crossplane cosign TOCTOU)](2026-08-27-file-write-and-install-path-escape-batch-ghsa.md)
+- [Apache Camel inbound header-to-Exchange mapping and deserialization wave (12 GHSAs)](2026-08-27-apache-camel-inbound-header-mapping-and-deserialization-wave-ghsa.md)
+- [asyncssh SCP path-traversal and AuthorizedKeysFile username-escape (CVE-2026-54591/54590)](2026-08-27-asyncssh-scp-filename-and-authorizedkeys-username-escapes-ghsa.md)
+- [Senaite LIMS unauthenticated eval injection (CVE-2026-54569)](2026-08-27-senaite-lims-unauthenticated-eval-injection-ghsa.md)
+- [Cloudreve WebDAV scoped-credential root-escape follow-up (CVE-2026-54563)](2026-07-20-cloudreve-pillow-token-image-boundaries-ghsa.md#august-27-webdav-scoped-credential-escape-follow-up)
+- [Budibase attachment signed-URL datasource-credential minting follow-up (CVE-2026-54356)](2026-06-22-budibase-gogs-skillctl-nuxt-automation-boundaries-ghsa.md#august-27-attachment-signed-url-datasource-credential-minting-follow-up)
 - [MCE hub-controller label/name/URL-path cross-cluster authority follow-up](2026-05-07-cluster-control-plane-secret-and-impersonation-boundary-batch-ghsa.md#august-26-follow-up-mce-hub-controllers-derive-cross-cluster-authority-from-labels-names-and-url-paths)
 - [DB-GPT unauthenticated skill-upload path-to-write primitive](2026-08-26-db-gpt-skill-upload-path-write-boundary-ghsa.md)
 - [Apache Tomcat authorization, auth, and parser-boundary batch](2026-08-26-tomcat-authorization-auth-parser-boundary-batch-ghsa.md)
