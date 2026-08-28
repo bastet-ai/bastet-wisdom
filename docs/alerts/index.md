@@ -10,6 +10,11 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Yamcs StreamSQL Janino RCE, function-AC fail-open wave, and Phalcon router ReDoS (10 GHSAs)](2026-08-28-yamcs-streamsql-janino-rce-and-funcac-fail-open-wave-ghsa.md)
+- [Phalcon Volt `join` filter compile-time PHP code injection (CVE-2026-59989)](2026-08-28-phalcon-volt-join-filter-compile-time-code-injection-ghsa.md)
+- [Klever KLV token-minting via royalty-overflow and marketplace TOCTOU](2026-08-28-klever-klv-token-minting-royalty-overflow-toctou-ghsa.md)
+- [free5GC NRF NF-registration poisoning via unvalidated NF Profile endpoints (CVE-2026-55068)](2026-08-28-free5gc-nrf-nf-registration-poisoning-ghsa.md)
+- [SunEditor embed-plugin DOM XSS via script-element recreation (GHSA-w93q-cq9w-58p7)](2026-08-28-suneditor-embed-plugin-dom-xss-ghsa-w93q-cq9w-58p7.md)
 - [Silverstripe email-field to code-execution cluster (userforms/advancedworkflow RCE + framework media-embed XSS)](2026-08-27-silverstripe-email-field-code-execution-cluster-ghsa.md)
 - [Kyverno `generator.apply()` cross-namespace RoleBinding authority (CVE-2026-54523)](2026-08-27-kyverno-generator-apply-cross-namespace-authority-ghsa.md)
 - [File-write and install-path escape batch (IzPack unpacker, libreoffice-convert, n8n-sqlite3 `db_path`, Crossplane cosign TOCTOU)](2026-08-27-file-write-and-install-path-escape-batch-ghsa.md)

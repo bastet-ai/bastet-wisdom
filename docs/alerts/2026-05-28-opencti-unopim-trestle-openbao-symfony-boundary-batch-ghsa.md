@@ -115,6 +115,34 @@ Evidence to capture:
 
 Reporting heuristic: the strongest reports show **untrusted OSCAL input plus victim-side import plus read of a file outside the declared workspace**, especially when the imported content is stored in build artifacts or review output.
 
+### 4b. compliance-trestle Jinja2 re-parsing SSTI — untrusted data executed as template source (August 28)
+
+**Advisory (2026-08-28 GitHub wave):** [GHSA-jw39-3688-r4rx / CVE-2026-54757](https://github.com/advisories/GHSA-jw39-3688-r4rx) — high, SSTI → RCE.
+
+Different boundary from the file-read item above: here untrusted **data** is re-parsed as **Jinja2 template source** without a sandbox. The root anti-pattern is passing runtime data — markdown file content, extracted section text, or LUT/data-field values — into `Parser(self.environment, content).parse()` using a plain `jinja2.Environment` (not `SandboxedEnvironment`), so `{{ ... }}` payloads execute and can traverse `__class__.__mro__` / `__globals__` / `__subclasses__()` to reach `os.system` / `subprocess`.
+
+Where to look:
+
+- `MDCleanInclude.parse()` and `MDSectionInclude.parse()` in `trestle/core/jinja/tags.py` — markdown bodies / section `raw_text` loaded via `FileSystemLoader.get_source()` then fed straight to `Parser(...).parse()`.
+- Any pipeline rendering third-party or vendor-supplied SSP documents, LUT YAML, or markdown includes into trusted templates, where rendered output or data-field values flow back into a re-parsing step.
+- Note the previously-fixed `render_template()` recursive `while` loop (single `template.render(**lut)` now) — the same `__globals__.os.system()` technique survives in the remaining tag re-parsing paths.
+
+Safe validation path:
+
+1. Confirm the tag handlers in use (`md_clean_include`, `mdsection_include`) and that the trestle workspace is writable in the lab.
+2. Place a marker markdown file whose body contains a **benign** Jinja2 construct that prints a canary (e.g. `{{ 7*6 }}`), plus a disabled/commented object-traversal line.
+3. Trigger the trestle `author jinja` render over it and confirm the canary evaluates in the output — proving the markdown body was executed as template source, not emitted as text.
+4. In a sandboxed lab with a denied process sink, replace the traversal sink with a recorder that logs the argument and returns a fixed string; capture the recorded argument as the RCE-boundary proof.
+5. Do not render real vendor/compliance data, do not reach internal endpoints, and do not execute discovery or persistence commands.
+
+Evidence to capture:
+
+- The exact `Parser(self.environment, ...)` sink line and the `Environment` (non-sandboxed) construction site.
+- The canary-evaluates differential vs. a sandboxed/escaped control.
+- The input-to-parse-to-execute path for each affected tag (`MDCleanInclude`, `MDSectionInclude`), noting `MDDatestamp` as the lower-risk internally-generated-string variant.
+
+Reporting heuristic: the strongest reports connect **attacker-writable workspace/data content** to a **secondary `Parser.parse()` on a non-sandboxed `Environment`**, and enumerate *every* re-parsing call site (the fix that removed the `render_template` loop is not sufficient because the tags re-parse independently).
+
 ### 5. OpenBao cross-namespace lease revoke / renew boundary
 
 Where to look:

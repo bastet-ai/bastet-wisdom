@@ -8,16 +8,16 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Yamcs StreamSQL Janino RCE, function-AC fail-open wave, and Phalcon router ReDoS](alerts/2026-08-28-yamcs-streamsql-janino-rce-and-funcac-fail-open-wave-ghsa.md)
+- [Phalcon Volt `join` filter compile-time PHP code injection (GHSA-hrwp-4hh9-c8r8)](alerts/2026-08-28-phalcon-volt-join-filter-compile-time-code-injection-ghsa.md)
+- [Klever KLV token-minting via royalty-overflow and marketplace TOCTOU](alerts/2026-08-28-klever-klv-token-minting-royalty-overflow-toctou-ghsa.md)
+- [free5GC NRF NF-registration poisoning via unvalidated NF Profile endpoints](alerts/2026-08-28-free5gc-nrf-nf-registration-poisoning-ghsa.md)
 - [SunEditor embed-plugin DOM XSS via script-element recreation (GHSA-w93q-cq9w-58p7)](alerts/2026-08-28-suneditor-embed-plugin-dom-xss-ghsa-w93q-cq9w-58p7.md)
 - [Silverstripe email-field to code-execution cluster (userforms/advancedworkflow RCE + framework media-embed XSS)](alerts/2026-08-27-silverstripe-email-field-code-execution-cluster-ghsa.md)
 - [Kyverno `generator.apply()` cross-namespace RoleBinding authority (CVE-2026-54523)](alerts/2026-08-27-kyverno-generator-apply-cross-namespace-authority-ghsa.md)
 - [File-write and install-path escape batch (IzPack unpacker, libreoffice-convert, n8n-sqlite3 `db_path`, Crossplane cosign TOCTOU)](alerts/2026-08-27-file-write-and-install-path-escape-batch-ghsa.md)
 - [Apache Camel inbound header-to-Exchange mapping and deserialization wave](alerts/2026-08-27-apache-camel-inbound-header-mapping-and-deserialization-wave-ghsa.md)
 - [asyncssh SCP path-traversal and AuthorizedKeysFile username-escape](alerts/2026-08-27-asyncssh-scp-filename-and-authorizedkeys-username-escapes-ghsa.md)
-- [Senaite LIMS unauthenticated eval injection (CVE-2026-54569)](alerts/2026-08-27-senaite-lims-unauthenticated-eval-injection-ghsa.md)
-- [MCE hub-controller label/name/URL-path cross-cluster authority follow-up](alerts/2026-05-07-cluster-control-plane-secret-and-impersonation-boundary-batch-ghsa.md#august-26-follow-up-mce-hub-controllers-derive-cross-cluster-authority-from-labels-names-and-url-paths)
-- [DB-GPT unauthenticated skill-upload path-to-write primitive](alerts/2026-08-26-db-gpt-skill-upload-path-write-boundary-ghsa.md)
-- [Apache Tomcat authorization, auth, and parser-boundary batch](alerts/2026-08-26-tomcat-authorization-auth-parser-boundary-batch-ghsa.md)
 
 
 

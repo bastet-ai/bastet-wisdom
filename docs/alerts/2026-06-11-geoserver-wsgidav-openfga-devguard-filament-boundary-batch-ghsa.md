@@ -28,6 +28,19 @@ Replayable validation:
 - Record: version, role, WMS output format, raw template, the exact chain step that reaches the utility class, and the marker or rendered value. Compare against patched 2.27.0 behavior, where `GEOSERVER_FREEMARKER_BLOCK_LIST`, `GEOSERVER_FREEMARKER_ALLOW_LIST`, and `GEOSERVER_FREEMARKER_API_EXPOSED` restrict reachable objects to getters by default.
 - A bounded positive is **authenticated template content -> rendered output format -> canary chain reaches the blocked utility -> marker readback or inert file operation only**. Report it as a template-author-to-runtime boundary, not as unauthenticated compromise, and state the output formats and role required up front.
 
+### August 28 WsgiDAV MySQL provider blind SQLi follow-up
+
+[GHSA-p6gw-4frg-j7jw / CVE-2026-55509](https://github.com/advisories/GHSA-p6gw-4frg-j7jw) (high) adds a second WsgiDAV boundary, distinct from the filesystem share-root escape above. The sample `MySQLBrowserProvider` builds its SQL by string concatenation: a path like `/db/users/1` is split into a validated table name and an **unescaped record key** dropped straight into `WHERE id = '<key>'`, so a single quote in the key breaks out into SQL. The provider's numeric-type check has a typo (`INTT` instead of `INT`), so even integer primary keys take the quoted branch — but that branch is equally injectable via quote breakout. The key is read during the normal existence check on a plain `GET`, so no authentication, write access, or special method is needed when the share is published anonymously, as these read shares commonly are.
+
+Durable operator value: the **status-code / response-time oracle**. A condition that matches one row and one that matches none produce different DAV status codes (e.g. 200 vs 404), which turns the provider into a boolean blind-SQLi oracle against the backing database — the advisory confirmed full data extraction this way locally.
+
+Replayable validation:
+
+- Preconditions: a lab WsgiDAV with `MySQLBrowserProvider` enabled against a disposable test database (the module is sample-only and not default-enabled; installations that do not activate it are not affected), a known test table, and a read share published without authentication.
+- Confirm the provider is active by listing the configured table via the share, then send a key that breaks out with a boolean payload (e.g. `1' AND 1=1 -- ` vs `1' AND 1=2 -- `) and record the two different DAV status codes as the oracle.
+- Extract only a single marker column value from a disposable table to prove full extraction capability. Do not read, copy, or exfiltrate real database data, and do not issue `UPDATE`/`DELETE`/`DROP` against production.
+- Evidence: provider version, enabled-module config, the share URL, the oracle request pair with their status codes, and the single extracted marker value. Report it as an unauthenticated (or share-scoped) blind SQLi boundary, not a general WsgiDAV compromise.
+
 ## Operator triage
 
 1. **Confirm the exact trust boundary before probing:** these are not broad unauthenticated internet RCEs. Most require authenticated access, a specific extension, a feature flag, a public asset, a relation action, or an affected database wrapper version.
