@@ -10,6 +10,8 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Pimcore DataObject RCE, Hotspotimage PHP deserialization, Studio SQLi, and reset-URL ATO (5 GHSAs)](2026-08-28-pimcore-dataobject-rce-sqli-and-reset-url-ato-ghsa.md)
+- [9router unauthenticated LLM-proxy access: Host-header spoofing and /codex rewrite bypass (2 GHSAs)](2026-08-28-9router-unauth-llm-proxy-host-and-codex-rewrite-bypass-ghsa.md)
 - [Yamcs StreamSQL Janino RCE, function-AC fail-open wave, and Phalcon router ReDoS (10 GHSAs)](2026-08-28-yamcs-streamsql-janino-rce-and-funcac-fail-open-wave-ghsa.md)
 - [Phalcon Volt `join` filter compile-time PHP code injection (CVE-2026-59989)](2026-08-28-phalcon-volt-join-filter-compile-time-code-injection-ghsa.md)
 - [Klever KLV token-minting via royalty-overflow and marketplace TOCTOU](2026-08-28-klever-klv-token-minting-royalty-overflow-toctou-ghsa.md)

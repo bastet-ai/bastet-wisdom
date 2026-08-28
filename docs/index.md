@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Pimcore DataObject RCE, Hotspotimage PHP deserialization, Studio SQLi, and reset-URL ATO (5 GHSAs)](alerts/2026-08-28-pimcore-dataobject-rce-sqli-and-reset-url-ato-ghsa.md)
+- [9router unauthenticated LLM-proxy access: Host-header spoofing and /codex rewrite bypass (2 GHSAs)](alerts/2026-08-28-9router-unauth-llm-proxy-host-and-codex-rewrite-bypass-ghsa.md)
 - [Yamcs StreamSQL Janino RCE, function-AC fail-open wave, and Phalcon router ReDoS](alerts/2026-08-28-yamcs-streamsql-janino-rce-and-funcac-fail-open-wave-ghsa.md)
 - [Phalcon Volt `join` filter compile-time PHP code injection (GHSA-hrwp-4hh9-c8r8)](alerts/2026-08-28-phalcon-volt-join-filter-compile-time-code-injection-ghsa.md)
 - [Klever KLV token-minting via royalty-overflow and marketplace TOCTOU](alerts/2026-08-28-klever-klv-token-minting-royalty-overflow-toctou-ghsa.md)
@@ -16,8 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Silverstripe email-field to code-execution cluster (userforms/advancedworkflow RCE + framework media-embed XSS)](alerts/2026-08-27-silverstripe-email-field-code-execution-cluster-ghsa.md)
 - [Kyverno `generator.apply()` cross-namespace RoleBinding authority (CVE-2026-54523)](alerts/2026-08-27-kyverno-generator-apply-cross-namespace-authority-ghsa.md)
 - [File-write and install-path escape batch (IzPack unpacker, libreoffice-convert, n8n-sqlite3 `db_path`, Crossplane cosign TOCTOU)](alerts/2026-08-27-file-write-and-install-path-escape-batch-ghsa.md)
-- [Apache Camel inbound header-to-Exchange mapping and deserialization wave](alerts/2026-08-27-apache-camel-inbound-header-mapping-and-deserialization-wave-ghsa.md)
-- [asyncssh SCP path-traversal and AuthorizedKeysFile username-escape](alerts/2026-08-27-asyncssh-scp-filename-and-authorizedkeys-username-escapes-ghsa.md)
 
 
 

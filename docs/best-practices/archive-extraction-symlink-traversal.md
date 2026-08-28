@@ -206,8 +206,24 @@ Affected versus corrected result:
 Impact demonstrated (path escape or metadata drift):
 ```
 
+## aqua `mholt/archives` symlink-follow write follow-up
+
+[GHSA-mf5c-hw34-4hpp / CVE-2026-55569](https://github.com/advisories/GHSA-mf5c-hw34-4hpp) reports that `aquaproj/aqua` extracts downloaded tool archives through `pkg/unarchive/archives.go` using `github.com/mholt/archives`. The handler creates symlink entries with `os.Symlink(f.LinkTarget, dstPath)` **without validating that the symlink target resolves inside the extraction destination**. A subsequent regular-file archive entry with the same path is opened with `OpenFile(dstPath, O_CREATE|O_WRONLY)`, which **follows the attacker-planted symlink**. A malicious or compromised aqua package / release asset can therefore write attacker-controlled bytes outside aqua's extraction directory, with the privileges of the user running aqua.
+
+This is the "create-then-dereference" composition already covered above, instantiated in a Go tool-manager context:
+
+| Case | Member layout | Evidence |
+| --- | --- | --- |
+| baseline | ordinary relative file | canonical destination stays in root |
+| symlink outside root | link below extraction root points at a sibling canary | `os.Symlink` records the target; target escapes root |
+| same-path dereference | a regular-file member with the symlink's path | `OpenFile(O_CREATE\|O_WRONLY)` follows the link to the sibling canary; denied sink records the outside-root write |
+| corrected build | byte-identical fixtures | containment check rejects before `os.Symlink`/`OpenFile` |
+
+Replayable validation: a disposable aqua root, a random sibling canary directory outside the extraction root, and a patched/denied `symlink`/`open`/`rename` sink. Build a local archive fixture with an inert marker file plus an out-of-root symlink followed by a same-path regular member. The bounded positive is **symlink entry passes containment → final `OpenFile` destination is the synthetic sibling canary → denied filesystem sink records the outside-root write**. Do not overwrite an existing file, target startup/configuration paths, plant a persistent outside-pointing link, or infer package-install code execution without proving a separate consumer.
+
 ## References
 
+- aqua `mholt/archives` symlink-follow write: https://github.com/advisories/GHSA-mf5c-hw34-4hpp
 - GitHub Advisory example: `malcontent` symlink path traversal due to argument confusion + missing symlink validation (CVE-2026-24846)
 - GNU tar `--one-top-level` hardlink boundary: https://github.com/advisories/GHSA-4f5j-wqjr-hx49
 - GNU tar incremental restore TOCTOU boundary: https://github.com/advisories/GHSA-v7fx-gjvh-347c
