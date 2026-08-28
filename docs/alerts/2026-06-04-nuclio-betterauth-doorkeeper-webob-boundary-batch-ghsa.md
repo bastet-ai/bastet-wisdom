@@ -47,6 +47,12 @@ Treat these as boundary checks: identity must bind to the target project, device
 - Required position: ability to influence an application redirect target that is assigned to `Response.location`
 - Boundary: application-local redirect targets must not normalize into attacker-controlled network-path references such as `//attacker.example/path`
 
+- Advisory: [GHSA-6hx8-3wjj-gr8g / CVE-2026-54770](https://github.com/advisories/GHSA-6hx8-3wjj-gr8g) (third follow-up, `webob` < 1.8.11, patched 1.8.11)
+- Product: `webob`
+- Affected versions: `< 1.8.11`
+- Required position: same — ability to influence `Response.location`
+- Boundary: a single leading C0 control byte or ASCII space must not slip past the un-stripped `SCHEME_RE` / `startswith("//")` guards and then be silently removed by `urllib.parse.urljoin()` (Python 3.10+ `urlsplit()` strips leading/trailing C0 controls and spaces before parsing), turning a guarded value into an open redirect. This is the fix-drift variant of the same Location-normalization gate: the guard runs on the un-stripped value while the joiner normalizes it.
+
 ## Recon workflow
 
 1. Confirm that scope permits authenticated application-boundary testing and that destructive operations are either prohibited or explicitly lab-scoped.
@@ -166,6 +172,28 @@ Use an endpoint where redirect targets are intended to remain same-origin. Avoid
 4. Interpret results:
    - **Contained:** `Location` remains a same-origin path or the input is rejected.
    - **Vulnerable boundary:** `Location` becomes `https://redirect-canary.example.test/path` or another attacker-controlled origin.
+
+### WebOb leading C0 / space redirect bypass (CVE-2026-54770 follow-up)
+
+This extends the canonicalization check to the Python 3.10+ `urlsplit()` normalization differential: the guards (`SCHEME_RE`, `startswith("//")`) run on the raw value, but `urljoin()` silently strips leading C0 control characters and spaces before parsing.
+
+1. Confirm the target runs `webob` < 1.8.11 on Python 3.10+ and has a same-origin redirect gate that assigns user input to `Response.location`.
+2. Send a leading single control byte or space before a protocol-relative target:
+
+   ```text
+   https://app.example.test/login?next=%20//redirect-canary.example.test/path
+   https://app.example.test/login?next=%00//redirect-canary.example.test/path
+   ```
+
+3. Inspect the raw response `Location` header:
+
+   ```bash
+   curl -i 'https://app.example.test/login?next=%20//redirect-canary.example.test/path'
+   ```
+
+4. Interpret results:
+   - **Contained:** `Location` stays same-origin, the input is rejected, or the value is 1.8.11+ (guard and joiner now agree on the normalized value).
+   - **Vulnerable boundary:** `Location` becomes `https://redirect-canary.example.test/path` — the leading byte passed the guard un-stripped and was removed by `urljoin()`.
 
 ## Evidence to capture
 

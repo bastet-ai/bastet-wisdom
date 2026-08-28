@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [SunEditor embed-plugin DOM XSS via script-element recreation (GHSA-w93q-cq9w-58p7)](alerts/2026-08-28-suneditor-embed-plugin-dom-xss-ghsa-w93q-cq9w-58p7.md)
 - [Silverstripe email-field to code-execution cluster (userforms/advancedworkflow RCE + framework media-embed XSS)](alerts/2026-08-27-silverstripe-email-field-code-execution-cluster-ghsa.md)
 - [Kyverno `generator.apply()` cross-namespace RoleBinding authority (CVE-2026-54523)](alerts/2026-08-27-kyverno-generator-apply-cross-namespace-authority-ghsa.md)
 - [File-write and install-path escape batch (IzPack unpacker, libreoffice-convert, n8n-sqlite3 `db_path`, Crossplane cosign TOCTOU)](alerts/2026-08-27-file-write-and-install-path-escape-batch-ghsa.md)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [MCE hub-controller label/name/URL-path cross-cluster authority follow-up](alerts/2026-05-07-cluster-control-plane-secret-and-impersonation-boundary-batch-ghsa.md#august-26-follow-up-mce-hub-controllers-derive-cross-cluster-authority-from-labels-names-and-url-paths)
 - [DB-GPT unauthenticated skill-upload path-to-write primitive](alerts/2026-08-26-db-gpt-skill-upload-path-write-boundary-ghsa.md)
 - [Apache Tomcat authorization, auth, and parser-boundary batch](alerts/2026-08-26-tomcat-authorization-auth-parser-boundary-batch-ghsa.md)
-- [Spring Security DPoP proof cache-based replay](alerts/2026-08-26-spring-security-dpop-proof-replay-cache-batch-ghsa.md)
 
 
 

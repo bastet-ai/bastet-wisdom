@@ -92,6 +92,8 @@ nav:
       - Agentic DAST Benchmark Validation: methodology/agentic-dast-benchmark-validation.md
       - Replayable Target Environment Design: methodology/target-environment-harness-design.md
       - Agent-guided Fuzzing Campaigns: methodology/agent-guided-fuzzing-campaigns.md
+      - PyPI Account-Compromise Supply-Chain Testing: methodology/pypi-account-compromise-supply-chain-testing.md
+      - Syslog RFC 5424 Frame-Forging Testing: methodology/syslog-rfc5424-frame-forging-testing.md
   - Exploit Paths:
       - CI/CD to Cloud Pivot Chain: methodology/ci-cd-cloud-pivot-chain.md
       - AWS Nitro Enclave KMS Boundaries: methodology/aws-nitro-enclave-kms-boundary-testing.md
