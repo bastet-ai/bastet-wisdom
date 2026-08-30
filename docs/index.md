@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Keycloak unauthenticated account takeover via reset-credentials flow bypass (CVE-2026-18963)](alerts/2026-08-29-keycloak-unauth-ato-reset-credentials-flow-bypass-ghsa.md)
+- [Apache Camel header-filter bypass follow-up wave (30 GHSAs)](alerts/2026-08-27-apache-camel-inbound-header-mapping-and-deserialization-wave-ghsa.md#august-29-follow-up-camel-header-filter-bypass-wave-30-ghsas)
 - [Pimcore DataObject RCE, Hotspotimage PHP deserialization, Studio SQLi, and reset-URL ATO (5 GHSAs)](alerts/2026-08-28-pimcore-dataobject-rce-sqli-and-reset-url-ato-ghsa.md)
 - [9router unauthenticated LLM-proxy access: Host-header spoofing and /codex rewrite bypass (2 GHSAs)](alerts/2026-08-28-9router-unauth-llm-proxy-host-and-codex-rewrite-bypass-ghsa.md)
 - [Yamcs StreamSQL Janino RCE, function-AC fail-open wave, and Phalcon router ReDoS](alerts/2026-08-28-yamcs-streamsql-janino-rce-and-funcac-fail-open-wave-ghsa.md)
@@ -15,9 +17,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Klever KLV token-minting via royalty-overflow and marketplace TOCTOU](alerts/2026-08-28-klever-klv-token-minting-royalty-overflow-toctou-ghsa.md)
 - [free5GC NRF NF-registration poisoning via unvalidated NF Profile endpoints](alerts/2026-08-28-free5gc-nrf-nf-registration-poisoning-ghsa.md)
 - [SunEditor embed-plugin DOM XSS via script-element recreation (GHSA-w93q-cq9w-58p7)](alerts/2026-08-28-suneditor-embed-plugin-dom-xss-ghsa-w93q-cq9w-58p7.md)
-- [Silverstripe email-field to code-execution cluster (userforms/advancedworkflow RCE + framework media-embed XSS)](alerts/2026-08-27-silverstripe-email-field-code-execution-cluster-ghsa.md)
 - [Kyverno `generator.apply()` cross-namespace RoleBinding authority (CVE-2026-54523)](alerts/2026-08-27-kyverno-generator-apply-cross-namespace-authority-ghsa.md)
-- [File-write and install-path escape batch (IzPack unpacker, libreoffice-convert, n8n-sqlite3 `db_path`, Crossplane cosign TOCTOU)](alerts/2026-08-27-file-write-and-install-path-escape-batch-ghsa.md)
 
 
 
