@@ -70,7 +70,22 @@ Include:
 
 Repository URL validation has to happen at the fetch boundary, not just at the form boundary. If a platform supports multiple VCS backends, each backend needs its own URL policy, canonicalization rules, and scheme allowlist.
 
+## August 30 follow-up: Weblate project-scope IDOR and object-existence disclosure (2 GHSAs)
+
+Two same-day Weblate advisories land in the reusable **Django-view object-scope** class, not the URL-fetch class above:
+
+- **IDOR via globally scoped object lookup** — [GHSA-2q2q-jr9g-v9rf / CVE-2026-55228](https://github.com/advisories/GHSA-2q2q-jr9g-v9rf) (high): `GroupViewSet` (and sibling team/project viewsets) looked objects up by primary key **without filtering by the caller's project/workspace scope**, so an authenticated project manager could read (and misconfigure) groups for projects they have no access to. Fixed in [PR #19970](https://github.com/WeblateOrg/weblate/pull/19970).
+- **403-vs-404 object existence disclosure** — [GHSA-2p9g-x3cv-5hh4 / CVE-2026-55227](https://github.com/advisories/GHSA-2p9g-x3cv-5hh4) (medium): several endpoints returned **403 instead of 404** for objects in private projects the caller cannot see, letting an unprivileged user enumerate object IDs and infer the existence of private projects. Fixed in [PR #19971](https://github.com/WeblateOrg/weblate/pull/19971).
+
+Operator heuristics (apply to any Django/DRF or project-scoped REST app):
+
+1. **Primary-key lookups without scope filters.** For every viewset that takes an ID from the URL, check whether the queryset is filtered by the tenant/project/workspace the caller is bound to. A `get_object_or_404(Model, pk=…)` that ignores scope is the primitive; supply a foreign-scope ID and record the 200.
+2. **Status-code differential as an existence oracle.** If 403 means "exists but not yours" and 404 means "does not exist", every unprivileged request is a membership probe. Sweep `/api/…/<id>/` ranges and map the 403/404 boundary; that is the evidence.
+3. **Scope drift after user enumeration.** The Weblate bug class also covers *write* misconfiguration (granting group access to foreign projects) — prove with a synthetic group and a denied mutation sink, never with real project access changes.
+
 ## Sources
 
 - [GitHub Advisory Database: GHSA-hfpv-mc5v-p9mm](https://github.com/advisories/GHSA-hfpv-mc5v-p9mm)
 - [GitHub Advisory Database: Weblate advisories](https://github.com/WeblateOrg/weblate/security/advisories)
+- [GitHub Advisory Database: Weblate GroupViewSet IDOR GHSA-2q2q-jr9g-v9rf / CVE-2026-55228](https://github.com/advisories/GHSA-2q2q-jr9g-v9rf)
+- [GitHub Advisory Database: Weblate object-existence disclosure GHSA-2p9g-x3cv-5hh4 / CVE-2026-55227](https://github.com/advisories/GHSA-2p9g-x3cv-5hh4)

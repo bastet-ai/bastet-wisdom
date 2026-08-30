@@ -10,6 +10,10 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Piccolo-Admin superuser escalation via session-token disclosure on read-only CRUD routes](2026-08-30-piccolo-admin-session-token-disclosure-superuser-escalation-ghsa.md)
+- [RestrictedPython guard-hook shadowing via positional-only arguments — sandbox escape](2026-08-30-restrictedpython-guard-hook-shadowing-sandbox-escape-ghsa.md)
+- [MapFish Print 404-reflected XXE, Spinnaker kustomize-bake YAML tags, and PowSyBl local command executor](2026-08-30-mapfish-xxe-spinnaker-kustomize-and-powsybl-command-executor-ghsa.md)
+- [SeaweedFS S3 `X-Amz-Copy-Source` traversal, S3Tables management collapse, Bifrost SSRF deny-list, and phpSysInfo header trust](2026-08-30-seaweedfs-s3-copy-source-traversal-and-ssrf-allowlist-trust-ghsa.md)
 - [Keycloak unauthenticated account takeover via reset-credentials flow bypass (CVE-2026-18963)](2026-08-29-keycloak-unauth-ato-reset-credentials-flow-bypass-ghsa.md)
 - [Apache Camel header-filter bypass follow-up wave (30 GHSAs, Aug 29)](2026-08-27-apache-camel-inbound-header-mapping-and-deserialization-wave-ghsa.md#august-29-follow-up-camel-header-filter-bypass-wave-30-ghsas)
 - [Pimcore DataObject RCE, Hotspotimage PHP deserialization, Studio SQLi, and reset-URL ATO (5 GHSAs)](2026-08-28-pimcore-dataobject-rce-sqli-and-reset-url-ato-ghsa.md)

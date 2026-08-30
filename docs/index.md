@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Piccolo-Admin superuser escalation via session-token disclosure on read-only CRUD routes (GHSA-2gh4-jmwq-rr8w)](alerts/2026-08-30-piccolo-admin-session-token-disclosure-superuser-escalation-ghsa.md)
+- [RestrictedPython guard-hook shadowing via positional-only arguments (GHSA-ffg3-p8fm-mjx2 / CVE-2026-55830)](alerts/2026-08-30-restrictedpython-guard-hook-shadowing-sandbox-escape-ghsa.md)
 - [Keycloak unauthenticated account takeover via reset-credentials flow bypass (CVE-2026-18963)](alerts/2026-08-29-keycloak-unauth-ato-reset-credentials-flow-bypass-ghsa.md)
 - [Apache Camel header-filter bypass follow-up wave (30 GHSAs)](alerts/2026-08-27-apache-camel-inbound-header-mapping-and-deserialization-wave-ghsa.md#august-29-follow-up-camel-header-filter-bypass-wave-30-ghsas)
 - [Pimcore DataObject RCE, Hotspotimage PHP deserialization, Studio SQLi, and reset-URL ATO (5 GHSAs)](alerts/2026-08-28-pimcore-dataobject-rce-sqli-and-reset-url-ato-ghsa.md)
@@ -16,8 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [Phalcon Volt `join` filter compile-time PHP code injection (GHSA-hrwp-4hh9-c8r8)](alerts/2026-08-28-phalcon-volt-join-filter-compile-time-code-injection-ghsa.md)
 - [Klever KLV token-minting via royalty-overflow and marketplace TOCTOU](alerts/2026-08-28-klever-klv-token-minting-royalty-overflow-toctou-ghsa.md)
 - [free5GC NRF NF-registration poisoning via unvalidated NF Profile endpoints](alerts/2026-08-28-free5gc-nrf-nf-registration-poisoning-ghsa.md)
-- [SunEditor embed-plugin DOM XSS via script-element recreation (GHSA-w93q-cq9w-58p7)](alerts/2026-08-28-suneditor-embed-plugin-dom-xss-ghsa-w93q-cq9w-58p7.md)
-- [Kyverno `generator.apply()` cross-namespace RoleBinding authority (CVE-2026-54523)](alerts/2026-08-27-kyverno-generator-apply-cross-namespace-authority-ghsa.md)
 
 
 

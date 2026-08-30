@@ -38,3 +38,17 @@ Portainer sits between regular users and Docker/Kubernetes hosts, so every proxy
 Run Portainer and a fake Docker API in an isolated lab. Give a low-privilege user access only to harmless status routes, then replace Docker dispatch with a recorder that returns no daemon data. Generate raw path pairs covering dot segments, repeated and encoded separators, percent-decoding order, mixed slash forms where the stack accepts them, path parameters, and double decoding. Preserve the raw request target, each middleware's route identity, normalized upstream path, matched RBAC rule, and denied backend operation.
 
 A bounded positive is **low-privilege request -> authorization evaluates benign route A -> proxy normalization forwards privileged route B to the denied fake-Docker sink**. A changed status code or parser discrepancy alone is insufficient. Never create a container, mount the host, access the Docker socket outside the fake backend, or claim host root without the exact privileged operation and endpoint binding.
+
+## August 30 follow-up: unauthenticated `/api/restore` admin takeover on the initialization window
+
+- **Unauthenticated restore endpoint → admin takeover** — [GHSA-x626-fcwx-f5pc / CVE-2026-55761](https://github.com/advisories/GHSA-x626-fcwx-f5pc), high, 5.9. Portainer's `POST /api/restore` is *intentionally* unauthenticated so the instance can be restored before the first admin account exists, and it stays reachable for the **five-minute initialization window that opens on every startup**. An unauthenticated attacker with network access to a not-yet-initialised instance can POST a crafted backup archive containing attacker-controlled credentials and replace the Portainer database, gaining full administrative access. The same unauthenticated window also exposes the admin-account-creation endpoint (`/api/users/admin/...`). Fixed in `2.39.4` and `2.43.0` (affected `>= 2.39.0, < 2.39.4` and `>= 2.40.0, < 2.43.0`).
+
+Durable heuristic: this is the **init-window / pre-bootstrap endpoint** class — a route that is unauthenticated *by design* during first-run and then gated afterward. The operator check is to confirm whether the instance has completed initialization and whether the bootstrap/restore/admin-create routes are actually closed afterward. On a target, the question is timing: is the instance inside the init window, and does the restore endpoint authenticate once an admin exists? This pairs with the existing backup-archive path-traversal write finding above: the same archive-restore surface that can write files outside the root can also wholesale replace the credential store when unauthenticated.
+
+Replayable validation (lab only): a lab Portainer in the affected range, deliberately left uninitialised.
+
+1. Baseline: with no admin created, confirm `POST /api/restore` is reachable unauthenticated (negative control is the same route returning 401 after an admin exists).
+2. Craft a minimal backup archive that seeds a canary admin credential; POST it to `/api/restore`.
+3. Positive: the canary credential is accepted at login, proving the unauthenticated restore replaced the database. Stop there — do not exfiltrate a real database, do not create a real admin on a managed host, and do not target production.
+4. Negative control on `2.39.4` / `2.43.0`: the endpoint requires authentication or the init window is closed.
+

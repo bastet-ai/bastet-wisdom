@@ -54,6 +54,22 @@ This cluster is durable for operators because it exposes repeatable container co
 - Attempt only the documented workflow needed to show whether project restrictions can be bypassed into a canary command or unauthorized host-affecting operation.
 - Evidence should show request/route, project setting, expected denial, observed action, marker output, and patched denial.
 
+## August 30 follow-up: cross-project copy authorization bypasses
+
+Two same-day advisories expose the same project-boundary class from a different angle: the **copy destination is authorized, but the copy source is not**.
+
+- **Instance copy** — [GHSA-c9f5-j9c3-mhrg / CVE-2026-55622](https://github.com/advisories/GHSA-c9f5-j9c3-mhrg), high, 7.7, Incus `< 7.2.0`. `cmd/incusd/instances.go` authorizes `POST /1.0/instances` against the *target* project; the copy path in `cmd/incusd/instances_post.go` then loads the source instance from the attacker-controlled `req.Source.Project` without checking whether the caller can view that source instance. An attacker who knows a project name and an instance name they cannot access copies the instance into a project they control and then reads what the original project hid — including secrets inside the instance. The copy must occur on the same server, but nothing stops the copied instance from moving to another server afterward.
+- **Custom volume copy** — [GHSA-64f3-v33m-w89f / CVE-2026-55621](https://github.com/advisories/GHSA-64f3-v33m-w89f), high, 7.7, Incus `v7 < 7.2.0` (and `v6 <= 6.23.0`, `<= 0.7.0`). The storage-volume creation handler authorizes creation in the target project, then passes the attacker-controlled `req.Source.Project` into `CreateCustomVolumeFromCopy` with no `allowPermission` / `CanView` check on the source volume.
+
+Durable heuristic: for every copy/move/restore/migrate operation, enumerate the **pair of authorization decisions** (source read, destination write) and verify both. A handler that authorizes only the destination while resolving the source from request input is the finding. This is the mirror image of the restricted-project escapes above: those let a low-privilege project reach host primitives; these let a low-privilege project reach *another project's* data.
+
+Replayable validation (lab only): isolated Incus lab, two projects, a restricted certificate pinned to `projects: [default]`.
+
+1. Seed `secrets` project with a canary instance (or custom volume) containing a marker file; confirm the restricted certificate cannot list or view it (negative control).
+2. As the restricted certificate, issue an instance copy with `target-project: default`, `source-project: secrets`, `source-instance: secret` (advisory PoC shape via the `POST /1.0/instances` copy request). Same for the volume variant with `storage volume create ... --source-project secrets`.
+3. Positive on `< 7.2.0`: the copy lands in `default` and the marker is readable — the boundary proof is *source project denied, destination project owned*. Stop at the marker; do not read real instance secrets, do not move the copy to a second server, do not target production.
+4. Negative control on `7.2.0`: the source read is checked and the copy is rejected with an entitlement error.
+
 ## Reporting notes
 
 - Lead with the precise boundary: **image `rootfs/` symlink to host file**, **image `templates/` symlink to host file**, **exec-output symlink to host write**, **restricted project to command execution**, **multipart object key to storage-root traversal**, **backup compression metadata to command arguments**, or **trusted image hash to client file write**.

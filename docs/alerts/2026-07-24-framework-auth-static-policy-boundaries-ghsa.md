@@ -13,6 +13,7 @@ Sources:
 - [GHSA-83w8-p2f5-377r: `@fastify/static` route-guard bypass](https://github.com/advisories/GHSA-83w8-p2f5-377r)
 - [GHSA-8pvw-jcv7-9cmj: `@fastify/static` `allowedPath` canonicalization bypass](https://github.com/advisories/GHSA-8pvw-jcv7-9cmj)
 - [GHSA-gcjh-h69q-9w9g: cel-go JSON private-field exposure](https://github.com/advisories/GHSA-gcjh-h69q-9w9g)
+- [GHSA-fpm2-m4qq-wghr: Apache Camel platform-http JWT iss/aud skipped when unset / CVE-2026-66908](https://github.com/advisories/GHSA-fpm2-m4qq-wghr)
 
 !!! warning "Authorized validation only"
     Use local fixtures, synthetic routes, marker files, fake bearer values, and structs containing canary fields. Never retrieve production static files, submit forged tokens to third-party services, or evaluate expressions against real credentials or customer objects.
@@ -49,6 +50,17 @@ Use a disposable Camel route whose only side effect is incrementing an in-memory
 | non-empty role requirement, wrong role | reject |
 
 Capture whether the verifier or owned introspection stub was called, not only the final status. A positive finding proves **bearer presence -> empty role/permission branches skip all verification -> route executes**. Do not describe downstream RCE unless that exact protected route independently reaches a code-execution producer and explicit authorization permits proving it.
+
+### Platform-HTTP JWT follow-up: iss/aud skipped when unset (GHSA-fpm2-m4qq-wghr / CVE-2026-66908)
+
+In `org.apache.camel:camel-platform-http-main` 4.8.0 through 4.21.x, `JWTAuthenticationConfigurer.buildJwtOptions` returns `null` when **neither `jwtIssuer` nor `jwtAudience` is configured**, and the caller then skips `JWTAuthOptions.setJWTOptions` entirely. The Vert.x `JWTAuth` instance is built from the keystore alone, so inbound tokens are checked for **signature and expiry only** — `iss` and `aud` claims are never validated. The server starts normally with no warning; the component documentation presents signature/expiry checking as the default and issuer/audience as an optional extra. Both the application server and management server paths are affected. Fixed in 4.22.0.
+
+Operator deltas from the matrix above:
+
+- **Mint a lab-issued token with a *wrong* `iss` and `aud`** (signed by the trusted keystore key, unexpired). Positive: the route accepts it even though the documented claim checks are not enforced.
+- **Mint a token for a *different service audience*** than the target route's intended scope. Positive: cross-audience token accepted.
+- **Negative control on 4.22.0+**: the same two tokens must be rejected.
+- Evidence: the `buildJwtOptions` return value / `setJWTOptions` call path, the accepted/declared claim set, and the route marker hit. Do not harvest real tokens; use synthetic lab-signed values only.
 
 ## `@fastify/static`: authorize and resolve the same canonical path
 
