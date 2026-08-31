@@ -504,6 +504,10 @@ Maintain this as the seed list of official or primary sources for the tool famil
 - Goploy advisories/source: https://github.com/zhenorzz/goploy/security/advisories and https://github.com/zhenorzz/goploy
 - ha-mcp advisories/source: https://github.com/homeassistant-ai/ha-mcp/security/advisories and https://github.com/homeassistant-ai/ha-mcp
 - aiosmtplib advisories/source: https://github.com/cole/aiosmtplib/security/advisories and https://github.com/cole/aiosmtplib
+- mariadb-connector-nodejs advisories/source: https://github.com/mariadb-corporation/mariadb-connector-nodejs/security/advisories and https://github.com/mariadb-corporation/mariadb-connector-nodejs
+- mariadb-java-client advisories/source: https://github.com/mariadb-corporation/mariadb-java-client/security/advisories and https://github.com/mariadb-corporation/mariadb-java-client
+- mariadb-connector-r2dbc advisories/source: https://github.com/mariadb-corporation/mariadb-connector-r2dbc/security/advisories and https://github.com/mariadb-corporation/mariadb-connector-r2dbc
+- Snipe-IT advisories/source: https://github.com/grokability/snipe-it/security/advisories and https://github.com/grokability/snipe-it
 - Kite advisories/source: https://github.com/zxh326/kite/security/advisories and https://github.com/zxh326/kite
 - Apache Fesod advisories/source: https://github.com/apache/fesod/security/advisories and https://github.com/apache/fesod
 - Kimai advisories/source: https://github.com/kimai/kimai/security/advisories and https://github.com/kimai/kimai

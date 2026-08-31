@@ -10,6 +10,7 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [MariaDB connector multi-byte-charset SQL injection, cleartext auth-plugin leak, and charset-confusion boundaries (8 GHSAs)](2026-08-31-mariadb-connector-charset-sqli-and-cleartext-auth-boundaries-ghsa.md)
 - [vm2 sandbox breakout via indirect-call dangerous-mutator shadowing (CVE-2026-47698)](2026-08-31-vm2-indirect-call-mutator-sandbox-breakout-ghsa.md)
 - [Piccolo-Admin superuser escalation via session-token disclosure on read-only CRUD routes](2026-08-30-piccolo-admin-session-token-disclosure-superuser-escalation-ghsa.md)
 - [RestrictedPython guard-hook shadowing via positional-only arguments — sandbox escape](2026-08-30-restrictedpython-guard-hook-shadowing-sandbox-escape-ghsa.md)

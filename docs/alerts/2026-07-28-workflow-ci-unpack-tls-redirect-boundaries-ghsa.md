@@ -130,6 +130,22 @@ GHSA-pfc9-2cqg-9wq6 requires explicit redirect following. The one-line fix shows
 
 Strong evidence is **fake credential sent to owned HTTPS A -> followed downgrade redirect -> owned HTTP B receives that credential on the affected version -> fixed version strips it**. A redirect response alone is not disclosure, and this test does not establish an attacker-controlled redirect source in a real application.
 
+## August 31 follow-up: aiosmtplib STARTTLS plaintext-buffer response injection
+
+[GHSA-vxj7-4xrp-5vr4 / CVE-2026-55558](https://github.com/advisories/GHSA-vxj7-4xrp-5vr4) (aiosmtplib `<=5.1.1`) describes a plaintext-to-TLS buffer carryover: on `start_tls=True`/`None`, the client reads the server's `220` go-ahead and immediately performs the TLS handshake without discarding data still buffered on the plaintext socket. The asyncio transport is swapped in place, so the protocol object and its receive buffer survive the plaintext-to-TLS boundary and are parsed as though they arrived inside the TLS session. An on-path attacker can, in a single segment right after the client's `STARTTLS`, send the `220` reply followed by attacker-chosen response lines (for example `220 Go ahead`, `250-mx.evil`, `250 AUTH LOGIN`); the client consumes only the `220`, leaves the injected lines buffered, completes the handshake, and then parses the pre-staged plaintext as the first post-TLS server response. This also desynchronizes every subsequent command/response pair in the "encrypted" session. Implicit/direct TLS (`use_tls=True`) has no plaintext phase and is not affected.
+
+The durable pattern generalizes to every protocol that upgrades plaintext to TLS in place: **bytes observed on the plaintext leg must be discarded, not replayed, and no security decision may be derived from the plaintext leg after the upgrade.** RFC 3207 section 4.2 requires the client to discard any knowledge obtained from the server before the TLS negotiation; the 5.1.2 fix treats any data buffered after the `220` and before the handshake as a protocol violation.
+
+### STARTTLS boundary fixture
+
+1. Run an owned SMTP server that advertises `STARTTLS` in a lab network namespace, plus a second owned listener behind it that records the first post-upgrade response line and any subsequent command/response pairs. Use fake credentials and a marker EHLO/MAIL payload only; do not relay mail.
+2. Connect with the affected aiosmtplib using `start_tls=True` against the owned server. As the control baseline, send only the legitimate `220` after `STARTTLS` and confirm the handshake and subsequent commands are in sync.
+3. Mutate: in the same segment after the client's `STARTTLS`, send `220 Go ahead` plus attacker-chosen lines (`250` capability lines naming an owned `.invalid` domain, a fake `AUTH` line). Record which lines the client parses as post-TLS server responses and whether later commands desynchronize (mismatched response codes, duplicate `EHLO`, or command interpreted as data).
+4. Add controls: `use_tls=True` implicit TLS (no plaintext phase, must be inert), `start_tls=False`, and aiosmtplib 5.1.2 or later (must reject the buffered post-`220` data as a protocol violation).
+5. Repeat with a second owned listener that presents a generated test certificate so the TLS leg is terminated locally; never intercept or terminate production mail traffic.
+
+A bounded positive result is **plaintext buffer carries the injected lines across the STARTTLS boundary -> the client parses attacker-staged lines as the first post-TLS response -> subsequent session commands desynchronize** on the affected version, with 5.1.2 discarding the buffered data. Do not use real mailboxes, real credentials, or third-party SMTP endpoints.
+
 ## Reporting checklist
 
 Include:

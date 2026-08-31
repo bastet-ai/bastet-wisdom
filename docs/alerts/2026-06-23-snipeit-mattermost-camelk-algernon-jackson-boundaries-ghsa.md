@@ -51,6 +51,24 @@ This is the destructive twin of the self-service permission mass-assignment item
 
 Patched in `grokability/snipe-it` commit [`1cff2d67`](https://github.com/grokability/snipe-it/commit/1cff2d67aabd00ee51d864c1d7fb717494c1d6ad).
 
+## August 31 follow-up: finfo-MIME-gated inline-serve sanitizer bypass → stored XSS
+
+**Advisory:** [GHSA-jhph-5q74-pmfx](https://github.com/advisories/GHSA-jhph-5q74-pmfx) — stored XSS via inline-served attachment.
+
+The durable pattern: an upload/attachment is **content-type gated by a MIME sniff (finfo)** and then **inline-served with that sniffed MIME as the response `Content-Type`** without an `X-Content-Type-Options: nosniff` header or an explicit block on `text/html`/`image/svg+xml`/`application/xml`. When a low-privileged user uploads a file whose finfo-sniffed MIME is a browser-executable type but whose name or content the upload-side sanitizer did not strip, the inline-serve route returns the file with the sniffed MIME and the browser executes it in the app's origin. The trust boundary is **finfo-sniffed MIME → response `Content-Type` → browser script execution**, not the upload-time extension filter.
+
+Heuristic for any attachment/document inline-serve route: (1) enumerate the MIME types finfo can sniff from a user-controlled upload; (2) confirm whether the inline-serve response sets `X-Content-Type-Options: nosniff`; (3) confirm whether the browser will execute the sniffed MIME in the app's origin (`text/html`, `image/svg+xml`, `application/xml` with an embedded `<script>`, `image/gif` with `<svg>`); (4) confirm the upload-side sanitizer does not strip the executable payload for that MIME. Prove only with a marker payload that logs a benign beacon to an owned callback — do not exfiltrate data or target other users' sessions.
+
+### Bounded PoC workflow
+
+1. Provision an owned Snipe-IT lab with an affected version and a low-privileged account that can upload attachments.
+2. Upload a synthetic file whose finfo MIME is `image/svg+xml` (or `text/html`) and whose body contains only a benign `<script>` that fires a beacon to an owned `canary.invalid` listener. Do not place a real exfiltration or session-hijack payload.
+3. Request the inline-serve route for that attachment and capture the response `Content-Type`, `X-Content-Type-Options`, and whether the browser executed the script (owner callback hit).
+4. Add controls: a `nosniff` response (must not execute), a non-executable MIME (`application/pdf`), and the patched version (must reject or serve with a safe MIME / download disposition).
+5. Keep the proof to the beacon hit and the response headers; do not read other users' sessions, do not upload real sensitive data, and do not target production.
+
+Strong evidence is **low-priv upload -> finfo-sniffed executable MIME -> inline-serve response with that MIME and no `nosniff` -> browser executes the marker script in the app's origin** on the affected version, with the patched version serving a safe disposition.
+
 ## Operator triage
 
 1. **Start with privilege boundaries, not CVSS.** Prioritize routes where a low-privileged user supplies permission fields, tenant/team IDs, target namespaces, action URLs, hostnames, or type IDs.

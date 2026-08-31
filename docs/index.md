@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [MariaDB connector multi-byte-charset SQL injection, cleartext auth-plugin leak, and charset-confusion boundaries (8 GHSAs)](alerts/2026-08-31-mariadb-connector-charset-sqli-and-cleartext-auth-boundaries-ghsa.md)
 - [vm2 sandbox breakout via indirect-call dangerous-mutator shadowing (GHSA-cfcw-xp6x-25gj / CVE-2026-47698)](alerts/2026-08-31-vm2-indirect-call-mutator-sandbox-breakout-ghsa.md)
 - [Piccolo-Admin superuser escalation via session-token disclosure on read-only CRUD routes (GHSA-2gh4-jmwq-rr8w)](alerts/2026-08-30-piccolo-admin-session-token-disclosure-superuser-escalation-ghsa.md)
 - [RestrictedPython guard-hook shadowing via positional-only arguments (GHSA-ffg3-p8fm-mjx2 / CVE-2026-55830)](alerts/2026-08-30-restrictedpython-guard-hook-shadowing-sandbox-escape-ghsa.md)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [9router unauthenticated LLM-proxy access: Host-header spoofing and /codex rewrite bypass (2 GHSAs)](alerts/2026-08-28-9router-unauth-llm-proxy-host-and-codex-rewrite-bypass-ghsa.md)
 - [Yamcs StreamSQL Janino RCE, function-AC fail-open wave, and Phalcon router ReDoS](alerts/2026-08-28-yamcs-streamsql-janino-rce-and-funcac-fail-open-wave-ghsa.md)
 - [Phalcon Volt `join` filter compile-time PHP code injection (GHSA-hrwp-4hh9-c8r8)](alerts/2026-08-28-phalcon-volt-join-filter-compile-time-code-injection-ghsa.md)
-- [Klever KLV token-minting via royalty-overflow and marketplace TOCTOU](alerts/2026-08-28-klever-klv-token-minting-royalty-overflow-toctou-ghsa.md)
 
 
 
