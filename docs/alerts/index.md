@@ -10,6 +10,7 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [vm2 sandbox breakout via indirect-call dangerous-mutator shadowing (CVE-2026-47698)](2026-08-31-vm2-indirect-call-mutator-sandbox-breakout-ghsa.md)
 - [Piccolo-Admin superuser escalation via session-token disclosure on read-only CRUD routes](2026-08-30-piccolo-admin-session-token-disclosure-superuser-escalation-ghsa.md)
 - [RestrictedPython guard-hook shadowing via positional-only arguments — sandbox escape](2026-08-30-restrictedpython-guard-hook-shadowing-sandbox-escape-ghsa.md)
 - [MapFish Print 404-reflected XXE, Spinnaker kustomize-bake YAML tags, and PowSyBl local command executor](2026-08-30-mapfish-xxe-spinnaker-kustomize-and-powsybl-command-executor-ghsa.md)

@@ -39,6 +39,18 @@ A same-day Snipe-IT wave reinforces the same reusable bug-hunting heuristics. Du
 
 Lower-priority items in the same wave (stored XSS via inline attachment / Markdown custom field, open redirect after user edit, CSS injection via `header_color`, `import.created_by` overwrite, legacy license-checkin permission, print-inventory authorization bypass) were reviewed and are standard XSS/redirect/mass-assignment notes that do not add a new boundary class; track them, revisit if they chain with the cross-company or destructive-sink findings above.
 
+## August 31 follow-up: Snipe-IT sparse-permission mass-assignment wipe
+
+**Advisory:** [GHSA-j5g3-42wp-gqm3 / CVE-2026-55843](https://github.com/advisories/GHSA-j5g3-42wp-gqm3) — high (CVSS 6.5).
+
+`UsersController::update()` passes the request `permission` field **unconditionally** to `NormalizePermissionsPayloadAction`, which returns an **empty array** when the field is absent. That empty result flows to `PreserveUnauthorizedPrivilegedPermissionsAction`, which restores *only* the `superuser` key (when the editor is not a superuser) and the `admin` key (when the editor is neither admin nor superuser). Every other permission — including `admin` when the editing user *is* an admin — is discarded, and `$user->permissions` is overwritten with the sparse result.
+
+The durable pattern: **an absent request field is treated as "set this to empty," not "leave it unchanged."** Because the `canEditAuthFields` gate lets admins update any non-superuser account (including other admins), a `PUT /users/{id}` that omits `permission` silently and permanently destroys the target's admin flag and all granular permissions with no error. A secondary, lower-impact path exists for non-admin users holding `users.edit` who can wipe granular permissions off regular accounts the same way.
+
+This is the destructive twin of the self-service permission mass-assignment items already in the table: there the field is *present* and out-of-envelope; here the field is *absent* and the missing-field normalization erases everything. Heuristic for any mass-assignment surface: **audit the missing-field path.** For each permission/role/tenant/capability field, verify that "not in the payload" means "preserve current value" and not "set to null/empty." Build the test as a before/after permission matrix on a disposable account, sending the minimal update payload that omits the protected field, and confirm whether the field survives.
+
+Patched in `grokability/snipe-it` commit [`1cff2d67`](https://github.com/grokability/snipe-it/commit/1cff2d67aabd00ee51d864c1d7fb717494c1d6ad).
+
 ## Operator triage
 
 1. **Start with privilege boundaries, not CVSS.** Prioritize routes where a low-privileged user supplies permission fields, tenant/team IDs, target namespaces, action URLs, hostnames, or type IDs.
