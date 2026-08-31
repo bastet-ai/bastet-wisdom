@@ -63,6 +63,27 @@ This batch is durable because the advisories expose reusable operator boundaries
 - Preserve preconditions in the title or first paragraph. These findings are high-signal when the report names the required role, feature flag, known webhook ID, deployment config, package version, and safe proof object.
 - Keep proof artifacts inert and owned. Strong evidence is a callback receipt, marker file, synthetic metadata row, canary schema field, or owned-account email; weak evidence is broad claims about RCE, secret theft, or account takeover without controlled validation.
 
+## August 31 follow-up: TYPO3 Form Framework server-side MIME restriction never enforced (GHSA-mfqj-cqv3-h7xw / CVE-2026-15305)
+
+TYPO3's Form Framework `_FileUpload_` / `_ImageUpload_` elements with `allowedMimeTypes` configured let users upload files of arbitrary MIME types. The restriction was not enforced server-side because the `MimeTypeValidator` was registered **during form building, before concrete form definition properties were applied**, so the validator never made it into the processing pipeline. PHP file upload was **not** possible per the advisory, but arbitrary MIME upload on a backend where uploaded files are served or processed is a reusable input-boundary failure.
+
+- **Affected versions:** TYPO3 `>= 14.2.0, <= 14.3.4`.
+- **Patched version:** 14.3.5 LTS.
+- **Related record:** [GHSA-p8pr-442q-qf8g](https://github.com/advisories/GHSA-p8pr-442q-qf8g) is a withdrawn duplicate of this advisory; track GHSA-mfqj-cqv3-h7xw.
+
+### Operator value
+
+This is the same class as the upload-boundary findings tracked on the [CodeIgniter 4 upload-extension boundary page](2026-06-11-codeigniter-upload-extension-boundary-ghsa.md): a *configured* restriction that silently does not run is worse than no restriction, because it defeats defense-in-depth assumptions. The reusable audit pattern:
+
+1. **Validator registration timing.** For any form/workflow framework, enumerate where validators are attached relative to where definition properties are applied. A validator registered before property hydration (or whose pipeline slot is computed from a pre-merge definition) can be silently absent from the final processing pipeline even though the configuration UI shows the restriction as active.
+2. **Proof of the enforcement gap, not the payload.** In a lab TYPO3 with an affected version, configure a `FileUpload` element with `allowedMimeTypes` set to a narrow list, submit a file with a disallowed MIME type, and record that it is accepted on the affected version and rejected on the patched version. Use a benign canary file (for example a marker document with an unexpected MIME), not an executable payload. Do not demonstrate PHP upload, webshell placement, or execution — the advisory explicitly bounds the issue to arbitrary MIME types.
+3. **Evidence to capture:** the TYPO3 version, the exact form element and `allowedMimeTypes` configuration, the accepted-disallowed-MIME acceptance on the affected build, the patched-build rejection, and the registration-order source reference for the `MimeTypeValidator`.
+
+### Durable lesson
+
+- **A configured restriction that does not execute is a silent authz/validz hole.** When auditing any upload or input pipeline, verify the *runtime* validator set, not the configuration: dump the actual pipeline/validator list at processing time and compare it against the configured restrictions.
+- **Backend file upload + MIME config = boundary test target.** Wherever a CMS exposes "allowed MIME types" on a user-facing form, the first test is a disallowed-MIME canary; the second is whether accepted uploads land in a public/served path.
+
 ## Notes on skipped adjacent items
 
 The same scan rechecked Disclosed, PortSwigger, Trail of Bits, ProjectDiscovery, GitHub advisory published/updated feeds, and CISA KEV. Tornado C-extension memory access, pypdf resource-consumption issues, gorest race-condition crash, nebula-mesh cache headers, Routinator crash/cache traversal updates, and TYPO3 indexed-search/sanitizer XSS were tracked but not promoted here because they either skew toward availability/robustness or add less reusable offensive operator workflow than the file, authz, SSRF, role, and token-link boundaries above. No new PortSwigger, Trail of Bits, ProjectDiscovery, Disclosed, or CISA KEV item in this run added a higher-signal workflow than the GitHub advisory batch above.

@@ -64,3 +64,33 @@ X-Skillz-End-To-End: keep-me
 Record the origin response and the final client response. The affected helper forwards `X-Skillz-Hop`; the fixed helper removes it while retaining `X-Skillz-End-To-End`. Vary header case, optional whitespace, and multiple comma-separated tokens, but do not put credentials or operational internal metadata in the canary.
 
 Treat this as a transport-policy primitive, not automatic cache poisoning or authorization bypass. Escalation requires a concrete downstream consumer that trusts the leaked extension field. The strongest report includes raw origin-to-proxy and proxy-to-client header sets plus an affected-versus-fixed comparison.
+
+## August 31 follow-up: `@hono/oauth-providers` OAuth state check fails open on omitted state (GHSA-fm3f-ch8h-qw8q / CVE-2026-81888)
+
+The `@hono/oauth-providers` package (`google`, `github`, `facebook`, `discord`, `twitch`, `linkedin`, `msentra`) compares the OAuth callback `state` against the stored state with a check that treats **two absent values as a match**. A callback that omits `state` — when no `state` was ever stored — therefore passes the anti-CSRF check and redeems the authorization code. The `x` (Twitter) provider is not exploitable because its PKCE binding covers the case. Hono's `csrf()` middleware does not help: it only inspects form-style requests, while the OAuth callback is a top-level `GET` navigation the middleware treats as safe.
+
+- **Affected versions:** `@hono/oauth-providers` `< 0.8.6`.
+- **Patched version:** `0.8.6`.
+- **Severity:** medium, CVSS 3.1 5.4 (CWE-352 CSRF / CWE-1275).
+
+### Impact model
+
+An attacker can make a victim's browser complete an OAuth callback that binds the **attacker's** identity instead of the victim's:
+
+1. **Login CSRF:** the victim silently acts inside the attacker's account.
+2. **Forced account linking:** the attacker's identity is linked to the victim's account, enabling later sign-in as the victim.
+
+### Replayable validation (lab / owned accounts only)
+
+Preconditions: a lab app using an affected `@hono/oauth-providers` version with one of the listed providers, two synthetic accounts, and a tester-controlled OAuth-issuer stub (or an owned-account OAuth flow where the policy permits). No production users, no real session hijacking.
+
+1. **State-omission differential.** Drive the provider's authorize + callback flow twice: once with the full state round-trip (control), once with a callback that omits `state` while no state was stored. Record that the omitted-state callback is accepted and the code redeemed on the affected version, and rejected on `0.8.6`.
+2. **Identity-binding proof with canaries only.** Use a lab OAuth issuer stub that returns a tester-chosen subject claim. Show that a state-omitted callback from the attacker's stub session binds the stub subject to the victim's lab account (forced-linking table: pre-state, callback response, post-state account linkage). Do not bind real identities.
+3. **PKCE contrast.** Repeat the omission against the `x` provider and record the rejection, to bound the class to the state-only providers.
+4. **Evidence to capture:** affected package version, provider list, the state-compare behavior (absent==absent), the omitted-state callback acceptance vs. `0.8.6` rejection, and the forced-linking pre/post state with synthetic subjects. Redact all tokens and session values.
+
+### Durable lesson
+
+- **Anti-CSRF checks must fail closed on missing state, not compare for equality.** "Stored state equals callback state" is the wrong predicate when both sides can be empty; the correct check is "a state was stored AND it matches". Any framework or library whose session/CSRF comparison is a plain equality over optional fields is a fail-open candidate.
+- **OAuth `csrf()` middleware coverage is form-scoped.** Top-level `GET` callback navigations bypass form-based CSRF protection by design; the `state` (or PKCE) parameter is the only binding. When auditing social-login integrations, test the callback route directly, not just the middleware.
+- **Provider-by-provider contrast is the proof.** A multi-provider package can have one provider (PKCE-bound) that is safe and a fleet of state-only providers that are not. Enumerate the provider matrix and record which ones the fix/behavior covers.
