@@ -1,6 +1,6 @@
 # SAML, MCP, OpenMetadata, MVT, and render-boundary batch
 
-Source: GitHub Security Advisories REST fallback, published/updated 2026-05-21. Refreshed from the 2026-06-10 hourly scan after GitHub's updated feed resurfaced samlify/OpenMetadata and the adjacent Mobile Verification Toolkit path-traversal advisory.
+Source: GitHub Security Advisories REST fallback, published/updated 2026-05-21. Refreshed from the 2026-06-10 hourly scan after GitHub's updated feed resurfaced samlify/OpenMetadata and the adjacent Mobile Verification Toolkit path-traversal advisory. Refreshed again on 2026-08-31 with an OpenMetadata FreeMarker email-template SSTI follow-up.
 
 This batch is durable because each item gives operators a reusable validation pattern: signed SAML assertion attribute injection, unauthenticated local MCP-to-PowerShell control, metadata-service credential disclosure through a low-privilege workflow, hostile forensic bundles crossing analyst-workstation filesystem boundaries, and sanitizer raw-text bypass that turns stored content into executable markup.
 
@@ -37,6 +37,34 @@ This batch is durable because each item gives operators a reusable validation pa
 - In SAML reports, include the IdP library/version, the exact profile field or claim source, the signed assertion diff, and the SP authorization decision that changed.
 - In MCP reports, include bind address, transport mode, CORS/origin behavior, auth posture, reachable tool names, and the Windows user context for any harmless command proof.
 - In sanitizer reports, include the sanitizer version, input payload, sanitized output, render sink, and whether the bug is stored, reflected, or admin-only.
+
+## August 31 follow-up: OpenMetadata FreeMarker email-template SSTI to RCE (GHSA-5f29-2333-h9c7 / CVE-2026-22244)
+
+OpenMetadata's `DefaultTemplateProvider.getTemplate()` renders email-template content fetched from the document repository into a FreeMarker `Template` with a bare `Configuration(Configuration.VERSION_2_3_31)` — no `TemplateClassResolver.SAFER_RESOLVER`, no `?api` restriction, no input sanitization. Because the template *content* is itself user-writable (an authenticated admin can replace `data.template` on any `EmailTemplate` entity via `PATCH /api/v1/docStore/{templateId}` with a `json-patch` body), a single admin credential plus any trigger that renders a notification email (test email, password reset, user invitation, account-activity notification) becomes a command execution on the server process user. This is a different trust boundary from the earlier `TEST_CONNECTION` credential-echo item on this page: there the leak is in the API *response*; here the template *content* is the payload.
+
+- **Affected:** `org.open-metadata:platform` (maven) `>= 1.5.0, < 1.11.4`; confirmed on 1.11.2; patched in `1.11.4`.
+- **Severity:** high (CWE-1336 Server-Side Template Injection).
+- **Preconditions:** an authenticated admin (or any account that can `PATCH` docStore `EmailTemplate` entities), a render trigger for the modified template, and in the advisory's PoC a reachable SMTP endpoint (the advisory wired a local MailDev sink; any SMTP host works).
+
+### Operator triage
+
+1. Treat the docStore `EmailTemplate` PATCH endpoint as a stored-template write surface: it accepts arbitrary FreeMarker source with no restriction, so any admin-level credential is a template-authoring credential.
+2. Inventory every FreeMarker/Jinja/Mustache/Go-template sink in a target that loads template content from a user-writable store (docstore, CMS, settings DB, notification queue). If the renderer is constructed without a class/built-in restriction, the stored content is a command-execution primitive, not just markup.
+3. Check which notification triggers are reachable with the same credential that can write the template. A trigger that requires a *second*, lower-privilege user (e.g. the target of a password reset) matters: it means one compromised admin account can execute on behalf of flows it cannot directly drive.
+
+### Replayable validation (lab / owned SMTP only)
+
+Preconditions: an authorized lab OpenMetadata instance on an affected version (Docker Compose, MySQL + Elasticsearch), a lab SMTP sink (for example MailDev on `127.0.0.1:1025`) wired into the instance's email configuration, and a disposable admin account. No production instances, no real user inboxes, no exfiltration to external hosts.
+
+1. **Positive proof is a marker in a captured email.** Log in with the lab admin token, `GET /api/v1/docStore?entityType=EmailTemplate` to find the `testMail` entity id, `PATCH` `/data/template` with an inert FreeMarker `Execute`-class marker (identity + working directory only, for example `whoami`/`pwd` equivalents or `id; pwd`), then trigger `PUT /api/v1/system/email/test` to a lab address on the lab SMTP sink. Vulnerable result: the marker output appears in the captured `.eml`.
+2. **Capture the trust-boundary chain:** the `PATCH` request/response, the stored template row, the exact FreeMarker `Configuration` construction in the affected build (no `SAFER_RESOLVER`/`?api` restrictions), and the render call site in `DefaultTemplateProvider`.
+3. **Negative control:** repeat the same patch + trigger against `1.11.4` (or a build with the sandboxed `Configuration`) and record that the marker no longer executes.
+4. **Evidence limits:** identity/working-directory markers only. Do not capture environment-variable dumps, secrets, database credentials, or JWT signing keys in evidence; do not open reverse shells or reach cloud metadata; keep the SMTP sink local.
+
+### Durable lesson
+
+- **Stored template content is the payload.** Whenever template *source* is fetched from a user-writable store and compiled without a class/built-in resolver restriction, template injection is as durable a pattern as SQLi in this class of application. The audit question is "who can write the template, and what can the renderer execute" — not "can I inject into a variable."
+- **The admin-write + notify-render split is the report's core.** A strong report shows the write endpoint, the stored template, the unsandboxed renderer, and a single trigger that crosses from admin state to process execution — with version ranges and the sandboxed-config negative control.
 
 ## Notes on skipped items from this scan
 

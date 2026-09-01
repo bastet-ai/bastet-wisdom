@@ -15,6 +15,8 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 - [TYPO3 Form Framework server-side MIME restriction never enforced (GHSA-mfqj-cqv3-h7xw / CVE-2026-15305)](2026-06-12-typo3-budibase-geoserver-appsmith-boundary-batch-ghsa.md#august-31-follow-up-typo3-form-framework-server-side-mime-restriction-never-enforced-ghsa-mfqj-cqv3-h7xw-cve-2026-15305)
 - [`@hono/oauth-providers` OAuth state check fails open on omitted state (GHSA-fm3f-ch8h-qw8q / CVE-2026-81888)](2026-05-09-hono-render-jwt-cache-and-prototype-boundary-batch-ghsa.md#august-31-follow-up-honooauth-providers-oauth-state-check-fails-open-on-omitted-state-ghsa-fm3f-ch8h-qw8q-cve-2026-81888)
 - [MariaDB connector multi-byte-charset SQL injection, cleartext auth-plugin leak, and charset-confusion boundaries (8 GHSAs)](2026-08-31-mariadb-connector-charset-sqli-and-cleartext-auth-boundaries-ghsa.md)
+- [Kirby media-handler encoded-slash traversal and chunk-upload permission boundary (2 GHSAs)](2026-08-31-kirby-media-encoded-slash-traversal-and-chunk-upload-boundary-ghsa.md)
+- [MetaGPT SPO extension and class-view rebuild: workspace path to command execution and file read (2 GHSAs)](2026-08-31-metagpt-spo-workspace-path-to-command-and-file-read-ghsa.md)
 - [vm2 sandbox breakout via indirect-call dangerous-mutator shadowing (CVE-2026-47698)](2026-08-31-vm2-indirect-call-mutator-sandbox-breakout-ghsa.md)
 - [Piccolo-Admin superuser escalation via session-token disclosure on read-only CRUD routes](2026-08-30-piccolo-admin-session-token-disclosure-superuser-escalation-ghsa.md)
 - [RestrictedPython guard-hook shadowing via positional-only arguments — sandbox escape](2026-08-30-restrictedpython-guard-hook-shadowing-sandbox-escape-ghsa.md)
