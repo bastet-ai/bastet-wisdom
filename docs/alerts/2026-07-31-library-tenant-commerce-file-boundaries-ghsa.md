@@ -262,6 +262,27 @@ Multiple modules parse XML with `xml.etree.ElementTree`, which honors DTD entity
 
 Prove the class-resolution gap with a synthetic pickle that references an inert canary class and a denied `__reduce__` sink; confirm `find_class` resolves the canary without executing it. Do not ship a real RCE gadget or run it on a shared host. Report the deserializer-selection flaw with the exact `pickle_load` call site and the `restricted` default.
 
+## September 4 NLTK follow-up: pathsec default-off and DNS-resolution SSRF fail-open
+
+Two later NLTK records (both through the current `3.x` line) extend the same library-surface theme. Confirm the exact build and corrected behavior before reporting.
+
+### `pathsec` default `ENFORCE=False` disables all controls ([GHSA-p3m8-78j2-g5p3](https://github.com/advisories/GHSA-p3m8-78j2-g5p3) / CVE-2026-62388)
+
+`nltk.pathsec` ships with `ENFORCE=False` as the default, which disables *all* of its path-security controls — the URL validation, the file-open sandbox, and the downloader namespace confinement described throughout this page are inert unless an application explicitly opts in. The durable operator check: in any target that uses NLTK network/corpus loading, confirm whether `pathsec.ENFORCE` is actually set in the running configuration (code audit, env/config, or a behavior probe) rather than assuming the library self-protects. A library that is safe by default only in review and unsafe by default in the wild is a **configuration-trust boundary**, not a code boundary: the report is which deployment paths leave `ENFORCE` at its default.
+
+### `validate_network_url()` SSRF fail-open via DNS resolution ([GHSA-3gqm-fcw5-w839](https://github.com/advisories/GHSA-3gqm-fcw5-w839) / CVE-2026-63311)
+
+`validate_network_url()` can fail open through DNS resolution: when the resolver returns an answer the validator does not classify into a blocked category (or the lookup path errors in a way the validator treats as "not blocked"), the URL passes validation even though it resolves to a private/loopback/metadata destination. This is the same **validation-to-connect drift** as the DNS-rebinding, RFC 6598, and proxy-hop items above, with the drift now in the resolver-answer classification step.
+
+Use two owned peers in a disposable namespace with no production routes:
+
+```text
+validate   -> owned name that resolves to a blocked-lookalike / unclassified answer
+connect    -> owned private/loopback peer B that the resolver actually returns
+```
+
+Record the validator verdict, the resolver answer (family, address, classification), and the final connected peer. A bounded positive is **validation passes -> resolver returns a destination the validator did not classify as blocked -> fetch reaches the owned private peer**. Never reach cloud metadata, loopback admin routes, or production private services.
+
 ## Evidence and reporting
 
 For every workflow, preserve:

@@ -188,3 +188,32 @@ Two later advisories add route-normalization and object-ownership checks to the 
 3. Record authenticated subject, selected passkey ID, resolved owner, authorization decision, and side effect. Repeat on `1.4.0`.
 
 Report **authenticated user A -> caller-selected passkey ID for B -> deletion sink without owner check**. Do not enumerate passkey IDs, remove a real authentication factor, or interpret route reachability as deletion without before/after canary evidence.
+
+## September 4 follow-up: CKAN MCP server cache-key, error-verbose, and allowlist boundaries
+
+Three later CKAN MCP Server advisories add reusable MCP server-trust checks to the July 7 `server_url`/`base_url` SSRF filter work above. They belong on this page because they are the same product boundary: caller-controlled MCP parameters crossing into cache, error, and allowlist logic that a CKAN MCP server exposes.
+
+| Advisory | Component | Boundary | Operator value |
+| --- | --- | --- | --- |
+| [GHSA-78x9-fhhx-v2g6](https://github.com/advisories/GHSA-78x9-fhhx-v2g6) / CVE-2026-73846 | CKAN MCP Server cache-key canonicalization | a cache-key collision lets one request's cached response answer a different request (cache confusion / poisoning) | Test MCP/HTTP cache keys for canonicalization collisions between attacker-shaped and legitimate requests; prove with two synthetic requests that map to one key. |
+| [GHSA-83x6-42hr-jc76](https://github.com/advisories/GHSA-83x6-42hr-jc76) / CVE-2026-73845 | MQA server allowlist | an unanchored allowlist regex/prefix matches attacker hosts or subpaths | Test the allowlist pattern with anchored vs. prefix/substring forms; record which attacker host passes. |
+| [GHSA-6f9w-9hf2-5rg3](https://github.com/advisories/GHSA-6f9w-9hf2-5rg3) / CVE-2026-73844 | verbose error responses | an error path discloses internal details (stack, config, data) it should not | Trigger the error path with a malformed request and capture the disclosed fields; redact and report the disclosure surface. |
+
+### Cache-key canonicalization collision
+
+1. Identify the MCP server's request cache and how it builds the cache key (URL, method, selected params, auth-independent fields).
+2. Craft two synthetic requests that differ in an attacker-controlled field but canonicalize to the **same** cache key — e.g., differing query param order, encoding, or a parameter the key omits.
+3. Seed request A with a marker response, then issue request B. A positive is B receiving A's cached marker despite the differing field. Report the two raw requests and the shared key; do not poison a shared production cache.
+
+### Unanchored allowlist match
+
+1. Locate the allowlist that gates which CKAN/MQA hosts or paths are permitted.
+2. Test attacker forms against it: the allow value as a **prefix** of an attacker host (`example.com.attacker.tld`), as a **substring**, with appended path, and with encoding. A positive is an attacker host/ path passing the unanchored check.
+3. Negative control: the anchored/regex-anchored version of the same allowlist.
+
+### Verbose error disclosure
+
+1. Send a malformed or out-of-bounds request that forces the error path.
+2. Capture the response body and record which fields are disclosed (stack frames, internal URLs, config keys, data fragments). Redact real secrets and report the disclosure surface and the request shape that triggered it.
+
+Keep all three to synthetic CKAN fixtures, owned/lab peers, and redacted output; do not read real CKAN data or poison a live shared cache.

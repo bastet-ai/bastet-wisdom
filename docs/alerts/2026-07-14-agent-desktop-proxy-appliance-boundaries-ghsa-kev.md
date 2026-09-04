@@ -80,6 +80,18 @@ Report this as **protected HTTP route -> bearer token accepted from URL query ->
 
 Report these as **perimeter appliance route -> unintended outbound request** and **administrator-controlled input -> command wrapper execution boundary**. Do not publish exploit payloads or perform state-changing appliance actions.
 
+### September 4 follow-up: SMA1000 KEV wave (CVE-2026-83548 SSRF, CVE-2026-83549 OS command injection)
+
+CISA added two more SMA1000 appliance entries on 2026-09-02 to the KEV catalog: [CVE-2026-83548](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) (Server-Side Request Forgery) and [CVE-2026-83549](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) (OS Command Injection). These extend the existing SMA1000 boundary checks above with a second, still-active KEV pair on the same perimeter-appliance line.
+
+The operator treatment is the same as CVE-2026-15409/15410 above, scoped to the two new preconditions:
+
+1. **CVE-2026-83548 (SSRF)** — confirm explicit authorization and product ownership first. Validate SSRF reachability only with an owned no-content callback plus route/auth evidence (which SMA1000 route issues the outbound request, and under what auth state). Do not request cloud metadata, internal management ports, or third-party hosts. Record the appliance version, the triggering route/field, auth state, callback ID, and the patched negative control.
+2. **CVE-2026-83549 (OS command injection)** — test only as an administrator in a lab. Stop at command-construction evidence or an inert marker command (nonce to a controlled log). Do not run a real command, do not publish a payload, and do not perform a state-changing appliance action.
+3. Keep the report bounded to the preconditions CISA lists for each CVE (unauthenticated/remote SSRF reach for 83548; specific authenticated-administrator command-execution conditions for 83549). Pair the two new entries with the 15409/15410 evidence on one SMA1000 validation queue so the appliance line is assessed as a whole, not as four disconnected CVEs.
+
+The durable operator value is unchanged: **SMA1000 is a repeat-KEV perimeter appliance**, so it belongs on the perimeter-appliance recon sweep with a single combined boundary matrix (route × auth × sink) rather than per-CVE patch notes.
+
 ## Reporting notes
 
 - Lead with preconditions: listener exposure, MCP transport reachability, desktop import trust model, proxy/backend IP-trust policy, token transport accepted by the route, appliance ownership, and authenticated role.

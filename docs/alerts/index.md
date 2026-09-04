@@ -10,6 +10,16 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [SiYuan kernel: publish-access tiers, localhost-trust admin bypass, and attribute-view SQL/SSTI boundaries (22 GHSAs)](2026-09-04-siyuan-kernel-publish-tiers-localhost-admin-and-attribute-view-sql-ghsa.md)
+- [OpenChoreo: unauth workflow trigger, cross-project command execution, and data-plane access boundaries (4 GHSAs)](2026-09-04-openchoreo-unauth-trigger-cross-project-command-and-data-plane-ghsa.md)
+- [Omnigent: guardrail-policy bypass, agent-bundle overwrite, and runner execution boundaries (4 GHSAs)](2026-09-04-omnigent-guardrail-bypass-agent-bundle-overwrite-and-runner-ghsa.md)
+- [Orval codegen: OpenAPI-spec-to-execution trust and generation-time SSRF boundaries (12 GHSAs)](2026-09-04-orval-codegen-spec-to-execution-and-spec-fetch-ssrf-ghsa.md)
+- [fast-uri: URL-authorization differential and SSRF bypass boundaries (4 GHSAs)](2026-09-04-fast-uri-url-authorization-differential-and-ssrf-bypass-ghsa.md)
+- [CKAN MCP server cache-key canonicalization, unanchored allowlist match, and verbose error disclosure follow-up (3 GHSAs)](2026-07-07-better-auth-aider-netfoil-ckan-mcp-boundaries-ghsa.md#september-4-follow-up-ckan-mcp-server-cache-key-error-verbose-and-allowlist-boundaries)
+- [SonicWall SMA1000 KEV wave: SSRF (CVE-2026-83548) and OS command injection (CVE-2026-83549) follow-up](2026-07-14-agent-desktop-proxy-appliance-boundaries-ghsa-kev.md#september-4-follow-up-sma1000-kev-wave-cve-2026-83548-ssrf-cve-2026-83549-os-command-injection)
+- [NLTK `pathsec` default-off and DNS-resolution SSRF fail-open follow-up (2 GHSAs)](2026-07-31-library-tenant-commerce-file-boundaries-ghsa.md#september-4-nltk-follow-up-pathsec-default-off-and-dns-resolution-ssrf-fail-open)
+- [Grav 2FA secret rotation, sandbox exfil, decompression, and blueprint callable follow-up](2026-08-25-grav-sandbox-escape-and-privilege-host-origin-boundaries-ghsa.md#september-4-follow-up-2fa-secret-rotation-sandbox-exfil-decompression-and-blueprint-callable)
+- [SeaweedFS Filer JWT prefix-match boundary and unauth filer IAM gRPC credential minting follow-up (2 GHSAs)](2026-08-30-seaweedfs-s3-copy-source-traversal-and-ssrf-allowlist-trust-ghsa.md#5-seaweedfs-follow-up-filer-jwt-prefix-match-and-unauth-filer-iam-grpc-september-4-wave)
 - [PaperCut NG/MF unauth auth-bypass → RCE chain: KEV, actively exploited (CVE-2026-82078 + CVE-2026-81578)](2026-08-31-papercut-ngmf-auth-bypass-to-rce-kev-cve-2026-82078-cve-2026-81578.md)
 - [Pangolin share-link cross-org auth bypass and OpenSearch SQL cursor deserialization to RCE (GHSA-gqgf-x763-r89w + GHSA-rj55-cp95-h7f6)](2026-08-31-pangolin-share-link-auth-bypass-and-opensearch-sql-cursor-deserialization-ghsa.md)
 - [Devtron `/orchestrator/api-token/webhook` returns plaintext super-admin JWTs to any authenticated user (GHSA-mrqp-7v92-wchj / CVE-2026-82882)](2026-02-05-devtron-attributes-api-token-secret-leak-ghsa-8wpc-j9q9-j5m2.md#august-31-follow-up-orchestratorapi-tokenwebhook-returns-plaintext-super-admin-jwts-to-any-authenticated-user-ghsa-mrqp-7v92-wchj-cve-2026-82882)

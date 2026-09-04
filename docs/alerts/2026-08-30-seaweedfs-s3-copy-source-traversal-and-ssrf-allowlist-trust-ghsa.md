@@ -58,6 +58,15 @@ X-Forwarded-For: 10.0.0.1   # any configured allowed IP
 
 Recon heuristic: for any product whose only access control is an IP allow-list, send `X-Forwarded-For` / `X-Real-IP` / `Client-IP` / `X-Forwarded-For` combinations with an allowed address. If the allow-list check reads the header before the socket peer address, it is bypassable end-to-end.
 
+## 5. SeaweedFS follow-up: Filer JWT prefix match and unauth filer IAM gRPC (September 4 wave)
+
+Two later SeaweedFS advisories extend the July/August S3-gateway work to the **Filer** (object-directory) identity layer. They belong on this page because they are the same product and the same class: a credential/policy representation that is checked one way at auth time but interpreted another way at the filer, plus a filer service that exposes S3-credential authority without authentication.
+
+- **[GHSA-gv5w-hfx8-8cwq](https://github.com/advisories/GHSA-gv5w-hfx8-8cwq) / CVE-2026-72921 — Filer JWT `allowed_prefixes` literal prefix match.** The Filer authorizer matches a credential's `allowed_prefixes` against the requested path using a **literal string-prefix** comparison instead of a bucket/prefix-boundary match. A caller whose JWT authorizes prefix `/bucket-a/` can therefore construct a requested path that string-prefixes the authorized prefix but resolves into a different bucket or outside it (e.g. `/bucket-a-secret/...`). The operator check: for any JWT/prefix-scoped storage authorizer, test the boundary between the *authorized prefix string* and the *actual path namespace* — especially when prefixes are not delimiter-terminated.
+- **[GHSA-2v6v-25fm-p4fg](https://github.com/advisories/GHSA-2v6v-25fm-p4fg) / CVE-2026-72920 — unauthenticated filer IAM gRPC service grants S3 credentials.** A filer IAM gRPC endpoint issues S3 credentials without requiring authentication, so a network peer can mint credentials for a bucket/prefix it should not hold. The operator check: for any service that *issues* storage credentials, confirm the minting endpoint itself is authenticated and scoped, not just the endpoints that *consume* credentials.
+
+Both are the same durable axis as the copy-source traversal above: **a storage-identity check whose representation (prefix string, gRPC auth gate) is looser than the namespace it is meant to confine.**
+
 ## Replayable validation (lab only)
 
 ### SeaweedFS copy-source traversal
@@ -74,6 +83,20 @@ Preconditions: a lab SeaweedFS S3 gateway (< 4.34), two buckets, and an IAM iden
 1. Create two identities in a lab SeaweedFS: one with only S3 `Read` on one bucket, one admin.
 2. As the low-priv identity, sign a SigV4 request with service `s3tables` for `GET /buckets` against the management endpoint.
 3. Positive on < 4.34: 200 with the admin-owned table-bucket inventory. Negative control on 4.34: 403. Do not create/mutate table buckets; inventory enumeration is the bounded proof.
+
+### SeaweedFS Filer JWT prefix-match boundary
+
+1. In a lab Filer, mint two JWTs: one with `allowed_prefixes: ["/bucket-a/"]` and a second scoped to a sibling bucket `/bucket-b/`. Seed one marker object in `bucket-b`.
+2. As the `bucket-a/`-only identity, request a path that **string-prefixes** the authorized prefix but resolves outside it — e.g. a path beginning `/bucket-a-secret/` or `bucket-a/../bucket-b/marker` where the filer's matcher is a literal prefix. Record the filer's allow/deny decision and the resolved object.
+3. A positive is the filer authorizing a request whose resolved namespace differs from the authorized prefix string. Capture the prefix string, the requested path, and the resolved path side by side. Do not read real tenant objects — one canary marker is the proof.
+4. Negative control: the fixed filer build that matches on a delimiter-terminated bucket/prefix boundary.
+
+### SeaweedFS unauth filer IAM gRPC credential minting
+
+1. In a lab Filer, locate the IAM gRPC endpoint that issues S3 credentials.
+2. From a plain network peer (no credentials), call the minting RPC for a bucket/prefix and record whether S3 credentials are returned. A positive is credential issuance without authentication.
+3. Stop at the credential-issuance decision. Do not use the minted credentials to read or mutate real objects; confirm only that the minting gate is absent and note which buckets the returned identity would authorize.
+4. Negative control: the fixed build, which requires authentication/scoping on the minting RPC.
 
 ### Bifrost IP-classifier check
 
@@ -103,3 +126,5 @@ Preconditions: a lab SeaweedFS S3 gateway (< 4.34), two buckets, and an IAM iden
 - [GitHub Advisory Database: SeaweedFS GHSA-hgpf-8634-g44c / CVE-2026-55873](https://github.com/advisories/GHSA-hgpf-8634-g44c) — S3Tables/Iceberg REST management API authorization collapse
 - [GitHub Advisory Database: Bifrost GHSA-w98g-5w9p-p3rc / CVE-2026-55245](https://github.com/advisories/GHSA-w98g-5w9p-p3rc) — `isPublicIP` deny-list gap (CGNAT, 6to4, NAT64, site-local)
 - [GitHub Advisory Database: phpSysInfo GHSA-786w-p5pm-cvgh / CVE-2026-55584](https://github.com/advisories/GHSA-786w-p5pm-cvgh) — `PSI_ALLOWED` allow-list bypass via `X-Forwarded-For` / `Client-IP`
+- [GitHub Advisory Database: SeaweedFS GHSA-gv5w-hfx8-8cwq / CVE-2026-72921](https://github.com/advisories/GHSA-gv5w-hfx8-8cwq) — Filer JWT `allowed_prefixes` literal prefix-match boundary escape
+- [GitHub Advisory Database: SeaweedFS GHSA-2v6v-25fm-p4fg / CVE-2026-72920](https://github.com/advisories/GHSA-2v6v-25fm-p4fg) — unauthenticated filer IAM gRPC service grants S3 credentials
