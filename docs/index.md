@@ -8,6 +8,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [CodeWhale / `deepseek-tui` agent-tool trust boundaries: repo-config shell override, git-tool argument injection, SSRF DNS-pinning TOCTOU, and env-symlink leaks (9 GHSAs)](alerts/2026-09-04-codewhale-agent-tool-trust-boundaries-ghsa.md)
+- [AI/ML ingestion boundaries: URL-partitioning SSRF, SSRF redirect bypass, checkpoint deserialization, and non-superuser LLM-config overwrite (5 GHSAs)](alerts/2026-09-04-ai-ml-ingestion-ssrf-deserialization-and-config-authorization-ghsa.md)
 - [SiYuan kernel: publish-access tiers, localhost-trust admin bypass, and attribute-view SQL/SSTI boundaries (22 GHSAs)](alerts/2026-09-04-siyuan-kernel-publish-tiers-localhost-admin-and-attribute-view-sql-ghsa.md)
 - [OpenChoreo: unauth workflow trigger, cross-project command execution, and data-plane access boundaries (4 GHSAs)](alerts/2026-09-04-openchoreo-unauth-trigger-cross-project-command-and-data-plane-ghsa.md)
 - [Omnigent: guardrail-policy bypass, agent-bundle overwrite, and runner execution boundaries (4 GHSAs)](alerts/2026-09-04-omnigent-guardrail-bypass-agent-bundle-overwrite-and-runner-ghsa.md)
@@ -16,8 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [PaperCut NG/MF unauth auth-bypass → RCE chain: KEV, actively exploited (CVE-2026-82078 + CVE-2026-81578)](alerts/2026-08-31-papercut-ngmf-auth-bypass-to-rce-kev-cve-2026-82078-cve-2026-81578.md)
 - [MariaDB connector multi-byte-charset SQL injection, cleartext auth-plugin leak, and charset-confusion boundaries (8 GHSAs)](alerts/2026-08-31-mariadb-connector-charset-sqli-and-cleartext-auth-boundaries-ghsa.md)
 - [Kirby media-handler encoded-slash traversal and chunk-upload permission boundary (GHSA-9vx2-j98c-p72w + GHSA-67mx-6wf2-92xp)](alerts/2026-08-31-kirby-media-encoded-slash-traversal-and-chunk-upload-boundary-ghsa.md)
-- [MetaGPT SPO extension and class-view rebuild: workspace path to command execution and file read (GHSA-w32p-36mf-mmvj + GHSA-2p3m-whr7-9m4w)](alerts/2026-08-31-metagpt-spo-workspace-path-to-command-and-file-read-ghsa.md)
-- [vm2 sandbox breakout via indirect-call dangerous-mutator shadowing (GHSA-cfcw-xp6x-25gj / CVE-2026-47698)](alerts/2026-08-31-vm2-indirect-call-mutator-sandbox-breakout-ghsa.md)
 
 
 

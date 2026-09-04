@@ -10,6 +10,9 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [CodeWhale / `deepseek-tui` agent-tool trust boundaries: repo-config shell override, git-tool argument injection, SSRF DNS-pinning TOCTOU, and env-symlink leaks (9 GHSAs)](2026-09-04-codewhale-agent-tool-trust-boundaries-ghsa.md)
+- [AI/ML ingestion boundaries: URL-partitioning SSRF, SSRF redirect bypass, checkpoint deserialization, and non-superuser LLM-config overwrite (5 GHSAs)](2026-09-04-ai-ml-ingestion-ssrf-deserialization-and-config-authorization-ghsa.md)
+- [Claude Code Studio unauthenticated OS command injection follow-up (GHSA-79wm-x847-7cvg / CVE-2026-73222)](2026-06-10-claude-code-action-mcp-and-baileys-event-boundaries-ghsa.md#september-4-claude-code-studio-unauthenticated-os-command-injection-follow-up)
 - [SiYuan kernel: publish-access tiers, localhost-trust admin bypass, and attribute-view SQL/SSTI boundaries (22 GHSAs)](2026-09-04-siyuan-kernel-publish-tiers-localhost-admin-and-attribute-view-sql-ghsa.md)
 - [OpenChoreo: unauth workflow trigger, cross-project command execution, and data-plane access boundaries (4 GHSAs)](2026-09-04-openchoreo-unauth-trigger-cross-project-command-and-data-plane-ghsa.md)
 - [Omnigent: guardrail-policy bypass, agent-bundle overwrite, and runner execution boundaries (4 GHSAs)](2026-09-04-omnigent-guardrail-bypass-agent-bundle-overwrite-and-runner-ghsa.md)

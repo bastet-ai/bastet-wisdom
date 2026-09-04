@@ -125,3 +125,28 @@ A strong report frames impact as **remote protocol input crossing into trusted a
 5. Record the requested path, canonical worktree/git-dir path, sandbox profile, helper decision, and marker writes. Repeat on 2.1.163 or later.
 
 Report **repository/prompt-controlled worktree operation -> Git directory or canonical-path confusion -> filesystem/helper action escapes the intended sandbox context**. Stop at a disposable outside-root marker; do not overwrite a startup file or demonstrate persistence.
+
+## September 4 Claude Code Studio unauthenticated OS command injection follow-up
+
+[GHSA-79WM-X847-7CVG](https://github.com/advisories/GHSA-79wm-x847-7cvg) / CVE-2026-73222 (high, CVSS 8.8) is an **unauthenticated OS command injection (RCE) in the `claude-code-templates` npm package `<= 1.29.2`**, reachable through the Claude Code Studio server started with `--studio`. This is a different surface from the worktree/persistent-config findings above: it is not a repo-clone or sandbox-escape chain, it is the *local server* exposing an HTTP/template route that reaches shell execution with no authentication.
+
+### What to map
+
+1. Identify hosts running `claude-code-templates` (Claude Code Studio) at or below `1.29.2`, especially where the `--studio` server is bound beyond loopback or fronted by a proxy.
+2. Inventory the Studio server's HTTP routes that accept a user-controlled field (template id, command, path, or payload) and trace which reach a shell/exec sink.
+3. Confirm whether the route is authenticated: the reported path is unauthenticated, so the check is route-reachability + exec-sink, not a bypass of an existing authn layer.
+4. Separate the command-injection sink from any template-rendering side effects; the durable primitive is the unauthenticated exec, not XSS.
+
+### Authorized validation boundary
+
+Use a disposable Studio server on a loopback-only, credential-free host with no real repo, credentials, or network access.
+
+1. Start `--studio` on the vulnerable version behind a recorder that denies real shell execution.
+2. Send a request to the unauthenticated route with an inert canary (a marker argument that the recorder logs, not a real payload).
+3. Record the route, the accepted field, and whether the exec sink is reached with no credential. Prove with the marker only.
+4. Negative control: the fixed version and a request that is not the injection route.
+
+Report as **unauthenticated Studio HTTP route -> user-controlled field -> OS command sink**, naming the exact route and field. Do not execute a real payload, read environment secrets, or target a shared/production Studio host.
+
+- Include package version, the `--studio` binding, the route/field, and the inert canary evidence.
+- Keep severity tied to the unauthenticated exec primitive; do not inflate a route-reachability check into a claim about internal-data access unless the sink independently reaches it.
