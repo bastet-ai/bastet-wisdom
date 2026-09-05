@@ -117,6 +117,21 @@ Primary entries: [GHSA-mp7r-57w4-5qm3](https://github.com/advisories/GHSA-mp7r-5
 4. **`*ByPublishIgnore` visible-only filters are a recurring blind spot.** The tag, graph-node, and transclusion paths each used a visible-only filter that skipped the password tier. Audit every `*ByPublishIgnore` / "visible-only" call site against the password-aware access check.
 5. **Path/ID-resolution endpoints are metadata exfiltration primitives.** Five `CheckAuth`-only filetree endpoints let an anonymous reader map the entire private tree and convert titles to IDs — removing the "attacker must know an ID" precondition for every other block-read endpoint. Inventory ID↔path↔title resolution routes separately from the content routes.
 
+## September 5 follow-up: attribute-view key/cell filter bypass (2 GHSAs)
+
+Two later SiYuan kernel advisories published 2026-09-05 (both fixed in `v3.8.2`, both `CheckAuth`-only, both reachable by a publish `RoleReader` — and by anonymous when `Publish.Auth.Enable` is `false`) close out the attribute-view axis with the *schema* half of the leak:
+
+- **[GHSA-rw64-64f2-x73j](https://github.com/advisories/GHSA-rw64-64f2-x73j) — `getAttributeViewKeys` returns private cell values.** The endpoint filters attribute-view *rows* by publish access, but *cell values* (`KeyValues`) from rows bound to inaccessible documents are not filtered — a publish reader retrieves hidden payloads from rows whose document is not theirs.
+- **[GHSA-5p8j-x73f-mfw4](https://github.com/advisories/GHSA-5p8j-x73f-mfw4) — `getAttributeViewKeysByID` skips parent-database visibility.** The by-ID variant never verifies the parent database's visibility, so a reader enumerates complete key schemas — sensitive field names and relation definitions — from hidden databases by ID.
+
+Reusable checks, extending the late-wave row-filter findings:
+
+1. **Row-level vs. cell-level vs. schema-level filtering are three separate controls.** The late-wave wave fixed row-level filtering in `renderAttributeView`; this follow-up shows the *keys/cells* endpoints (`getAttributeViewKeys`, `getAttributeViewKeysByID`) each carry their own access decision. For any attribute-view/database UI, build the full matrix: rows × cell values × key/schema definitions × parent-database visibility — a positive is any one cell of the matrix returned under a principal that should not see the source object.
+2. **By-ID endpoints are the weak sibling.** Name/path-based endpoints usually inherit the caller's visible-object set; by-ID endpoints take the ID as the sole authority. For every `*ByID` route, confirm the ID is re-checked against the caller's accessible-object set *and* that the parent object's visibility is checked, not just the child's.
+3. **Hidden-database schema is a recon primitive.** Sensitive field names and relation definitions from a hidden database tell an operator what data the tenant holds and how objects relate — the schema is the disclosure even when the row values stay hidden.
+
+All proofs are marker-only in a disposable kernel: a synthetic hidden database holding one marker row + one marker key definition, requested through both endpoints with a publish reader token; the positive is the marker value/schema returned. No real note content, no real database dump, no production mutation.
+
 ## Safety
 
 - **Disposable kernel only.** Synthetic notebooks, synthetic template/snippet files, one synthetic block/document ID, a lab `AccessAuthCode`, and denied SQLite/file sinks.
@@ -126,4 +141,4 @@ Primary entries: [GHSA-mp7r-57w4-5qm3](https://github.com/advisories/GHSA-mp7r-5
 
 ---
 
-*Source: hourly offensive-security scan, 2026-09-04. All 22 SiYuan kernel advisories in the first wave plus the 8 late-wave advisories above (30 total) tracked in the [source index](../notes/source-index.md).*
+*Source: hourly offensive-security scan, 2026-09-04 and 2026-09-05. All 22 SiYuan kernel advisories in the first wave, the 8 late-wave advisories, and the 2 September 5 attribute-view follow-ups above (32 total) tracked in the [source index](../notes/source-index.md).*
