@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Agent/LLM + dev-console unauth wave: AutoAgent unauth TCP root RCE, Cua env-gated auth skip, SQL Chat unauth API-to-DB SQL relay, Coolify OAuth email-collision session mint, Axolotl `trust_remote_code` model-load RCE, MindsDB/Webstudio/Rowboat/Sim URL-relay SSRF (9 GHSAs)](alerts/2026-09-05-agent-ai-devconsole-unauth-rce-sql-relay-and-oauth-session-mint-ghsa.md)
 - [Unauth RCE/admin KEV wave: Kestra suffix-match auth bypass → workflow RCE (CVE-2026-49869), Artifactory default-config unauth admin (CVE-2026-82329), and Sangoma Switchvox `/pa` PhoneIP SQLi → RCE (CVE-2026-9586)](alerts/2026-09-05-kestra-artifactory-switchvox-unauth-rce-admin-kev-ghsa.md)
 - [CodeWhale / `deepseek-tui` agent-tool trust boundaries: repo-config shell override, git-tool argument injection, SSRF DNS-pinning TOCTOU, and env-symlink leaks (9 GHSAs)](alerts/2026-09-04-codewhale-agent-tool-trust-boundaries-ghsa.md)
 - [AI/ML ingestion boundaries: URL-partitioning SSRF, SSRF redirect bypass, checkpoint deserialization, and non-superuser LLM-config overwrite (5 GHSAs)](alerts/2026-09-04-ai-ml-ingestion-ssrf-deserialization-and-config-authorization-ghsa.md)
