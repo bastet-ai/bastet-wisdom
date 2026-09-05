@@ -10,6 +10,7 @@ High-signal incident notes, malware waves, CVE writeups, and active defensive re
 
 ## Recent highlights
 
+- [Unauth RCE/admin KEV wave: Kestra suffix-match auth bypass → workflow RCE (CVE-2026-49869), Artifactory default-config unauth admin (CVE-2026-82329), and Sangoma Switchvox `/pa` PhoneIP SQLi → RCE (CVE-2026-9586)](2026-09-05-kestra-artifactory-switchvox-unauth-rce-admin-kev-ghsa.md)
 - [CodeWhale / `deepseek-tui` agent-tool trust boundaries: repo-config shell override, git-tool argument injection, SSRF DNS-pinning TOCTOU, and env-symlink leaks (9 GHSAs)](2026-09-04-codewhale-agent-tool-trust-boundaries-ghsa.md)
 - [AI/ML ingestion boundaries: URL-partitioning SSRF, SSRF redirect bypass, checkpoint deserialization, and non-superuser LLM-config overwrite (5 GHSAs)](2026-09-04-ai-ml-ingestion-ssrf-deserialization-and-config-authorization-ghsa.md)
 - [Claude Code Studio unauthenticated OS command injection follow-up (GHSA-79wm-x847-7cvg / CVE-2026-73222)](2026-06-10-claude-code-action-mcp-and-baileys-event-boundaries-ghsa.md#september-4-claude-code-studio-unauthenticated-os-command-injection-follow-up)

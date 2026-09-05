@@ -13,6 +13,8 @@ This section captures **durable, actionable guidance** triggered by noteworthy a
 
 ## Recent additions worth prioritizing
 
+- **2026-09-05 KEV unauth RCE/admin wave — Kestra, JFrog Artifactory, Sangoma Switchvox** — [operator guidance](2026-09-05-kestra-artifactory-switchvox-unauth-rce-admin-kev-ghsa.md)
+  - CISA added three actively-exploited, **unauthenticated** entries on 2026-09-02/04, all with forensic-triage flags and 2026-09-05 due dates: **CVE-2026-49869** (Kestra OSS, CWE-78/287 — `endsWith("/configs")` suffix-match auth bypass → unauth workflow creation → RCE with default script plugins, fixed 1.0.45/1.3.21), **CVE-2026-82329** (JFrog Artifactory, CWE-287 — default-config unauth admin), and **CVE-2026-9586** (Sangoma Switchvox SMB 8.3, CWE-89 CVSSv4 9.3 — unauth `/pa` `PhoneIP` → PostgreSQL SQLi → `COPY … TO PROGRAM` RCE, patched 8.4.0.2, in-the-wild exploitation observed). Prioritize internet-exposed orchestration/registry/PBX assets; Chromium V8 type-confusion (CVE-2026-85046, same day) is a browser memory-safety entry with no public exploit path and is tracked, not turned into an operator page.
 - **2026-05-20 KEV legacy client and Defender batch** — [guidance](2026-05-20-cisa-kev-legacy-client-and-defender-boundary-guidance.md)
   - CISA added exploited legacy Microsoft/Adobe client-side RCE surfaces and Microsoft Defender endpoint boundary issues: CVE-2008-4250, CVE-2009-1537, CVE-2009-3459, CVE-2010-0249, CVE-2010-0806, CVE-2026-41091, and CVE-2026-45498.
   - Prioritize EOL removal/isolation, Defender platform health, SMB/RPC exposure reduction, and post-exploitation hunting by the 2026-06-03 due date.

@@ -8,6 +8,7 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 ## Recent entries
 
+- [Unauth RCE/admin KEV wave: Kestra suffix-match auth bypass → workflow RCE (CVE-2026-49869), Artifactory default-config unauth admin (CVE-2026-82329), and Sangoma Switchvox `/pa` PhoneIP SQLi → RCE (CVE-2026-9586)](alerts/2026-09-05-kestra-artifactory-switchvox-unauth-rce-admin-kev-ghsa.md)
 - [CodeWhale / `deepseek-tui` agent-tool trust boundaries: repo-config shell override, git-tool argument injection, SSRF DNS-pinning TOCTOU, and env-symlink leaks (9 GHSAs)](alerts/2026-09-04-codewhale-agent-tool-trust-boundaries-ghsa.md)
 - [AI/ML ingestion boundaries: URL-partitioning SSRF, SSRF redirect bypass, checkpoint deserialization, and non-superuser LLM-config overwrite (5 GHSAs)](alerts/2026-09-04-ai-ml-ingestion-ssrf-deserialization-and-config-authorization-ghsa.md)
 - [SiYuan kernel: publish-access tiers, localhost-trust admin bypass, and attribute-view SQL/SSTI boundaries (30 GHSAs)](alerts/2026-09-04-siyuan-kernel-publish-tiers-localhost-admin-and-attribute-view-sql-ghsa.md)
@@ -17,7 +18,6 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 - [fast-uri: URL-authorization differential and SSRF bypass boundaries (4 GHSAs)](alerts/2026-09-04-fast-uri-url-authorization-differential-and-ssrf-bypass-ghsa.md)
 - [PaperCut NG/MF unauth auth-bypass → RCE chain: KEV, actively exploited (CVE-2026-82078 + CVE-2026-81578)](alerts/2026-08-31-papercut-ngmf-auth-bypass-to-rce-kev-cve-2026-82078-cve-2026-81578.md)
 - [MariaDB connector multi-byte-charset SQL injection, cleartext auth-plugin leak, and charset-confusion boundaries (8 GHSAs)](alerts/2026-08-31-mariadb-connector-charset-sqli-and-cleartext-auth-boundaries-ghsa.md)
-- [Kirby media-handler encoded-slash traversal and chunk-upload permission boundary (GHSA-9vx2-j98c-p72w + GHSA-67mx-6wf2-92xp)](alerts/2026-08-31-kirby-media-encoded-slash-traversal-and-chunk-upload-boundary-ghsa.md)
 
 
 
