@@ -10,8 +10,8 @@ Agent-ready offensive security skills, recon workflows, and replayable exploit-p
 
 - [CodeWhale / `deepseek-tui` agent-tool trust boundaries: repo-config shell override, git-tool argument injection, SSRF DNS-pinning TOCTOU, and env-symlink leaks (9 GHSAs)](alerts/2026-09-04-codewhale-agent-tool-trust-boundaries-ghsa.md)
 - [AI/ML ingestion boundaries: URL-partitioning SSRF, SSRF redirect bypass, checkpoint deserialization, and non-superuser LLM-config overwrite (5 GHSAs)](alerts/2026-09-04-ai-ml-ingestion-ssrf-deserialization-and-config-authorization-ghsa.md)
-- [SiYuan kernel: publish-access tiers, localhost-trust admin bypass, and attribute-view SQL/SSTI boundaries (22 GHSAs)](alerts/2026-09-04-siyuan-kernel-publish-tiers-localhost-admin-and-attribute-view-sql-ghsa.md)
-- [OpenChoreo: unauth workflow trigger, cross-project command execution, and data-plane access boundaries (4 GHSAs)](alerts/2026-09-04-openchoreo-unauth-trigger-cross-project-command-and-data-plane-ghsa.md)
+- [SiYuan kernel: publish-access tiers, localhost-trust admin bypass, and attribute-view SQL/SSTI boundaries (30 GHSAs)](alerts/2026-09-04-siyuan-kernel-publish-tiers-localhost-admin-and-attribute-view-sql-ghsa.md)
+- [OpenChoreo: unauth workflow trigger, cross-project command execution, and data-plane access boundaries (5 GHSAs)](alerts/2026-09-04-openchoreo-unauth-trigger-cross-project-command-and-data-plane-ghsa.md)
 - [Omnigent: guardrail-policy bypass, agent-bundle overwrite, and runner execution boundaries (4 GHSAs)](alerts/2026-09-04-omnigent-guardrail-bypass-agent-bundle-overwrite-and-runner-ghsa.md)
 - [Orval codegen: OpenAPI-spec-to-execution trust and generation-time SSRF boundaries (12 GHSAs)](alerts/2026-09-04-orval-codegen-spec-to-execution-and-spec-fetch-ssrf-ghsa.md)
 - [fast-uri: URL-authorization differential and SSRF bypass boundaries (4 GHSAs)](alerts/2026-09-04-fast-uri-url-authorization-differential-and-ssrf-bypass-ghsa.md)

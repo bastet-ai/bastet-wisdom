@@ -98,6 +98,55 @@ Additional same-day SurrealDB advisories extend this page's database authorizati
 - For JWT checks, use disposable keys and non-sensitive claims; evidence is accept/deny behavior by algorithm and key class, not token contents.
 - For implicit namespace/database creation, use throwaway names and capture route/query state only. Do not create production namespaces, tables, or users.
 
+## September 4 SurrealDB follow-up: PERMISSIONS-clause writes, cross-scope custom API, and deny-net DNS bypass (3 GHSAs)
+
+A 2026-09-04 SurrealDB cluster adds three entries that extend this page's database-authorization and network-policy themes: [GHSA-66r2-5gwj-gxm2](https://github.com/advisories/GHSA-66r2-5gwj-gxm2) / CVE-2026-63733, [GHSA-848m-r628-vrxw](https://github.com/advisories/GHSA-848m-r628-vrxw) / CVE-2026-63735, and [GHSA-m3c3-78fh-w3w7](https://github.com/advisories/GHSA-m3c3-78fh-w3w7) / CVE-2025-71390. The first two are patched in SurrealDB `3.2.0`; the deny-net DNS bypass is patched in `2.1.8` (and not present from `2.2.6`/`2.3.6` onward).
+
+| Advisory | Component | Boundary | Operator value |
+| --- | --- | --- | --- |
+| [GHSA-66r2-5gwj-gxm2](https://github.com/advisories/GHSA-66r2-5gwj-gxm2) / CVE-2026-63733 | `DEFINE ... PERMISSIONS ... WHERE` clauses | the clause is evaluated with permission enforcement disabled (so it cannot recurse), but it may contain **data-modifying statements** that run with enforcement still off — so triggering the guarded operation writes to tables the caller cannot write | When a `PERMISSIONS ... WHERE` clause contains `CREATE`/`UPDATE`/`DELETE`/`RELATE`/`INSERT`/`UPSERT`, any principal allowed to perform the guarded operation can write to the clause's target tables without permission on them, once per matched record. Audit every permission clause for embedded writes. |
+| [GHSA-848m-r628-vrxw](https://github.com/advisories/GHSA-848m-r628-vrxw) / CVE-2026-63735 | `DEFINE API` custom HTTP routes | `/api/{namespace}/{database}/{endpoint}` took namespace/database from the URL and applied them to the caller's session before the endpoint ran, without checking the caller's authenticated scope covered them; the handler runs with permissions disabled (definer's rights), so the endpoint's `PERMISSIONS` clause was the only gate (`PERMISSIONS FULL` = open to everyone). `api::invoke()` resolved against the session's selected NS/DB (settable via `surreal-ns`/`surreal-db` headers or `USE`) the same way | An authenticated user scoped to any one namespace/database (a `VIEWER` is enough) can invoke a custom API in *another* namespace/database by naming the victim scope in the URL, reading data that endpoint returns — including from `PERMISSIONS NONE` tables — or triggering its writes/side effects. |
+| [GHSA-m3c3-78fh-w3w7](https://github.com/advisories/GHSA-m3c3-78fh-w3w7) / CVE-2025-71390 | `http::*` functions under `--allow-net`/`--deny-net` | deny-list network capability was checked against the hostname, not the resolved IP, so a hostname that DNS-resolves to an address inside the `--deny-net` block still got the request issued and the response returned to the caller | An authenticated user can reach internal/private endpoints by pointing `http::<fn>(<url>)` at a hostname whose A record lands inside the denied range. Treat the resolved IP, not the hostname, as the SSRF control. |
+
+### Replayable validation boundaries
+
+**Permission-clause write side effects (GHSA-66r2-5gwj-gxm2).**
+
+1. In a disposable SurrealDB lab (`< 3.2.0`), define two tables: a `post` table the low-priv test user can update, and a `log` table the user has **no** permission on.
+2. Define `DEFINE TABLE post PERMISSIONS FOR update WHERE (CREATE log SET at = time::now()) OR true;` (synthetic only; do not point the clause at a real audit/compliance table).
+3. As the low-priv user, perform one permitted `post` update and confirm a `log` record is created despite no `log` write permission. Positive evidence: the `log` row count goes up.
+4. Negative controls: a read-only `PERMISSIONS WHERE` clause (no writes) does not create side-effect rows; and SurrealDB `3.2.0` rejects defining a clause containing a write and blocks writes at runtime during evaluation.
+5. This is an integrity issue, not disclosure: the clause cannot switch namespace/database and cannot create users. Do not model it as a cross-tenant escape.
+
+**Cross-scope custom API (GHSA-848m-r628-vrxw).**
+
+1. In a two-namespace lab on `< 3.2.0`, create a custom API (`DEFINE API`) in the *victim* namespace that reads a synthetic marker value and returns it (a `PERMISSIONS FULL` endpoint is the worst case; a `PERMISSIONS NONE` table read inside the handler is the sharper proof, because the handler runs with permissions disabled).
+2. Authenticate as a principal scoped only to a *different* namespace (a `VIEWER` suffices).
+3. Invoke `/api/<victim_ns>/<victim_db>/<endpoint>` with the victim scope in the URL. Positive evidence: the synthetic marker value from the victim namespace is returned to a principal whose authenticated scope does not include it.
+4. Repeat via `api::invoke()` using `surreal-ns`/`surreal-db` headers or `USE` to confirm the same resolution path.
+5. Negative control: `3.2.0` returns `403 Forbidden` for a target scope outside the caller's authenticated level, at both the HTTP entry point and the dispatch step. Do not use real tenant data as the marker; a synthetic row with a unique value is the proof.
+
+**Deny-net DNS bypass (GHSA-m3c3-78fh-w3w7).**
+
+1. On a lab instance in `< 2.1.8` (or the affected 2.x line) started with `--allow-net --deny-net <private-range>`, register a hostname on an owned lab DNS zone that resolves to an address inside the denied range, fronting an owned callback that logs method/host/URI only.
+2. As an authenticated lab user, issue `http::get("http://<owned-hostname>/marker")` and confirm the server still issues the request and returns the synthetic response.
+3. Negative controls: the same hostname under `2.1.8`/`2.2.6`/`2.3.6`+ is denied at connect time because the resolved IP is re-checked; and an explicit allow-list (`--allow-net <trusted-range>`) where the trusted range is fully operator-controlled remains safe.
+4. Keep the proof to the owned callback's access log (method/host/URI), not response bodies. Do not target cloud metadata, internal production services, or customer networks.
+
+### Durable operator value
+
+1. **"Evaluated with enforcement off" is a write surface, not just a read shortcut.** Any query clause, trigger, or computed field that runs with permission checks disabled is an integrity boundary: if it can execute DML, it can write to objects the caller cannot address directly. Audit every `PERMISSIONS WHERE`, `DEFINE FUNCTION`, event, and cascade for embedded writes.
+2. **Definer's-rights handlers make the endpoint's own `PERMISSIONS` the only gate.** Custom APIs, webhooks, and user-defined functions that run with permissions disabled are only as strong as the clause on the endpoint they wrap. A `PERMISSIONS FULL` handler is open to any caller who can reach it — and reachability is the next question (see below).
+3. **URL-path scope selection is a cross-tenant primitive when the session is caller-settable.** When an HTTP route or `api::invoke()` derives the target namespace/database from the URL, header, or `USE` state *and* the handler runs definer's rights, the boundary proof is: can a principal scoped to namespace X invoke an endpoint in namespace Y? Test the scope-override direction, not just the endpoint's own permissions.
+4. **Network capability must check the resolved IP, not the hostname.** Any `http::*` / SSRF-style capability with allow/deny lists must re-resolve and re-check after DNS, because a deny-list matched on hostname is bypassable by any DNS zone the attacker controls. This is the same fail-open family as this page's earlier `--deny-net` port-redirect entry: the control must run against the *final* destination.
+
+### Follow-up harness additions
+
+- Extend the two-namespace lab with a third low-priv `VIEWER` principal, synthetic `post`/`log` tables, a `DEFINE API` endpoint returning a unique marker, and an owned DNS zone + callback.
+- For the permission-clause check, capture before/after row counts on the side-effect table and the defining query text; do not define clauses that write to compliance/audit tables or real tenant data.
+- For the cross-scope check, show the caller's authenticated scope, the requested URL scope, the returned marker, and the `403` negative control on the patched build.
+- For the DNS bypass, capture the owned callback access log (method/host/URI) and the DNS answer, with the patched-build denial as the negative control.
+
 ### Local desktop and MCP transport checks
 
 - Build an isolated desktop or containerized lab profile with no real notes, decks, credentials, devices, or MCP tools.

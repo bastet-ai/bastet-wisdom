@@ -80,6 +80,50 @@ Report as **attribute-view cell -> unescaped template/fragment -> SQL/REGEXP sin
 - **No real SQL execution.** Query-shape/parse evidence only; no `UNION`/stacked data reads, no sandbox escape.
 - **No script execution.** XSS proven with a harmless event marker, not a live payload.
 
+## September 4 late-wave follow-up: metadata, static-file, and secret-stripping boundaries (8 GHSAs)
+
+A second SiYuan kernel cluster published on 2026-09-04 extends the same audit axis into three route families the first wave did not cover: **reader-reachable metadata endpoints**, **static-file route registrations**, and **the secret-stripping inventory for non-administrator `getConf`**. All eight are `CheckAuth`-only routes reachable by a publish `RoleReader` token and, when `Publish.Auth.Enable` is `false`, by the anonymous account.
+
+Primary entries: [GHSA-mp7r-57w4-5qm3](https://github.com/advisories/GHSA-mp7r-57w4-5qm3) / CVE-2026-72792, [GHSA-h4v5-crx2-3cv4](https://github.com/advisories/GHSA-h4v5-crx2-3cv4) / CVE-2026-72793, [GHSA-34fj-mwm6-fjfg](https://github.com/advisories/GHSA-34fj-mwm6-fjfg) / CVE-2026-72794, [GHSA-h6w7-xxcf-w2mq](https://github.com/advisories/GHSA-h6w7-xxcf-w2mq) / CVE-2026-72795, [GHSA-fgmr-7w36-9qfq](https://github.com/advisories/GHSA-fgmr-7w36-9qfq) / CVE-2026-72796, [GHSA-f2rw-w22v-54vh](https://github.com/advisories/GHSA-f2rw-w22v-54vh) / CVE-2026-72797, [GHSA-mfrj-v65r-979c](https://github.com/advisories/GHSA-mfrj-v65r-979c) / CVE-2026-72798, and [GHSA-5w7r-f4cg-rqq7](https://github.com/advisories/GHSA-5w7r-f4cg-rqq7) / CVE-2026-72799.
+
+### Boundary map
+
+| Class | Route / sink | Defect | Reusable check |
+| --- | --- | --- | --- |
+| Session-signing-key disclosure | `POST /api/system/getConf` (non-admin) | `HideConfSecret` blocklist omits `Conf.CookieKey`, `NotebookCrypto`, and `Export.PandocBin` that the `exportConf` cloner already strips | Compare the two secret-stripping inventories; a positive is a field one strips and the other returns. |
+| Session-cookie forge primitive | same, `Conf.CookieKey` | the session-cookie signing key is returned to any reader | Capture the key as the boundary proof; on instances without an access-auth code a forged cookie can authenticate as a privileged user. |
+| Metadata tag vocabulary | tag-list endpoint using `FilterTagsByPublishIgnore` | tags from password-protected docs are counted/returned without the publish-password check | Compare the visible-only tag filter against a password-gated one; a positive is a tag label + usage count from a protected document. |
+| Transclusion / embedded blocks | embedded-block render | block content is returned without publish-access filtering | Seed a marker block in a hidden/publish-forbidden doc; confirm it is returned to an anonymous reader. |
+| Related-database content | `renderAttributeView` `Relation`/`Rollup` cells | the row filter is keyed only to the first cell; related-DB `Contents` are never publish-checked | Request a *published* database that relates to a *hidden* one; a positive is the private DB's block text in the published rows. |
+| Fail-open row filter | `renderAttributeView` when column 0 is not a block | `bt == nil` skips the accessibility check entirely | Reorder a database so column 0 is non-block; confirm rows are returned unchecked. |
+| Static-file route bypass | `/templates/`, `/snippets/`, `/widgets/`, `/plugins/`, `/emojis/`, `/export/` | registered with `CheckAuth` only; no publish-access / `refuseToAccess` / `IsSensitivePath` check | Pick a file the REST API refuses (`refuseToAccess`) and confirm the static route still serves it to the same reader. |
+| Export-artifact retrieval | `/export/csv/<name>/`, `/export/code/<name>` | code/CSV export names are derivable from `listDocsByPath` titles while the artifact exists | Derive the name, request the artifact, and record whether a private document's export is returned. |
+| Encrypted-notebook enumeration | `POST /api/notebook/getEncryptedNotebookStatus` | returns id/name/`unlocked` for every encrypted notebook, unfiltered | Compare against `lsNotebooks` (which filters publish-invisible notebooks); a positive is encrypted-notebook names + live lock state returned to a reader. |
+| Private document-tree mapping | `getFullHPathByID`, `getHPathByID`, `getPathByID`, `getIDsByHPath`, `getHPathByPath` | five path-resolution endpoints with no publish-access check | Resolve a hidden/publish-forbidden document ID to its full HPath and notebook; then `getIDsByHPath` to enumerate sibling IDs. |
+
+### Replayable validation boundaries
+
+1. **Two-secret-inventory diff (the `getConf` core).** In a disposable kernel, diff every field returned by non-admin `POST /api/system/getConf` against the `exportConf` cloner's output. The reusable finding is any field the cloner strips but `HideConfSecret` does not. Capture `Conf.CookieKey`, `NotebookCrypto`, and `Export.PandocBin` as marker values, **not** real keys. Do not forge a live session against a real instance; the boundary proof is "secret present in reader response vs. absent in export."
+2. **Static-route vs. REST-route differential.** For `/templates/`, `/snippets/`, `/widgets/`, `/plugins/`, `/emojis/`, and `/export/`, pick one path the REST `getFile`/`refuseToAccess` control denies to a reader and confirm the static route serves it under the same principal. A positive is identical reader principal, denied via REST, served via static. Use synthetic template/snippet files; do not read real notebook content or export real documents.
+3. **Related-database leak.** Build two databases: a published DB-A with a `Relation`/`Rollup` column pointing at a publish-forbidden DB-B that holds a marker value. Request `renderAttributeView` for DB-A. A positive is DB-B's marker appearing in DB-A's published rows. For the fail-open leg, reorder DB-A so column 0 is non-block and confirm the row is returned with no accessibility check.
+4. **Document-tree mapping.** With one document in a publish-forbidden notebook, call `getFullHPathByID` and `getPathByID` for its ID, then `getIDsByHPath` on the parent folder. A positive is the private HPath/notebook returned plus sibling document IDs. Stop at metadata; do not open the resolved documents' content.
+5. **Encrypted-notebook enumeration.** Confirm `getEncryptedNotebookStatus` returns notebooks that `lsNotebooks` withholds from the same reader, and record the live `unlocked` flag. Do not use the lock-state signal to time a real read of decrypted content.
+
+### Durable operator value
+
+1. **Two secret-stripping inventories is the root enabler.** `HideConfSecret` (a blocklist) and the `exportConf` cloner (an allowlist the project actually maintains) diverge, and the blocklist fails open on every field nobody added. Any tiered system that has "strip these secrets for lower roles" in *two places* should be audited by diffing the two inventories field-by-field.
+2. **Static-file registrations are a second, parallel route family.** The REST API's `refuseToAccess` / publish / sensitive-path controls do not apply to `gin` `.Static`/`.StaticFile` route groups. Enumerate *both* the REST handlers and the static registrations for the same data directory; the divergence is the bug.
+3. **Row-level filters that key only to the primary cell leak relation/route content.** Attribute-view, table, or card UIs that render "this row's primary block is public" but ship related-cell content (`Relation`, `Rollup`, rollups, joins, embeds) from a *different* object's scope will leak that other object. Test the full cell set, not just column 0, and test the fail-open path when column 0 is not the primary identifier.
+4. **`*ByPublishIgnore` visible-only filters are a recurring blind spot.** The tag, graph-node, and transclusion paths each used a visible-only filter that skipped the password tier. Audit every `*ByPublishIgnore` / "visible-only" call site against the password-aware access check.
+5. **Path/ID-resolution endpoints are metadata exfiltration primitives.** Five `CheckAuth`-only filetree endpoints let an anonymous reader map the entire private tree and convert titles to IDs — removing the "attacker must know an ID" precondition for every other block-read endpoint. Inventory ID↔path↔title resolution routes separately from the content routes.
+
+## Safety
+
+- **Disposable kernel only.** Synthetic notebooks, synthetic template/snippet files, one synthetic block/document ID, a lab `AccessAuthCode`, and denied SQLite/file sinks.
+- **No real secret use.** Capture `Conf.CookieKey`, `NotebookCrypto`, and encrypted-notebook material only as marker values; do not forge a live session, decrypt a real notebook, or use the OS username/path to build a real read primitive.
+- **No real content exfiltration.** Prove related-DB, transclusion, and document-tree leaks with synthetic marker values; do not open or dump real protected documents.
+- **No production mutation.** All checks are read/decision differentials.
+
 ---
 
-*Source: hourly offensive-security scan, 2026-09-04. All 22 SiYuan kernel advisories tracked in the [source index](../notes/source-index.md).*
+*Source: hourly offensive-security scan, 2026-09-04. All 22 SiYuan kernel advisories in the first wave plus the 8 late-wave advisories above (30 total) tracked in the [source index](../notes/source-index.md).*

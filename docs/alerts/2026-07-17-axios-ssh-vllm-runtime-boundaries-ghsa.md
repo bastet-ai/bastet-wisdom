@@ -185,6 +185,55 @@ Report this as **AI media/batch URL -> validator/client parser mismatch or missi
 
 Report this as **model config/repository metadata -> remote dynamic module loader -> trust flag not enforced on startup or subcomponent path**. Include the config field, loader path, CLI flags, resolved commit/cache path, and fixed behavior.
 
+## September 4 follow-up: derender output bounds, error-path disclosure, and structured-output guard siblings (4 GHSAs)
+
+A 2026-09-04 vLLM cluster adds four entries that extend this page's runtime-channel and parser-differential themes: [GHSA-hwrm-c4cx-rf4j](https://github.com/advisories/GHSA-hwrm-c4cx-rf4j) / CVE-2026-73555, [GHSA-48jh-3gj7-fg8v](https://github.com/advisories/GHSA-48jh-3gj7-fg8v) / CVE-2026-73556, [GHSA-8737-qx52-hjff](https://github.com/advisories/GHSA-8737-qx52-hjff) / CVE-2026-71486, and [GHSA-pr7f-p5mw-fc87](https://github.com/advisories/GHSA-pr7f-p5mw-fc87) / CVE-2026-73557. All are patched in vLLM `0.26.0`.
+
+| Advisory | Component | Boundary | Operator value |
+| --- | --- | --- | --- |
+| [GHSA-hwrm-c4cx-rf4j](https://github.com/advisories/GHSA-hwrm-c4cx-rf4j) / CVE-2026-73555 | `validation_exception_handler` (`server_utils.py`) | `str(exc)` on a Pydantic `RequestValidationError` leaks `File "...", line N` plus the OS username, home dir, venv path, and Python version; `sanitize_message()` strips memory addresses but not file-path patterns | A single malformed JSON body to any `/v1` POST endpoint yields version fingerprinting (handler + line numbers) even when `/version` is disabled. Test malformed-JSON error bodies as an information-disclosure surface. |
+| [GHSA-48jh-3gj7-fg8v](https://github.com/advisories/GHSA-48jh-3gj7-fg8v) / CVE-2026-73556 | `lm-format-enforcer` structured-output backend | the GHSA-rwxx-mrjm-wc2m ReDoS fix wrapped `xgrammar` and `outlines` compiles in `compile_regex_with_timeout` but left the `lm-format-enforcer` `RegexParser` unguarded (same `interegular` FSM primitive, no timeout, no buildability check) | When a project patches a ReDoS/DoS per-backend, audit *every* backend that shares the same compilation primitive. A one-request catastrophic regex against `backend=lm-format-enforcer` pegs a core and stalls the engine's structured-output path (unauthenticated when the API has no key). |
+| [GHSA-8737-qx52-hjff](https://github.com/advisories/GHSA-8737-qx52-hjff) / CVE-2026-71486 | `/v1/completions/derender` and `/v1/chat/completions/derender` | caller-supplied `GenerateResponse` objects are detokenized without `max_model_len`/`max_tokens`/`max_num_seqs`/response-size bounds, because derender accepts the *generated-output shape* directly rather than deriving limits from a bounded generation | Treat derender/post-processing routes that accept "already-generated" structures from the client as unbounded-resource boundaries; CPU and memory scale with attacker-chosen `token_ids` lists. Affects the CPU-only render frontend in disaggregated deployments. |
+| [GHSA-pr7f-p5mw-fc87](https://github.com/advisories/GHSA-pr7f-p5mw-fc87) / CVE-2026-73557 | `safe_load_prompt_embeds` follow-up guard for CVE-2025-62164 | the `torch.sparse.check_sparse_tensor_invariants()` context manipulates *process-global* PyTorch state via save/enable/restore; two `prompt_embeds` parts in one `/v1/chat/completions` request run concurrently on the default executor, so one context can restore the flag to `False` while the other is still guarded | When a fix wraps a deserialization sink in a global-flag context, test concurrent execution of the guarded region. The bypass needs `--enable-prompt-embeds` (default-off) and no API key; it does *not* need multimodal mode, `enable_mm_embeds`, or `renderer_num_workers > 1`. |
+
+### Replayable validation boundaries
+
+**Error-path information disclosure (GHSA-hwrm-c4cx-rf4j).**
+
+1. Send one malformed-JSON or missing-field body to each `/v1` POST endpoint (`/v1/chat/completions`, `/v1/completions`, `/tokenize`, `/detokenize`).
+2. Record the full error body. A positive is a `File "...", line N` pattern or OS username/home-dir/venv path in the response.
+3. Compare with the response body of a request that triggers a *handled* (non-exception) error to confirm the leak is specific to the exception handler's `str(exc)` path.
+4. This is a read-only recon primitive: it fingerprints vLLM version and host layout without authentication. Do not combine it with real exploit attempts.
+
+**Structured-output backend coverage (GHSA-48jh-3gj7-fg8v).**
+
+1. Confirm the operator's structured-output backend selection (`--structured-outputs-config`). The bug is specific to `backend=lm-format-enforcer`; `xgrammar` and `outlines` are bounded.
+2. With a lab vLLM using `backend=lm-format-enforcer`, submit a single `/v1/completions` request with `structured_outputs.regex` set to a catastrophic pattern (e.g. `(a{1,300}){300}`) and record that the request does not return while a control core is pegged.
+3. Negative control: the identical request against `backend=outlines` or `backend=xgrammar` returns a clean, bounded error via `compile_regex_with_timeout`.
+4. Report as **per-backend ReDoS patch left one shared-primitive backend unguarded**. Keep the proof to timing/timeout evidence; do not run the payload against a production engine.
+
+**Derender unbounded-output (GHSA-8737-qx52-hjff).**
+
+1. Confirm the target build exposes `/v1/completions/derender` or `/v1/chat/completions/derender` (introduced by the disaggregated-render PR; not in `v0.23.0`).
+2. Submit a derender request with `generate_responses` containing nested `choices[*].token_ids` lists far larger than any generation-side budget (e.g. 16 responses × 4 choices × 8192 tokens) and record CPU/memory growth and response size.
+3. Negative control: the same token budget passed through the normal `/v1/completions` generate path is bounded by `max_tokens`/`max_model_len`.
+4. Report as **client-supplied generated-output shape bypasses generation-side resource bounds at the post-processing stage**. Use bounded payloads; do not attempt to crash a shared production frontend.
+
+**Concurrent prompt-embedding guard bypass (GHSA-pr7f-p5mw-fc87).**
+
+1. Preconditions: `--enable-prompt-embeds` enabled, no API-key middleware (stock default), PyTorch pin in the affected range. Record whether `renderer_num_workers` is default (1) — the bypass does not need a multi-worker renderer.
+2. In a lab worker, build one `/v1/chat/completions` request with two `prompt_embeds` content parts: part A a benign valid embedding, part B the invalid sparse payload that the guarded loader rejects under serial execution.
+3. Let both parts schedule on the event-loop default executor concurrently. The positive evidence is part B's `torch.load(..., weights_only=True)` observing the global invariant flag disabled and reconstructing the malformed sparse tensor, reaching `to_dense()` before later validation.
+4. Negative controls: the identical two-part request in a patched build (or with a shared process-wide lock), and a serial single-part request where the guard holds.
+5. Do not publish the sparse payload; report the concurrency interleaving (save/enable/restore of the process-global flag across two parts) and the guarded-sink reachability. RCE/memory-corruption consequences remain conditional on the historical CVE-2025-62164 behavior; do not claim them without a reproduced crash.
+
+### Durable operator value
+
+1. **Error handlers are a fingerprinting surface.** Any framework that renders `str(exception)` into an HTTP response leaks file paths, usernames, and version-specific line numbers. Audit malformed-input error bodies on every unauthenticated endpoint, not just the happy-path auth checks.
+2. **Per-backend fixes leave sibling backends exposed.** When a DoS/ReDoS is patched in one of N interchangeable backends, the audit must enumerate every backend that shares the vulnerable primitive. The patched backend is the *negative control*, not the proof of safety.
+3. **"Already-generated" input shapes defeat generation-side limits.** Endpoints that accept the output of a pipeline (derender, post-processing, replay) from the client bypass every limit that the generating stage enforced. Validate the replayed structure against the same budgets.
+4. **Global-flag guards are a concurrency primitive.** Any fix that wraps a deserialization sink in a save/enable/restore context over process-global state is raceable by concurrent request parts. Test the guarded region with two concurrent actors sharing one process.
+
 ## Operator checklist
 
 - [ ] Did the proof use owned canary infrastructure rather than metadata/internal production hosts?
